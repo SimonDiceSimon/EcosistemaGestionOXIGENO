@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Gestión y Despensa - Pequeño Productor</title>
+  <title>Sistema de Gestión Pequeño Productor</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Phosphor Icons para iconografía moderna -->
@@ -29,7 +29,7 @@
       animation: fadeIn 0.22s ease-out;
     }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
+      from { opacity: 0; transform: translateY(5px); }
       to { opacity: 1; transform: translateY(0); }
     }
   </style>
@@ -76,12 +76,14 @@
 </head>
 <body class="bg-stone-100 text-stone-800 antialiased min-h-screen flex flex-col justify-between selection:bg-amber-200">
 
-  <header class="bg-emerald-950 text-white shadow-md sticky top-0 z-40 border-b border-emerald-900">
-    <div class="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between">
+  <!-- ======================================================= -->
+  <!-- ENCABEZADO SUPERIOR CON ESTADO DE NUBE Y SESIÓN        -->
+  <!-- ======================================================= -->
+  <header class="bg-emerald-950 text-white shadow-md sticky top-0 z-30 border-b border-emerald-900">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
       
-      <!-- Identidad y logo -->
       <div class="flex items-center gap-3 cursor-pointer select-none" onclick="irAInicioSiAutenticado()">
-        <div class="w-10 h-10 rounded-xl bg-emerald-800 flex items-center justify-center shadow-inner border border-emerald-700/80 shrink-0">
+        <div class="w-10 h-10 rounded-xl bg-emerald-800 flex items-center justify-center shadow-inner border border-emerald-700/80">
           <i class="ph-bold ph-plant text-2xl text-emerald-300"></i>
         </div>
         <div>
@@ -95,36 +97,25 @@
         </div>
       </div>
 
-      <!-- Barra de navegación por módulos cuando hay sesión activa -->
-      <div id="barraUsuarioSesion" class="hidden flex items-center gap-1.5 sm:gap-2">
-        
-        <!-- Pestañas principales de la app -->
-        <nav class="flex items-center bg-emerald-900/90 p-1 rounded-xl border border-emerald-800 text-xs font-bold">
-          <button id="navBtnProductos" onclick="cambiarVista('inicio')" class="px-2.5 sm:px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 bg-emerald-800 text-white shadow-sm">
-            <i class="ph-bold ph-squares-four"></i> <span class="hidden md:inline">Productos</span>
-          </button>
-          <button id="navBtnCalculadora" onclick="iniciarNuevoCalculo()" class="px-2.5 sm:px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 text-emerald-200 hover:text-white">
-            <i class="ph-bold ph-calculator"></i> <span class="hidden md:inline">Nueva Tanda</span>
-          </button>
-          <button id="navBtnDespensa" onclick="cambiarVista('despensa')" class="px-2.5 sm:px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 text-emerald-200 hover:text-white">
-            <i class="ph-bold ph-archive"></i> <span>Mi Despensa</span>
-          </button>
-        </nav>
+      <!-- Acciones de cabecera cuando hay sesión activa -->
+      <div id="barraUsuarioSesion" class="hidden flex items-center gap-2">
+        <button id="btnVolverInicio" onclick="cambiarVista('inicio')" class="hidden text-xs bg-emerald-900 hover:bg-emerald-800 text-emerald-100 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition border border-emerald-800" title="Volver al Panel Principal">
+          <i class="ph-bold ph-house text-sm"></i> <span class="hidden sm:inline">Panel Principal</span>
+        </button>
 
-        <!-- Emprendimiento y Logout -->
-        <div class="flex items-center bg-emerald-900/80 border border-emerald-800 rounded-xl px-2 py-1 gap-1.5">
-          <div class="text-left hidden lg:block">
+        <div class="flex items-center bg-emerald-900/80 border border-emerald-800 rounded-xl px-2.5 py-1.5 gap-2">
+          <div class="text-left hidden sm:block">
             <span class="text-[9px] uppercase tracking-wider text-emerald-300 font-bold block leading-none">Emprendimiento</span>
-            <span id="nombreEmprendimientoHeader" class="text-xs font-bold text-white max-w-[120px] truncate block leading-tight">Mi Chacra</span>
+            <span id="nombreEmprendimientoHeader" class="text-xs font-bold text-white max-w-[140px] truncate block leading-tight">Mi Emprendimiento</span>
           </div>
-          <button onclick="abrirModalBackup()" class="text-emerald-300 hover:text-white p-1 rounded-lg hover:bg-emerald-800 transition" title="Copia de seguridad">
-            <i class="ph-bold ph-floppy-disk text-base"></i>
-          </button>
-          <button onclick="solicitarCerrarSesion()" class="text-emerald-300 hover:text-white p-1 rounded-lg hover:bg-emerald-800 transition" title="Cambiar emprendimiento">
+          <button onclick="solicitarCerrarSesion()" class="text-emerald-300 hover:text-white p-1 rounded-lg hover:bg-emerald-800 transition" title="Cambiar de emprendimiento / Salir">
             <i class="ph-bold ph-sign-out text-base"></i>
           </button>
         </div>
 
+        <button onclick="abrirModalBackup()" title="Copia de seguridad local en archivo" class="text-xs bg-emerald-900 hover:bg-emerald-800 text-emerald-200 p-2 rounded-lg font-semibold transition border border-emerald-800 hidden sm:flex items-center">
+          <i class="ph-bold ph-floppy-disk text-base"></i>
+        </button>
       </div>
 
     </div>
@@ -132,6 +123,9 @@
 
   <main class="max-w-5xl mx-auto px-4 py-6 flex-1 w-full">
 
+    <!-- ======================================================= -->
+    <!-- VISTA 0: ACCESO / INGRESO Y REGISTRO                   -->
+    <!-- ======================================================= -->
     <div id="vistaAuth" class="fade-in max-w-md mx-auto my-6 sm:my-10">
       <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-stone-200 space-y-6">
         
@@ -142,7 +136,7 @@
         <div class="text-center">
           <h2 class="text-2xl font-black text-stone-900 mt-1">Acceso a tu Emprendimiento</h2>
           <p class="text-xs text-stone-500 mt-1 leading-relaxed">
-            Gestión comunitaria de costos, recetas y despensa sin correos difíciles.
+            Gestión comunitaria para sincronizar en cualquier celular o PC.
           </p>
         </div>
 
@@ -182,7 +176,7 @@
                      onkeydown="if(event.key === 'Enter'){ event.preventDefault(); procesarLogin(); }"
                      class="w-full bg-stone-50 border border-stone-300 rounded-xl pl-9 pr-3 py-2.5 text-sm font-black tracking-widest text-stone-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition">
             </div>
-            <span class="text-[10px] text-stone-400 mt-1 block">El código de 4 números con el que se registró.</span>
+            <span class="text-[10px] text-stone-400 mt-1 block">El código de 4 números con el que se registró el emprendimiento.</span>
           </div>
 
           <div id="mensajeErrorLogin" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
@@ -245,12 +239,20 @@
           </button>
         </form>
 
+        <div class="pt-2 border-t border-stone-100 text-[11px] text-stone-400 flex items-center justify-center gap-1.5 text-center">
+          <i class="ph-bold ph-shield-check text-emerald-600"></i>
+          <span>Base de datos en la nube sin correos ni contraseñas complejas.</span>
+        </div>
+
       </div>
     </div>
 
-    <div id="vistaInicio" class="hidden space-y-7 fade-in">
+    <!-- ======================================================= -->
+    <!-- VISTA 1: PANEL PRINCIPAL (TUS PRODUCTOS + MI DESPENSA) -->
+    <!-- ======================================================= -->
+    <div id="vistaInicio" class="hidden space-y-6 fade-in">
       
-      <!-- Banner de bienvenida y acción principal -->
+      <!-- RECUADRO 1: TUS PRODUCTOS Y COSTOS (Mantiene diseño original de la captura) -->
       <div class="bg-white rounded-2xl p-6 sm:p-7 shadow-sm border border-stone-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div class="flex items-center gap-2">
@@ -258,22 +260,16 @@
             <span id="badgeEmprendimientoActivo" class="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">Emprendimiento</span>
           </div>
           <h2 class="text-2xl sm:text-3xl font-black text-stone-900 mt-1">Tus Productos y Costos</h2>
-          <p class="text-xs sm:text-sm text-stone-500 mt-1">Registrá tus tandas, consultá tu estante de insumos y fijá tus precios de feria.</p>
+          <p class="text-xs sm:text-sm text-stone-500 mt-1">Registrá tus tandas, retomá borradores en proceso y calculá tus precios de venta.</p>
         </div>
 
-        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <button onclick="cambiarVista('despensa')" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-950 font-black px-4 py-3 rounded-xl transition flex items-center justify-center gap-1.5 border border-amber-300">
-            <i class="ph-bold ph-archive text-base"></i>
-            <span>Ver Mi Despensa</span>
-          </button>
-          <button onclick="iniciarNuevoCalculo()" class="text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-black px-4 py-3 rounded-xl shadow-md transition flex items-center justify-center gap-1.5">
-            <i class="ph-bold ph-plus-circle text-base"></i>
-            <span>Calcular Nuevo Producto</span>
-          </button>
-        </div>
+        <button onclick="iniciarNuevoCalculo()" class="w-full sm:w-auto text-sm bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white font-bold px-6 py-4 rounded-2xl shadow-md hover:shadow-lg active:scale-95 transition flex items-center justify-center gap-2.5 shrink-0 select-none">
+          <i class="ph-bold ph-plus-circle text-xl"></i>
+          <span>Calcular Nuevo Producto</span>
+        </button>
       </div>
 
-      <!-- SECCIÓN 1: Tandas Sin Terminar / Borradores (Ámbar) -->
+      <!-- SECCIÓN: Tandas Sin Terminar / Borradores (Color Ámbar) -->
       <div id="seccionBorradores" class="hidden space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
@@ -290,54 +286,65 @@
         </div>
       </div>
 
-      <!-- SECCIÓN 2: Productos Terminados (Verde) -->
-      <div class="space-y-3">
-        <div class="flex items-center justify-between">
-          <h3 class="text-xs font-black text-stone-600 uppercase tracking-wider flex items-center gap-1.5">
-            <i class="ph-bold ph-check-circle text-emerald-600 text-base"></i> Productos Terminados y Listos para Vender
-          </h3>
-          <span class="text-xs font-semibold text-stone-500" id="contadorTerminados">0 productos</span>
+      <!-- RECUADRO 2: MI DESPENSA (TAN GRANDE, VISIBLE Y TÁCTIL COMO EL PRIMERO) -->
+      <div class="bg-white rounded-2xl p-6 sm:p-7 shadow-sm border-2 border-amber-300/80 bg-gradient-to-br from-white via-amber-50/20 to-amber-100/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-black text-amber-800 uppercase tracking-wider">Control de Materia Prima</span>
+            <span id="badgeTotalInsumosDespensa" class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-200/70 text-amber-950 border border-amber-300">Estante Físico</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-amber-200 text-amber-900 flex items-center justify-center font-black text-2xl shrink-0 shadow-sm">
+              <i class="ph-bold ph-archive"></i>
+            </div>
+            <div>
+              <h2 class="text-2xl sm:text-3xl font-black text-stone-900 leading-tight">Mi Despensa</h2>
+              <p class="text-xs sm:text-sm text-stone-600 font-medium">Frascos, azúcar, tapas y stock físico listo para cocinar en el taller o campo.</p>
+            </div>
+          </div>
         </div>
 
-        <div id="contenedorTerminados" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Dinámico JS -->
-        </div>
-
-        <div id="estadoVacioProductos" class="hidden text-center py-16 px-4 bg-white rounded-2xl border border-dashed border-stone-300">
-          <i class="ph-duotone ph-basket text-5xl text-stone-300 mb-2"></i>
-          <h4 class="text-base font-bold text-stone-700">Aún no registraste ningún producto</h4>
-          <p class="text-xs text-stone-400 max-w-sm mx-auto mt-1 mb-4">Comenzá calculando tu primera tanda de mermelada, conservas, verdura o panificados.</p>
-          <button onclick="iniciarNuevoCalculo()" class="text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-4 py-2.5 rounded-lg transition inline-flex items-center gap-1.5">
-            <i class="ph-bold ph-plus"></i> Calcular Primer Producto
+        <!-- Botonera Táctil Gigante para Operar con Manos Ocupadas -->
+        <div class="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto shrink-0">
+          <button onclick="cambiarVista('despensa')" class="w-full sm:w-auto text-sm bg-stone-900 hover:bg-black active:bg-stone-800 text-white font-black px-6 py-4 rounded-2xl shadow-md active:scale-95 transition flex items-center justify-center gap-2.5 select-none">
+            <i class="ph-bold ph-door-open text-xl text-amber-400"></i>
+            <span>Abrir Mi Despensa</span>
+          </button>
+          <button onclick="abrirModalCompra()" class="w-full sm:w-auto text-sm bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white font-bold px-5 py-4 rounded-2xl shadow-md active:scale-95 transition flex items-center justify-center gap-2 select-none">
+            <i class="ph-bold ph-plus text-lg"></i>
+            <span>+ Sumar Compra</span>
           </button>
         </div>
       </div>
 
     </div>
 
+    <!-- ======================================================= -->
+    <!-- VISTA: PANTALLA COMPLETA "MI DESPENSA" (ESTANTES Y MP)  -->
+    <!-- ======================================================= -->
     <div id="vistaDespensa" class="hidden space-y-5 fade-in">
       
-      <!-- Encabezado de Mi Despensa -->
+      <!-- Barra superior con retorno y acciones de campo -->
       <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-stone-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-900 flex items-center justify-center font-black text-2xl shrink-0">
-            <i class="ph-bold ph-archive"></i>
-          </div>
+          <button onclick="cambiarVista('inicio')" class="w-10 h-10 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center transition active:scale-95 shrink-0" title="Volver al panel principal">
+            <i class="ph-bold ph-arrow-left text-lg"></i>
+          </button>
           <div>
             <div class="flex items-center gap-2">
               <h2 class="text-xl sm:text-2xl font-black text-stone-900 leading-none">Mi Despensa</h2>
-              <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">Control Físico</span>
+              <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">Control Físico</span>
             </div>
-            <p class="text-xs text-stone-500 font-medium mt-1">Materias primas, frascos y stock disponible para producir.</p>
+            <p class="text-xs text-stone-500 font-medium mt-1">Materias primas, envases y stock disponible en tu estante.</p>
           </div>
         </div>
 
         <div class="flex items-center gap-2 w-full sm:w-auto">
-          <button onclick="abrirModalNuevoInsumo()" class="flex-1 sm:flex-none bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs px-3.5 py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition">
-            <i class="ph-bold ph-plus"></i> Crear insumo
+          <button onclick="abrirModalNuevoInsumo()" class="flex-1 sm:flex-none bg-stone-100 hover:bg-stone-200 active:bg-stone-300 text-stone-800 font-bold text-xs px-3.5 py-3 rounded-xl flex items-center justify-center gap-1.5 transition select-none">
+            <i class="ph-bold ph-tag"></i> Crear insumo
           </button>
-          <button onclick="abrirModalCompra()" class="flex-1 sm:flex-none bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition">
-            <i class="ph-bold ph-shopping-cart-simple"></i> Sumar compra
+          <button onclick="abrirModalCompra()" class="flex-1 sm:flex-none bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white font-bold text-xs px-4 py-3 rounded-xl flex items-center justify-center gap-2 shadow-sm active:scale-95 transition select-none">
+            <i class="ph-bold ph-plus text-sm"></i> Sumar compra
           </button>
         </div>
       </div>
@@ -349,7 +356,7 @@
         </div>
         <div class="flex-1">
           <p class="font-black text-amber-950 text-sm leading-tight">El costo real de tus insumos aumentó</p>
-          <p class="text-xs text-amber-800 mt-1 leading-snug">Se registraron compras recientes que incrementaron el costo promedio de tu estante. Tu margen de ganancia real podría ser menor al calculado.</p>
+          <p class="text-xs text-amber-800 mt-1 leading-snug">Se registraron compras recientes que incrementaron el costo promedio de tu estante. Tu ganancia en mano real se achica si no actualizás tus recetas.</p>
           <button onclick="abrirModalImpacto()" class="mt-2.5 inline-flex items-center gap-1.5 text-xs font-black text-amber-950 bg-amber-200/80 hover:bg-amber-200 px-3.5 py-1.5 rounded-xl active:scale-95 transition">
             Ver impacto en mis productos <i class="ph-bold ph-arrow-right"></i>
           </button>
@@ -358,65 +365,68 @@
 
       <!-- BUSCADOR RÁPIDO TÁCTIL -->
       <div class="relative">
-        <i class="ph-bold ph-magnifying-glass absolute left-3.5 top-3.5 text-stone-400 text-lg"></i>
+        <i class="ph-bold ph-magnifying-glass absolute left-4 top-3.5 text-stone-400 text-xl"></i>
         <input 
           type="text" 
           id="input-buscador"
           oninput="filtrarInsumos()" 
-          placeholder="Buscar insumo en despensa (azúcar, frascos, tapas, fruta...)" 
-          class="w-full pl-10 pr-4 py-3 bg-white rounded-2xl border border-stone-200 text-stone-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-sm"
+          placeholder="Buscar insumo (azúcar, frascos, tapas, fruta...)" 
+          class="w-full pl-12 pr-4 py-3.5 bg-white rounded-2xl border border-stone-200 text-stone-900 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm"
         >
       </div>
 
-      <!-- LISTA DE ESTANTES (INSUMOS) -->
+      <!-- LISTA DE ESTANTES (TARJETAS DE MATERIA PRIMA CON BOTÓN "VER ESTANTE") -->
       <div id="contenedor-estante" class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <!-- Render dinámico JS -->
       </div>
 
       <!-- SIMULADOR DINÁMICO: ¿PARA CUÁNTO ME ALCANZA HOY? -->
-      <div class="bg-stone-900 text-white p-5 rounded-2xl shadow-md space-y-3">
+      <div class="bg-stone-900 text-white p-5 sm:p-6 rounded-3xl shadow-md space-y-3 mt-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <i class="ph-bold ph-sparkle text-amber-400 text-lg"></i>
+            <i class="ph-bold ph-sparkle text-amber-400 text-xl"></i>
             <p class="font-bold text-sm text-white">¿Para cuánto me alcanza hoy en la despensa?</p>
           </div>
           <span class="text-[10px] uppercase font-black bg-stone-800 text-amber-400 px-2 py-0.5 rounded-md border border-stone-700">Simulador</span>
         </div>
-        <p class="text-xs text-stone-400">Seleccioná cualquiera de tus recetas elaboradas para calcular cuántas unidades completas podés producir con el stock físico disponible en tus estantes:</p>
+        <p class="text-xs text-stone-400">Seleccioná cualquiera de tus recetas elaboradas para calcular cuántas unidades completas podés producir con el stock físico disponible:</p>
 
-        <select id="simulador-receta" onchange="calcularDisponibilidad()" class="w-full bg-stone-800 border border-stone-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-white focus:outline-none focus:border-amber-500">
-          <!-- Inyectado dinámicamente con productos terminados -->
+        <select id="simulador-receta" onchange="calcularDisponibilidad()" class="w-full bg-stone-800 border border-stone-700 rounded-xl px-3.5 py-3 text-xs font-bold text-white focus:outline-none focus:border-amber-500">
+          <!-- Inyectado dinámicamente -->
         </select>
 
-        <div id="resultado-simulador" class="bg-stone-800/90 rounded-xl p-3.5 border border-stone-700/80 text-xs space-y-1">
+        <div id="resultado-simulador" class="bg-stone-800/90 rounded-2xl p-4 border border-stone-700/80 text-xs space-y-1">
           <!-- Render dinámico -->
         </div>
       </div>
 
     </div>
 
+    <!-- ======================================================= -->
+    <!-- VISTA 2: DETALLE DEL PRODUCTO + PRECIOS DE VENTA      -->
+    <!-- ======================================================= -->
     <div id="vistaDetalle" class="hidden space-y-6 fade-in">
       
       <!-- Barra superior del detalle -->
       <div class="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-stone-200">
-        <button onclick="cambiarVista('inicio')" class="text-xs font-semibold text-stone-600 hover:text-stone-900 bg-white border border-stone-300 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition shadow-sm">
-          <i class="ph-bold ph-arrow-left"></i> Volver a la lista
+        <button onclick="cambiarVista('inicio')" class="text-xs font-semibold text-stone-600 hover:text-stone-900 bg-white border border-stone-300 px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition shadow-sm active:scale-95">
+          <i class="ph-bold ph-arrow-left"></i> Volver al panel principal
         </button>
 
         <div class="flex items-center gap-2">
-          <button id="btnContinuarBorradorDetalle" onclick="continuarEditandoBorrador()" class="hidden text-xs font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+          <button id="btnContinuarBorradorDetalle" onclick="continuarEditandoBorrador()" class="hidden text-xs font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition">
             <i class="ph-bold ph-pencil-simple text-sm"></i> Continuar completando tanda
           </button>
-          <button id="btnReutilizarTerminado" onclick="reutilizarProductoActual()" class="text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+          <button id="btnReutilizarTerminado" onclick="reutilizarProductoActual()" class="text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition">
             <i class="ph-bold ph-copy text-sm"></i> Reutilizar receta para nueva tanda
           </button>
-          <button onclick="solicitarEliminarProductoActual()" class="text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 p-2 rounded-lg transition" title="Eliminar producto">
+          <button onclick="solicitarEliminarProductoActual()" class="text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 p-2.5 rounded-xl transition" title="Eliminar producto">
             <i class="ph-bold ph-trash text-sm"></i>
           </button>
         </div>
       </div>
 
-      <!-- Tarjeta Principal con Métricas -->
+      <!-- Tarjeta Principal con Nombre, Estado y Métricas -->
       <div class="bg-stone-900 text-white rounded-2xl p-6 shadow-lg relative overflow-hidden">
         <div class="relative z-10">
           <div class="flex flex-wrap items-start justify-between gap-2">
@@ -428,7 +438,7 @@
               <h2 class="text-2xl sm:text-3xl font-black text-white mt-1" id="detalleNombre">Nombre del Producto</h2>
               <p class="text-xs text-stone-400 mt-1" id="detalleFecha">Tanda registrada el --/--/----</p>
             </div>
-            <div class="bg-stone-800/90 border border-stone-700/80 px-3 py-2 rounded-xl text-right">
+            <div class="bg-stone-800/90 border border-stone-700/80 px-3.5 py-2 rounded-xl text-right">
               <span class="text-[10px] uppercase font-bold text-stone-400 block">Rendimiento</span>
               <span class="text-base font-black text-stone-100" id="detalleRinde">0 unidades</span>
             </div>
@@ -472,7 +482,7 @@
           </div>
 
           <div class="flex items-center gap-2">
-            <button onclick="guardarPreciosFijados()" class="text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+            <button onclick="guardarPreciosFijados()" class="text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-sm active:scale-95">
               <i class="ph-bold ph-check"></i> Guardar Precios en la Nube
             </button>
           </div>
@@ -512,8 +522,6 @@
                 </span>
                 <span class="text-xs font-bold text-emerald-700" id="tagMargenMinorista">+50% ganancia</span>
               </div>
-              <p class="text-[11px] text-stone-500">Precio directo al consumidor en ferias o WhatsApp.</p>
-
               <div class="mt-4 p-3.5 bg-white rounded-xl border border-stone-200 shadow-inner">
                 <span class="text-[10px] uppercase font-bold text-stone-400 block">Precio de Venta Sugerido</span>
                 <div class="flex items-baseline gap-1 mt-0.5">
@@ -521,7 +529,6 @@
                   <span class="text-xs font-medium text-stone-500">/ unidad</span>
                 </div>
               </div>
-
               <div class="space-y-2 mt-3 text-xs">
                 <div class="flex justify-between items-center p-2 rounded-lg bg-emerald-50/70 border border-emerald-100 text-emerald-950 font-semibold">
                   <span>Ganancia limpia en mano:</span>
@@ -535,7 +542,7 @@
                   <i class="ph-bold ph-scales text-emerald-700 text-base mt-0.5"></i>
                   <div>
                     <span class="font-bold text-stone-800 block">Punto de recuperación:</span>
-                    <span id="simEquilibrioMinorista">Con vender X unidades cubrís todos los costos.</span>
+                    <span id="simEquilibrioMinorista">Con vender X unidades cubrís todos los costos de la tanda.</span>
                   </div>
                 </div>
               </div>
@@ -550,8 +557,6 @@
                 </span>
                 <span class="text-xs font-bold text-purple-700" id="tagMargenMayorista">+45% ganancia</span>
               </div>
-              <p class="text-[11px] text-stone-500">Para venta por bulto o cajón a almacenes y dietéticas.</p>
-
               <div class="mt-4 p-3.5 bg-white rounded-xl border border-stone-200 shadow-inner">
                 <div class="flex justify-between items-center">
                   <span class="text-[10px] uppercase font-bold text-stone-400 block">Precio por Unidad al Negocio</span>
@@ -564,7 +569,6 @@
                   <span class="text-xs font-medium text-stone-500">/ unidad</span>
                 </div>
               </div>
-
               <div class="space-y-2 mt-3 text-xs">
                 <div class="flex justify-between items-center p-2 rounded-lg bg-purple-50/70 border border-purple-100 text-purple-950 font-semibold">
                   <span>Ganancia limpia en mano:</span>
@@ -577,8 +581,8 @@
                 <div class="p-2.5 rounded-lg bg-white border border-stone-200 text-[11px] text-stone-600 flex items-start gap-2">
                   <i class="ph-bold ph-package text-purple-700 text-base mt-0.5"></i>
                   <div>
-                    <span class="font-bold text-stone-800 block">Ventaja canal mayorista:</span>
-                    <span>Cobrás de un solo saque sin horas de atención en la feria.</span>
+                    <span class="font-bold text-stone-800 block">Ventaja del canal mayorista:</span>
+                    <span>Cobrás de un solo saque sin dedicar horas de atención en la feria.</span>
                   </div>
                 </div>
               </div>
@@ -587,15 +591,13 @@
         </div>
       </div>
 
-      <!-- Insumos y Composición -->
+      <!-- Desglose de Insumos y Composición de Costos -->
       <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
         <div class="md:col-span-7 bg-white rounded-xl p-5 shadow-sm border border-stone-200">
           <h3 class="text-xs font-bold text-stone-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
             <i class="ph-bold ph-list-bullets text-emerald-700"></i> Insumos Utilizados en la Receta / Tanda
           </h3>
-          <div id="detalleListaInsumos" class="space-y-2">
-            <!-- Insertado por JS -->
-          </div>
+          <div id="detalleListaInsumos" class="space-y-2"></div>
         </div>
 
         <div class="md:col-span-5 bg-white rounded-xl p-5 shadow-sm border border-stone-200">
@@ -604,7 +606,7 @@
           </h3>
           <div class="space-y-2 text-xs">
             <div class="flex justify-between p-2 bg-stone-50 rounded-lg border border-stone-200">
-              <span class="text-stone-600">Insumos directos:</span>
+              <span class="text-stone-600">Insumos y envases directos:</span>
               <span class="font-bold text-stone-800" id="detalleSubtotalInsumos">$ 0</span>
             </div>
             <div class="flex justify-between p-2 bg-stone-50 rounded-lg border border-stone-200">
@@ -617,8 +619,8 @@
             </div>
             <div class="flex justify-between p-2 bg-purple-50 border border-purple-100 rounded-lg text-purple-900">
               <div>
-                <span class="font-semibold block">+20% Desgaste e Imprevistos:</span>
-                <span class="text-[10px] text-purple-700">Herramientas, gas y fletes</span>
+                <span class="font-semibold block">Otros Gastos y Desgaste (+20%):</span>
+                <span class="text-[10px] text-purple-700">Herramientas, gas, fletes e imprevistos</span>
               </div>
               <span class="font-bold self-center text-purple-800" id="detalleSubtotalExtra">$ 0</span>
             </div>
@@ -628,6 +630,9 @@
 
     </div>
 
+    <!-- ======================================================= -->
+    <!-- VISTA 3: CALCULADORA POR LOTE (7 PASOS)                 -->
+    <!-- ======================================================= -->
     <div id="vistaCalculadora" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 fade-in">
       
       <!-- FORMULARIO DE 7 PASOS -->
@@ -648,7 +653,7 @@
           </button>
         </div>
 
-        <!-- PASO 1: Nombre del producto -->
+        <!-- PASO 1 -->
         <section class="bg-white rounded-xl p-5 shadow-sm border border-stone-200">
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
@@ -658,45 +663,38 @@
             <span class="text-[10px] uppercase font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">Obligatorio</span>
           </div>
           <p class="text-xs text-stone-500 mb-2">Identificá con claridad lo que vas a elaborar o cosechar.</p>
-          <input type="text" id="nombreProducto" placeholder="Ej: Mermelada de Ciruela, Berenjenas en Escabeche, Pan de Campo" 
+          <input type="text" id="nombreProducto" placeholder="Ej: Mermelada de Tomate, Acelga por atado, Escabeche de Berenjenas" 
                  value="" oninput="actualizarNombreResumen()" 
                  class="w-full bg-stone-50 border border-stone-300 rounded-lg px-3 py-2.5 text-sm font-semibold text-stone-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition">
         </section>
 
-        <!-- PASO 2: Insumos de la Despensa y Compras -->
+        <!-- PASO 2 -->
         <section class="bg-white rounded-xl p-5 shadow-sm border border-stone-200">
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
               <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center justify-center">2</span>
-              <h2 class="font-bold text-stone-800 text-xs uppercase tracking-wider">Insumos de tu Despensa / Compras</h2>
+              <h2 class="font-bold text-stone-800 text-xs uppercase tracking-wider">Insumos Comprados (Compras / Facturas)</h2>
             </div>
-            <button onclick="cambiarVista('despensa')" class="text-[11px] font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1">
-              <i class="ph-bold ph-arrow-square-out"></i> Ver estantes
+            <button onclick="agregarCompraDesdeDespensa()" class="text-[11px] font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 px-2.5 py-1 rounded-lg transition border border-amber-300 flex items-center gap-1">
+              <i class="ph-bold ph-archive"></i> Traer de mi despensa
             </button>
           </div>
-          <p class="text-xs text-stone-500 mb-3">Tus insumos registrados en Mi Despensa ya tienen calculado su costo unitario promedio ponderado.</p>
+          <p class="text-xs text-stone-500 mb-3">Cargá lo que compraste empaquetado. El sistema calculará el costo unitario de cada insumo.</p>
 
-          <div id="contenedorCompras" class="space-y-2 mb-3">
-            <!-- Render dinámico JS -->
-          </div>
+          <div id="contenedorCompras" class="space-y-2 mb-3"></div>
 
-          <div class="flex flex-wrap gap-2">
-            <button onclick="agregarCompraDesdeDespensa()" class="text-xs text-emerald-800 bg-emerald-50 hover:bg-emerald-100 font-bold flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-emerald-300 transition">
-              <i class="ph-bold ph-archive text-sm"></i> + Traer insumo desde Mi Despensa
-            </button>
-            <button onclick="agregarCompra()" class="text-xs text-stone-700 bg-stone-100 hover:bg-stone-200 font-semibold flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-stone-300 transition">
-              <i class="ph-bold ph-plus-circle text-sm"></i> + Cargar nueva compra libre
-            </button>
-          </div>
+          <button onclick="agregarCompra()" class="text-xs text-emerald-800 bg-emerald-50 hover:bg-emerald-100 font-semibold flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-emerald-200 transition">
+            <i class="ph-bold ph-plus-circle text-sm"></i> + Cargar nueva compra de insumo
+          </button>
         </section>
 
-        <!-- PASO 3: Cosecha Propia -->
+        <!-- PASO 3 -->
         <section class="bg-white rounded-xl p-5 shadow-sm border border-stone-200">
           <div class="flex items-center gap-2 mb-2">
             <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center justify-center">3</span>
             <h2 class="font-bold text-stone-800 text-xs uppercase tracking-wider">Cosecha Propia (Chacra / Huerta)</h2>
           </div>
-          <p class="text-xs text-stone-500 mb-3">¿Utilizaste fruta o verdura que cosechaste con tus propias manos?</p>
+          <p class="text-xs text-stone-500 mb-3">¿Utilizaste verdura o fruta que cosechaste con tus propias manos?</p>
 
           <div class="grid grid-cols-2 gap-2 mb-3">
             <button type="button" id="btnCosechaNo" onclick="setearCosecha(false)" 
@@ -727,29 +725,26 @@
               <label class="block text-xs font-medium text-stone-600 mb-1">Horas dedicadas a cosechar</label>
               <input type="number" id="cosechaHoras" value="0" min="0" step="0.25" oninput="calcular()" 
                      class="w-full bg-white border border-stone-300 rounded px-2.5 py-1.5 text-xs font-bold text-stone-800 focus:ring-1 focus:ring-emerald-600">
-              <span class="text-[10px] text-stone-400">Tiempo de trabajo en la tierra</span>
             </div>
           </div>
         </section>
 
-        <!-- PASO 4: Insumos de la Receta / Tanda -->
+        <!-- PASO 4 -->
         <section class="bg-white rounded-xl p-5 shadow-sm border border-stone-200">
           <div class="flex items-center gap-2 mb-2">
             <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center justify-center">4</span>
-            <h2 class="font-bold text-stone-800 text-xs uppercase tracking-wider">Insumos de la Receta / Elaboración</h2>
+            <h2 class="font-bold text-stone-800 text-xs uppercase tracking-wider">Insumos de la Receta / Tanda y Elaboración</h2>
           </div>
-          <p class="text-xs text-stone-500 mb-3">Indicá los insumos consumidos en esta tanda:</p>
+          <p class="text-xs text-stone-500 mb-3">Indicá los insumos de hoy: podés tomarlos de compras del Paso 2 o escribir insumos libres.</p>
 
-          <div id="contenedorInsumosReceta" class="space-y-2 mb-3">
-            <!-- Render dinámico JS -->
-          </div>
+          <div id="contenedorInsumosReceta" class="space-y-2 mb-3"></div>
 
           <div class="flex flex-wrap gap-2">
             <button onclick="agregarInsumoReceta()" class="text-xs text-emerald-800 bg-emerald-50 hover:bg-emerald-100 font-semibold flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-emerald-200 transition">
-              <i class="ph-bold ph-plus-circle text-sm"></i> Usar insumo cargado en Paso 2
+              <i class="ph-bold ph-plus-circle text-sm"></i> Usar insumo de compras (Paso 2)
             </button>
             <button onclick="agregarInsumoLibreReceta()" class="text-xs text-stone-700 bg-stone-100 hover:bg-stone-200 font-semibold flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-stone-300 transition">
-              <i class="ph-bold ph-pencil-simple-line text-sm"></i> Escribir otro insumo directo
+              <i class="ph-bold ph-pencil-simple-line text-sm"></i> Escribir otro insumo libre
             </button>
           </div>
 
@@ -759,11 +754,11 @@
                 <i class="ph-bold ph-cooking-pot text-stone-600 text-lg mt-0.5"></i>
                 <div class="flex-1">
                   <label class="block text-xs font-semibold text-stone-800 mb-0.5">Horas de cocción / elaboración</label>
-                  <p class="text-[11px] text-stone-500 mb-2">Tiempo dedicado a cocinar, revolver, hornear o procesar.</p>
+                  <p class="text-[11px] text-stone-500 mb-2">Tiempo dedicado a cocinar, revolver, hornear o elaborar en esta tanda.</p>
                   <div class="flex items-center gap-2 max-w-xs">
                     <input type="number" id="horasCoccion" value="0" min="0" step="0.25" oninput="calcular()" 
                            class="w-24 bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-stone-800 focus:ring-1 focus:ring-emerald-600">
-                    <span class="text-xs text-stone-600 font-medium">horas</span>
+                    <span class="text-xs text-stone-600 font-medium">horas dedicadas</span>
                   </div>
                 </div>
               </div>
@@ -771,13 +766,13 @@
           </div>
         </section>
 
-        <!-- PASO 5: Envasado, Empaque y Valor de Hora -->
+        <!-- PASO 5 -->
         <section class="bg-white rounded-xl p-5 shadow-sm border border-stone-200">
           <div class="flex items-center gap-2 mb-2">
             <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center justify-center">5</span>
             <h2 class="font-bold text-stone-800 text-xs uppercase tracking-wider">Envasado, Empaque y Mano de Obra</h2>
           </div>
-          <p class="text-xs text-stone-500 mb-3">Tiempo de atar, llenar frascos, precintos o etiquetas y el valor que le das a tu hora.</p>
+          <p class="text-xs text-stone-500 mb-3">Tiempo de embolsar, colocar tapas, atar, etiquetar y el valor que le asignás a tu hora.</p>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="bg-stone-50 p-3 rounded-lg border border-stone-200">
@@ -787,22 +782,20 @@
                        class="w-24 bg-white border border-stone-300 rounded px-2.5 py-1.5 text-xs font-bold text-stone-800 focus:ring-1 focus:ring-emerald-600">
                 <span class="text-xs text-stone-500">horas</span>
               </div>
-              <span class="text-[10px] text-stone-400 block mt-1">Llenar frascos, tapas, etiquetado</span>
             </div>
 
             <div class="bg-stone-50 p-3 rounded-lg border border-stone-200">
               <label class="block text-xs font-semibold text-stone-700 mb-1">¿Cuánto vale tu hora de trabajo? ($)</label>
               <div class="relative">
                 <span class="absolute left-2.5 top-1.5 text-xs text-stone-400 font-bold">$</span>
-                <input type="number" id="valorHoraTrabajo" value="" placeholder="Ej: 3500" min="0" oninput="calcular()" 
-                       class="w-full bg-white border border-stone-300 rounded pl-6 pr-2.5 py-1.5 text-xs font-bold text-stone-800 focus:ring-1 focus:ring-emerald-600">
+                <input type="number" id="valorHoraTrabajo" value="" placeholder="Ej: 3000" min="0" oninput="calcular()" 
+                       class="w-full bg-white border border-stone-300 rounded pl-6 pr-2.5 py-1.5 text-xs font-bold text-stone-800 placeholder:text-stone-400 placeholder:font-normal focus:ring-1 focus:ring-emerald-600">
               </div>
-              <span class="text-[10px] text-stone-400 block mt-1">Lo que pretendés ganar por hora</span>
             </div>
           </div>
         </section>
 
-        <!-- PASO 6: Costo de Energía Eléctrica Mensual -->
+        <!-- PASO 6 -->
         <section class="bg-white rounded-xl p-5 shadow-sm border border-stone-200">
           <div class="flex items-center gap-2 mb-2">
             <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center justify-center">6</span>
@@ -833,17 +826,17 @@
           <div class="bg-stone-50 p-3.5 rounded-lg border border-stone-200 space-y-3">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
               <div>
-                <label class="block text-xs font-semibold text-stone-700 mb-1">Total de tu última factura de luz ($)</label>
+                <label class="block text-xs font-semibold text-stone-700 mb-1">Total factura de luz ($)</label>
                 <div class="relative">
                   <span class="absolute left-2.5 top-1.5 text-xs text-stone-400 font-bold">$</span>
                   <input type="number" id="facturaLuzMensual" value="" placeholder="Ej: 45000" min="0" oninput="calcular()" 
-                         class="w-full bg-white border border-stone-300 rounded pl-6 pr-2.5 py-1.5 text-xs font-bold text-stone-800 focus:ring-1 focus:ring-emerald-600">
+                         class="w-full bg-white border border-stone-300 rounded pl-6 pr-2.5 py-1.5 text-xs font-bold text-stone-800 placeholder:text-stone-400 placeholder:font-normal focus:ring-1 focus:ring-emerald-600">
                 </div>
                 <span class="text-[10px] text-stone-400 block mt-1" id="descripcionDivisionLuz">Se divide en 30 días y 24 hs (720 hs/mes).</span>
               </div>
 
               <div id="bloqueHorasExclusivas" class="hidden">
-                <label class="block text-xs font-semibold text-stone-700 mb-1">Horas de trabajo por día</label>
+                <label class="block text-xs font-semibold text-stone-700 mb-1">Horas diarias de taller</label>
                 <div class="flex items-center gap-2">
                   <input type="number" id="horasDiariasUsoLuz" value="6" min="1" max="24" step="0.5" oninput="calcular()" 
                          class="w-24 bg-white border border-stone-300 rounded px-2.5 py-1.5 text-xs font-bold text-stone-800 focus:ring-1 focus:ring-emerald-600">
@@ -855,29 +848,29 @@
             <div class="text-[11px] text-stone-600 bg-white p-2.5 rounded border border-stone-200 space-y-1">
               <div class="flex justify-between">
                 <span>Costo calculado por hora de luz:</span>
-                <span class="font-bold text-stone-800" id="indicadorCostoHoraLuz">$ 0,00/h</span>
+                <span class="font-bold text-stone-800" id="indicadorCostoHoraLuz">$ 62,50/h</span>
               </div>
               <div class="flex justify-between">
-                <span>Horas de esta tanda que consumen luz:</span>
+                <span>Horas que consumen luz:</span>
                 <span class="font-bold text-emerald-700" id="indicadorHorasLuzTanda">0 hs</span>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- PASO 7: Unidades Producidas (Rendimiento) -->
+        <!-- PASO 7 -->
         <section class="bg-white rounded-xl p-5 shadow-sm border border-stone-200">
           <div class="flex items-center gap-2 mb-2">
             <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center justify-center">7</span>
             <h2 class="font-bold text-stone-800 text-xs uppercase tracking-wider">Unidades Producidas (Rendimiento)</h2>
           </div>
-          <p class="text-xs text-stone-500 mb-3">¿Cuánto producto final listo para vender obtuviste?</p>
+          <p class="text-xs text-stone-500 mb-3">¿Cuánto producto final listo obtuviste en esta tanda?</p>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-semibold text-stone-700 mb-1">Cantidad total terminada</label>
               <input type="number" id="unidadesProducidas" value="" placeholder="Ej: 12" min="1" step="1" oninput="calcular()" 
-                     class="w-full bg-stone-50 border border-stone-300 rounded-lg px-3 py-2 text-sm font-black text-stone-800 focus:ring-2 focus:ring-emerald-600">
+                     class="w-full bg-stone-50 border border-stone-300 rounded-lg px-3 py-2 text-sm font-black text-stone-800 placeholder:text-stone-400 placeholder:font-normal focus:ring-2 focus:ring-emerald-600">
             </div>
 
             <div>
@@ -910,7 +903,7 @@
               <div class="flex items-baseline gap-1 mt-1">
                 <span class="text-3xl sm:text-4xl font-black text-emerald-400" id="resumenCostoUnitario">$ 0</span>
               </div>
-              <p class="text-[11px] text-stone-400 mt-1">Incluye insumos, mano de obra, luz y +20% de desgaste e imprevistos.</p>
+              <p class="text-[11px] text-stone-400 mt-1">Incluye insumos, mano de obra, luz y +20% de desgaste/imprevistos.</p>
             </div>
 
             <div class="mt-4 pt-3 border-t border-stone-800 flex justify-between items-center text-xs">
@@ -919,42 +912,62 @@
             </div>
 
             <div class="mt-5 space-y-2">
-              <button onclick="guardarProducto(true)" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm">
+              <button onclick="guardarProducto(true)" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm select-none">
                 <i class="ph-bold ph-cloud-arrow-up text-lg"></i>
                 <span>Agregar a mis productos</span>
               </button>
 
-              <button onclick="guardarProducto(false)" class="w-full bg-amber-500 hover:bg-amber-600 text-stone-950 font-extrabold py-3 px-4 rounded-xl shadow-sm transition flex items-center justify-center gap-2 text-xs">
+              <button onclick="guardarProducto(false)" class="w-full bg-amber-500 hover:bg-amber-600 text-stone-950 font-extrabold py-3 px-4 rounded-xl shadow-sm transition flex items-center justify-center gap-2 text-xs select-none">
                 <i class="ph-bold ph-clock-countdown text-base"></i>
-                <span>Guardar sin terminar (Borrador)</span>
+                <span>Guardar sin terminar</span>
               </button>
             </div>
 
-            <button onclick="reiniciarCalculo()" class="w-full mt-2 text-stone-400 hover:text-stone-200 text-xs py-1.5 transition flex items-center justify-center gap-1">
+            <button onclick="reiniciarCalculo()" class="w-full mt-2 text-stone-400 hover:text-stone-200 text-xs py-1.5 transition flex items-center justify-center gap-1 select-none">
               <i class="ph-bold ph-arrow-counter-clockwise"></i> Limpiar y empezar de nuevo
             </button>
           </div>
 
-          <!-- Tiempo y desglose -->
+          <div class="bg-white rounded-xl p-5 shadow-sm border border-stone-200 space-y-4">
+            <h4 class="text-xs font-bold text-stone-700 uppercase tracking-wide flex items-center gap-1.5">
+              <i class="ph-bold ph-clock text-emerald-700"></i> Tiempo Utilizado en la Tanda
+            </h4>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-stone-50 p-3 rounded-lg border border-stone-200">
+                <span class="text-[10px] uppercase font-bold text-stone-400 block">Horas Totales</span>
+                <span class="text-xl font-black text-stone-800 mt-0.5 block" id="resumenHorasTotales">0 hs</span>
+              </div>
+              <div class="bg-emerald-50/60 p-3 rounded-lg border border-emerald-200">
+                <span class="text-[10px] uppercase font-bold text-emerald-800 block">Tiempo por Unidad</span>
+                <span class="text-xl font-black text-emerald-700 mt-0.5 block" id="resumenTiempoPorUnidad">0 min</span>
+              </div>
+            </div>
+          </div>
+
           <div class="bg-white rounded-xl p-5 shadow-sm border border-stone-200 space-y-3">
             <h4 class="text-xs font-bold text-stone-700 uppercase tracking-wide flex items-center gap-1.5">
-              <i class="ph-bold ph-chart-pie-slice text-emerald-700"></i> Desglose del Costo
+              <i class="ph-bold ph-chart-pie-slice text-emerald-700"></i> Desglose del Costo Total
             </h4>
+
             <div class="space-y-2 text-xs">
-              <div class="flex justify-between text-stone-600">
-                <span>Insumos:</span>
+              <div class="flex justify-between items-center text-stone-600">
+                <span>Insumos y envases:</span>
                 <span class="font-bold text-stone-800" id="resumenDineroInsumos">$ 0</span>
               </div>
-              <div class="flex justify-between text-stone-600">
-                <span>Mano de obra:</span>
+              <div class="flex justify-between items-center text-stone-600">
+                <span>Mano de obra (tu tiempo):</span>
                 <span class="font-bold text-stone-800" id="resumenDineroTrabajo">$ 0</span>
               </div>
-              <div class="flex justify-between text-stone-600">
+              <div class="flex justify-between items-center text-stone-600">
                 <span>Electricidad:</span>
                 <span class="font-bold text-stone-800" id="resumenDineroLuz">$ 0</span>
               </div>
-              <div class="flex justify-between text-purple-900 bg-purple-50 p-2 rounded-md border border-purple-100">
-                <span>+20% Desgaste y Extras:</span>
+              <div class="flex justify-between items-center text-purple-900 bg-purple-50 p-2 rounded-md border border-purple-100">
+                <div>
+                  <span class="font-semibold block">+20% Desgaste y Otros Gastos:</span>
+                  <span class="text-[10px] text-purple-700">Herramientas, gas, fletes e imprevistos</span>
+                </div>
                 <span class="font-bold text-purple-800" id="resumenDineroExtra">$ 0</span>
               </div>
             </div>
@@ -967,6 +980,9 @@
 
   </main>
 
+  <!-- ======================================================= -->
+  <!-- MODAL: VER ESTANTE (Ajustes Físicos, Bajas y Remanentes) -->
+  <!-- ======================================================= -->
   <div id="modal-estante" class="fixed inset-0 bg-stone-900/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
     <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-5 animate-in fade-in duration-150 max-h-[92vh] overflow-y-auto">
       
@@ -979,9 +995,13 @@
           type="button" 
           onclick="cerrarModales()" 
           class="inline-flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 active:bg-stone-300 text-stone-700 px-3 py-1.5 rounded-xl font-bold text-xs active:scale-95 transition shrink-0"
+          aria-label="Cerrar ventana"
         >
           <span>Cerrar</span>
-          <i class="ph-bold ph-x text-sm"></i>
+          <svg class="w-4 h-4 text-stone-600" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
         </button>
       </div>
 
@@ -991,7 +1011,7 @@
         <p class="text-3xl font-black text-stone-900 mt-0.5" id="estante-cantidad-actual">0 kg</p>
       </div>
 
-      <!-- Pestañas: Retirar vs Sumar -->
+      <!-- Pestañas Táctiles: Retirar vs Sumar -->
       <div class="grid grid-cols-2 gap-2 bg-stone-100 p-1 rounded-2xl">
         <button id="tab-restar" onclick="setModoMovimiento('restar')" class="py-2.5 rounded-xl font-bold text-xs bg-white text-stone-900 shadow-sm transition">
           − Retirar del estante
@@ -1001,50 +1021,71 @@
         </button>
       </div>
 
-      <!-- Stepper horizontal táctil -->
+      <!-- CONTROL HORIZONTAL TÁCTIL GIGANTE CON SVG -->
       <div class="space-y-2">
         <label class="block text-xs font-bold text-stone-700" id="lbl-cantidad-movimiento">¿Cuánto vas a retirar?</label>
         
         <div class="flex items-stretch gap-2.5">
+          <!-- Botón Menos con SVG nítido -->
           <button 
             type="button" 
             onclick="ajustarPaso(-1)" 
             class="w-16 h-16 bg-stone-100 hover:bg-stone-200 active:bg-amber-100 border-2 border-stone-300 active:border-amber-500 rounded-2xl flex items-center justify-center text-stone-900 shrink-0 active:scale-95 transition shadow-sm select-none"
+            aria-label="Restar cantidad"
           >
-            <i class="ph-bold ph-minus text-2xl"></i>
+            <svg class="w-7 h-7 text-stone-900" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
           </button>
 
-          <div class="flex-1 flex items-center justify-center bg-stone-50 border-2 border-stone-300 focus-within:border-emerald-600 focus-within:bg-white rounded-2xl px-3 transition shadow-inner">
+          <!-- Input Central Limpio con Unidad -->
+          <div class="flex-1 flex items-center justify-center bg-stone-50 border-2 border-stone-300 focus-within:border-amber-600 focus-within:bg-white rounded-2xl px-3 transition shadow-inner">
             <input 
               type="number" 
               id="input-cant-movimiento" 
               step="any"
               placeholder="0" 
-              class="w-full text-center text-3xl font-black py-2 bg-transparent text-stone-900 focus:outline-none"
+              class="w-full text-center text-3xl font-black py-2 bg-transparent text-stone-900 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             >
             <span id="unidad-movimiento-badge" class="font-black text-stone-500 text-lg ml-1 select-none shrink-0">kg</span>
           </div>
 
+          <!-- Botón Más con SVG nítido -->
           <button 
             type="button" 
             onclick="ajustarPaso(1)" 
             class="w-16 h-16 bg-stone-100 hover:bg-stone-200 active:bg-amber-100 border-2 border-stone-300 active:border-amber-500 rounded-2xl flex items-center justify-center text-stone-900 shrink-0 active:scale-95 transition shadow-sm select-none"
+            aria-label="Sumar cantidad"
           >
-            <i class="ph-bold ph-plus text-2xl"></i>
+            <svg class="w-7 h-7 text-stone-900" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
           </button>
         </div>
 
+        <!-- Atajos Rápidos Táctiles -->
         <div class="grid grid-cols-4 gap-1.5 pt-1">
-          <button type="button" onclick="sumarAtajoRapido(1)" class="py-2 bg-stone-100 hover:bg-stone-200 rounded-xl text-xs font-black text-stone-700 transition active:scale-95">+1</button>
-          <button type="button" onclick="sumarAtajoRapido(5)" class="py-2 bg-stone-100 hover:bg-stone-200 rounded-xl text-xs font-black text-stone-700 transition active:scale-95">+5</button>
-          <button type="button" onclick="sumarAtajoRapido(10)" class="py-2 bg-stone-100 hover:bg-stone-200 rounded-xl text-xs font-black text-stone-700 transition active:scale-95">+10</button>
-          <button type="button" onclick="seleccionarTodoElStock()" id="btn-atajo-todo" class="py-2 bg-amber-100 hover:bg-amber-200 text-amber-950 rounded-xl text-xs font-black transition active:scale-95">Todo</button>
+          <button type="button" onclick="sumarAtajoRapido(1)" class="py-2 bg-stone-100 hover:bg-stone-200 active:bg-amber-200 rounded-xl text-xs font-black text-stone-700 transition active:scale-95">
+            +1
+          </button>
+          <button type="button" onclick="sumarAtajoRapido(5)" class="py-2 bg-stone-100 hover:bg-stone-200 active:bg-amber-200 rounded-xl text-xs font-black text-stone-700 transition active:scale-95">
+            +5
+          </button>
+          <button type="button" onclick="sumarAtajoRapido(10)" class="py-2 bg-stone-100 hover:bg-stone-200 active:bg-amber-200 rounded-xl text-xs font-black text-stone-700 transition active:scale-95">
+            +10
+          </button>
+          <button type="button" onclick="seleccionarTodoElStock()" id="btn-atajo-todo" class="py-2 bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-amber-950 rounded-xl text-xs font-black transition active:scale-95">
+            Todo
+          </button>
         </div>
       </div>
 
-      <!-- Costo si se suma remanente o compra parcial -->
+      <!-- CARGAR COSTO DE LO QUE SE SUMA -->
       <div id="bloque-costo-sumar" class="hidden space-y-2 bg-stone-50 border border-stone-200 rounded-2xl p-3.5">
-        <label class="block text-xs font-bold text-stone-800">¿Cuánto pagaste por este ingreso? ($)</label>
+        <label class="block text-xs font-bold text-stone-800">
+          ¿Cuánto pagaste por este ingreso? ($)
+        </label>
         <div class="relative">
           <span class="absolute left-3.5 top-3 font-black text-stone-400 text-base">$</span>
           <input 
@@ -1053,19 +1094,23 @@
             step="any"
             oninput="actualizarCostoUnitarioEnVivo()"
             placeholder="Ej: 6000 (o dejá vacío si es remanente previo)" 
-            class="w-full pl-8 pr-3 py-2.5 bg-white border border-stone-300 rounded-xl text-stone-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-sm"
+            class="w-full pl-8 pr-3 py-2.5 bg-white border border-stone-300 rounded-xl text-stone-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm"
           >
         </div>
         <div class="flex items-center justify-between text-[11px] pt-0.5">
           <span class="text-stone-500">Costo unitario resultante:</span>
           <span id="preview-costo-unitario" class="font-black text-stone-700">$0 / unidad</span>
         </div>
+        <p class="text-[11px] text-stone-500 leading-snug border-t border-stone-200/80 pt-1.5">
+          💡 <strong>Tip:</strong> Si es un remanente o insumo que ya tenías, dejalo en blanco. Si lo compraste recién, poné el total para calcular el promedio real ponderado.
+        </p>
       </div>
 
-      <!-- 3 MOTIVOS GENÉRICOS DE MERMA / RETIRO -->
+      <!-- 3 MOTIVOS GENÉRICOS DE RETIRO -->
       <div id="bloque-motivos" class="space-y-2">
         <p class="text-xs font-bold text-stone-700">Motivo del retiro (obligatorio):</p>
         <div class="grid grid-cols-1 gap-2">
+          
           <label class="flex items-center gap-3 p-3 rounded-xl border border-stone-200 bg-stone-50 active:bg-amber-50 cursor-pointer transition">
             <input type="radio" name="motivo-baja" value="Roto / Dañado" class="w-4 h-4 text-amber-600 focus:ring-amber-500" checked>
             <div>
@@ -1073,6 +1118,7 @@
               <span class="text-[11px] text-stone-500">Frascos rotos, tapas dobladas, bolsas pinchadas</span>
             </div>
           </label>
+
           <label class="flex items-center gap-3 p-3 rounded-xl border border-stone-200 bg-stone-50 active:bg-amber-50 cursor-pointer transition">
             <input type="radio" name="motivo-baja" value="Vencido / En mal estado" class="w-4 h-4 text-amber-600 focus:ring-amber-500">
             <div>
@@ -1080,13 +1126,15 @@
               <span class="text-[11px] text-stone-500">Fruta en mal estado, vencimiento, humedad</span>
             </div>
           </label>
+
           <label class="flex items-center gap-3 p-3 rounded-xl border border-stone-200 bg-stone-50 active:bg-amber-50 cursor-pointer transition">
             <input type="radio" name="motivo-baja" value="Consumo propio / Otro uso" class="w-4 h-4 text-amber-600 focus:ring-amber-500">
             <div>
               <span class="text-sm font-bold text-stone-800 block leading-tight">Consumo propio / Otro uso</span>
-              <span class="text-[11px] text-stone-500">Uso personal, obsequio o tareas ajenas al lote</span>
+              <span class="text-[11px] text-stone-500">Uso en la casa, obsequio o tareas ajenas al lote</span>
             </div>
           </label>
+
         </div>
       </div>
 
@@ -1101,6 +1149,9 @@
     </div>
   </div>
 
+  <!-- ======================================================= -->
+  <!-- MODAL: REGISTRAR COMPRA DIRECTA EN DESPENSA             -->
+  <!-- ======================================================= -->
   <div id="modal-compra" class="fixed inset-0 bg-stone-900/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
     <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4">
       <div class="flex justify-between items-center">
@@ -1108,38 +1159,44 @@
           <h2 class="text-xl font-black text-stone-900">Registrar compra</h2>
           <p class="text-xs text-stone-500">Entrada directa al estante con promedio ponderado</p>
         </div>
-        <button type="button" onclick="cerrarModales()" class="inline-flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-1.5 rounded-xl font-bold text-xs active:scale-95 transition">
+        <button type="button" onclick="cerrarModales()" class="inline-flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-1.5 rounded-xl font-bold text-xs active:scale-95 transition" aria-label="Cerrar ventana">
           <span>Cerrar</span>
-          <i class="ph-bold ph-x text-sm"></i>
+          <svg class="w-4 h-4 text-stone-600" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
         </button>
       </div>
 
       <div class="space-y-3 pt-1">
         <div>
           <label class="block text-xs font-bold text-stone-700 mb-1">Insumo que compraste</label>
-          <select id="compra-insumo-select" class="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-semibold text-stone-800 text-sm focus:ring-2 focus:ring-emerald-600">
-            <!-- Dinámico -->
+          <select id="compra-insumo-select" class="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-semibold text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600">
+            <!-- Cargado por JS -->
           </select>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-stone-700 mb-1">Cantidad comprada</label>
-            <input type="number" id="compra-cant" step="any" placeholder="Ej: 10" class="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 text-sm focus:ring-2 focus:ring-emerald-600">
+            <input type="number" id="compra-cant" step="any" placeholder="Ej: 10" class="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600">
           </div>
           <div>
             <label class="block text-xs font-bold text-stone-700 mb-1">Total pagado ($)</label>
-            <input type="number" id="compra-total" step="any" placeholder="Ej: 14000" class="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 text-sm focus:ring-2 focus:ring-emerald-600">
+            <input type="number" id="compra-total" step="any" placeholder="Ej: 14000" class="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600">
           </div>
         </div>
       </div>
 
-      <button onclick="guardarNuevaCompra()" class="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-2xl shadow-lg active:scale-98 transition text-sm mt-2">
+      <button onclick="guardarNuevaCompra()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg active:scale-98 transition text-sm mt-2">
         Guardar compra en el estante
       </button>
     </div>
   </div>
 
+  <!-- ======================================================= -->
+  <!-- MODAL: CREAR NUEVO INSUMO                               -->
+  <!-- ======================================================= -->
   <div id="modal-nuevo-insumo" class="fixed inset-0 bg-stone-900/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
     <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4">
       <div class="flex justify-between items-center">
@@ -1147,9 +1204,12 @@
           <h2 class="text-xl font-black text-stone-900">Nuevo Insumo en Despensa</h2>
           <p class="text-xs text-stone-500">Agregá un estante para control físico</p>
         </div>
-        <button type="button" onclick="cerrarModales()" class="inline-flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-1.5 rounded-xl font-bold text-xs">
+        <button type="button" onclick="cerrarModales()" class="inline-flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-1.5 rounded-xl font-bold text-xs" aria-label="Cerrar ventana">
           <span>Cerrar</span>
-          <i class="ph-bold ph-x text-sm"></i>
+          <svg class="w-4 h-4 text-stone-600" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
         </button>
       </div>
 
@@ -1170,14 +1230,14 @@
               <option value="g">g</option>
               <option value="l">litros (l)</option>
               <option value="ml">ml</option>
-              <option value="unid">unidades</option>
+              <option value="unid">unidades (unid)</option>
               <option value="paquetes">paquetes</option>
               <option value="atados">atados</option>
             </select>
           </div>
         </div>
         <div>
-          <label class="block text-xs font-bold text-stone-700 mb-1">Costo unitario actual ($ por unidad)</label>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Costo unitario ($ por unidad)</label>
           <input type="number" id="nuevoInsumoCostoUnitario" step="any" placeholder="Ej: 850" class="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-800 text-sm">
         </div>
       </div>
@@ -1188,6 +1248,9 @@
     </div>
   </div>
 
+  <!-- ======================================================= -->
+  <!-- MODAL: DETALLE DE IMPACTO ACUMULADO EN RECETAS          -->
+  <!-- ======================================================= -->
   <div id="modal-impacto" class="fixed inset-0 bg-stone-900/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
     <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4">
       <div class="flex justify-between items-start">
@@ -1195,9 +1258,17 @@
           <span class="text-xs font-black text-amber-700 uppercase tracking-wider">Decisión de Precios</span>
           <h2 class="text-xl font-black text-stone-900 leading-tight">Aumentos de Costo en Espera</h2>
         </div>
-        <button type="button" onclick="cerrarModales()" class="inline-flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-1.5 rounded-xl font-bold text-xs">
+        <button 
+          type="button" 
+          onclick="cerrarModales()" 
+          class="inline-flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 active:bg-stone-300 text-stone-700 px-3 py-1.5 rounded-xl font-bold text-xs active:scale-95 transition shrink-0"
+          aria-label="Cerrar ventana"
+        >
           <span>Cerrar</span>
-          <i class="ph-bold ph-x text-sm"></i>
+          <svg class="w-4 h-4 text-stone-600" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
         </button>
       </div>
 
@@ -1220,6 +1291,7 @@
     </div>
   </div>
 
+  <!-- MODAL CERRAR SESIÓN -->
   <div id="modalCerrarSesion" class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-stone-200 space-y-4">
       <div class="w-12 h-12 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center mx-auto text-2xl">
@@ -1240,6 +1312,7 @@
     </div>
   </div>
 
+  <!-- MODAL ELIMINAR PRODUCTO -->
   <div id="modalEliminar" class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-stone-200 space-y-4">
       <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-2xl">
@@ -1247,7 +1320,7 @@
       </div>
       <div class="text-center">
         <h3 class="text-base font-bold text-stone-800">¿Eliminar este producto?</h3>
-        <p class="text-xs text-stone-500 mt-1">Se borrará de la nube y de la lista de productos de tu emprendimiento.</p>
+        <p class="text-xs text-stone-500 mt-1">Se borrará de la nube para todos los dispositivos de tu emprendimiento.</p>
       </div>
       <div class="grid grid-cols-2 gap-2 pt-2">
         <button onclick="cerrarModal('modalEliminar')" class="py-2 px-3 rounded-lg border border-stone-300 text-xs font-semibold text-stone-700 hover:bg-stone-50 transition">
@@ -1260,45 +1333,53 @@
     </div>
   </div>
 
-  <div id="modalBackup" class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <!-- MODAL BACKUP -->
+  <div id="modalBackup" onclick="cerrarSiClicFondo(event, 'modalBackup')" class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200 space-y-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
           <i class="ph-bold ph-floppy-disk text-emerald-700 text-xl"></i>
           <h3 class="text-sm font-bold text-stone-800">Copia de Seguridad de Datos</h3>
         </div>
-        <button onclick="cerrarModal('modalBackup')" class="text-stone-400 hover:text-stone-700 text-lg p-1 rounded-lg">
+        <button onclick="cerrarModal('modalBackup')" class="text-stone-400 hover:text-stone-700 text-lg p-1 rounded-lg hover:bg-stone-100 transition" title="Cerrar ventana">
           <i class="ph-bold ph-x"></i>
         </button>
       </div>
+
       <p class="text-xs text-stone-500 leading-relaxed">
         Descargá una copia de seguridad en archivo .JSON que incluye todos tus productos, recetas y estantes de despensa.
       </p>
+
       <div class="space-y-3 pt-2">
         <button onclick="exportarCopiaJSON()" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition">
           <i class="ph-bold ph-download-simple text-sm"></i> Descargar copia completa (.JSON)
         </button>
+
         <div class="border-t border-stone-200 pt-3">
           <label class="block text-xs font-semibold text-stone-700 mb-1">Restaurar copia desde archivo local:</label>
           <input type="file" id="inputArchivoBackup" accept=".json" onchange="importarCopiaJSON(event)" class="text-xs text-stone-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-stone-100 file:text-stone-700 hover:file:bg-stone-200 cursor-pointer w-full">
         </div>
       </div>
+
       <div class="border-t border-stone-200 pt-3 flex justify-end">
-        <button onclick="cerrarModal('modalBackup')" class="py-2 px-4 rounded-lg border border-stone-300 text-xs font-semibold text-stone-700">Cerrar</button>
+        <button onclick="cerrarModal('modalBackup')" class="w-full sm:w-auto py-2 px-4 rounded-lg border border-stone-300 text-xs font-semibold text-stone-700 hover:bg-stone-100 transition flex items-center justify-center gap-1.5">
+          <i class="ph-bold ph-x"></i> Cerrar
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- TOAST TÁCTIL -->
-  <div id="toastMensaje" class="fixed bottom-6 right-6 bg-stone-900 text-white text-xs px-4 py-3 rounded-2xl shadow-2xl z-50 hidden flex items-center gap-2.5 border border-stone-800 transition-all">
-    <i class="ph-bold ph-check-circle text-emerald-400 text-base" id="toastIcono"></i>
+  <!-- AVISO TOAST FLOTANTE -->
+  <div id="toastMensaje" class="fixed bottom-6 right-6 bg-stone-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl z-50 hidden flex items-center gap-2 border border-stone-800 transition-all max-w-[90vw]">
+    <i class="ph-bold ph-check-circle text-emerald-400 text-base shrink-0" id="toastIcono"></i>
     <span id="toastTexto">Operación completada</span>
   </div>
 
+  <!-- FOOTER -->
   <footer class="bg-white border-t border-stone-200 py-4 text-center text-xs text-stone-500">
-    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-      <p class="font-medium text-stone-600">Sistema de Gestión y Despensa - Pequeño Productor</p>
-      <p class="text-[11px] text-stone-400">Control de estante, recetas y cálculo de precios para feriantes.</p>
+    <div class="max-w-5xl mx-auto px-4">
+      <p class="font-medium text-stone-600">Sistema de Gestión Pequeño Productor</p>
+      <p class="text-[11px] text-stone-400 mt-0.5">Sincronización en la nube multi-dispositivo y control de materia prima en taller.</p>
     </div>
   </footer>
 
@@ -1320,6 +1401,7 @@
       onSnapshot 
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+    // Configuración oficial de Firebase del proyecto
     const firebaseConfig = typeof __firebase_config !== 'undefined'
       ? JSON.parse(__firebase_config)
       : {
@@ -1335,10 +1417,9 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Estado de la sesión
+    // Estado global de la sesión
     let sesionActiva = null;
     let unsubscribeProductos = null;
-    let unsubscribeDespensa = null;
     let firebaseUser = null;
 
     // Estado de productos y recetas
@@ -1347,7 +1428,7 @@
     let productoAEliminarId = null;
     let borradorEnEdicionId = null;
 
-    // Estado del inventario / estantes de despensa
+    // Estado de Mi Despensa (Materia Prima física)
     let insumosDespensa = [
       { id: 1, nombre: "Azúcar Común", cantidad: 12.5, unidad: "kg", costoPromedio: 1150, costoHistorico: 950 },
       { id: 2, nombre: "Frascos de Vidrio 360cc", cantidad: 48, unidad: "unid", costoPromedio: 450, costoHistorico: 420 },
@@ -1357,11 +1438,13 @@
     let insumoSeleccionadoEstante = null;
     let modoMovimientoEstante = 'restar';
 
-    // Estado de la calculadora de tandas
+    // Estado formulario calculadora
     let compras = [];
     let insumosReceta = [];
     let cosechoPropio = false;
     let tipoMedidorLuz = 'hogar';
+
+    // Estado estrategia de precios
     let margenMinoristaSeleccionado = 50;
     let margenMayoristaSeleccionado = 45;
 
@@ -1376,7 +1459,7 @@
           await signInAnonymously(auth);
         }
       } catch (err) {
-        console.warn("Modo local activo:", err);
+        console.warn("Autenticación Firebase en modo local o diferida:", err);
       }
 
       onAuthStateChanged(auth, (user) => {
@@ -1412,7 +1495,8 @@
         .replace(/^-+|-+$/g, '');
     }
 
-    async function procesarLogin() {
+    async function procesarLogin(e) {
+      if (e && e.preventDefault) e.preventDefault();
       const nombreInput = document.getElementById('loginNombre').value.trim();
       const pinInput = document.getElementById('loginPin').value.trim();
       const errorDiv = document.getElementById('mensajeErrorLogin');
@@ -1431,6 +1515,7 @@
       }
 
       const idEmprendimiento = slugificarNombre(nombreInput);
+
       const localData = localStorage.getItem(`sgpp_emp_${idEmprendimiento}`);
       if (localData) {
         try {
@@ -1441,41 +1526,50 @@
             iniciarSincronizacionEmprendimiento();
             return;
           } else {
-            if (textoError) textoError.innerText = "El PIN es incorrecto.";
+            if (textoError) textoError.innerText = "El PIN ingresado es incorrecto.";
             if (errorDiv) errorDiv.classList.remove('hidden');
             return;
           }
         } catch (err) {
-          console.warn(err);
+          console.warn("Error sesión local:", err);
         }
       }
 
-      // Consulta en Firestore
       try {
         const docRef = doc(db, 'emprendimientos', idEmprendimiento);
         const snap = await getDoc(docRef);
         if (snap.exists()) {
           const data = snap.data();
           if (data.pin === pinInput) {
-            sesionActiva = { id: idEmprendimiento, nombre: data.nombre || nombreInput, pin: data.pin };
+            sesionActiva = {
+              id: idEmprendimiento,
+              nombre: data.nombre || nombreInput,
+              pin: data.pin
+            };
             localStorage.setItem(`sgpp_emp_${idEmprendimiento}`, JSON.stringify(sesionActiva));
             localStorage.setItem('sgpp_sesion_activa', JSON.stringify(sesionActiva));
             iniciarSincronizacionEmprendimiento();
             return;
+          } else {
+            if (textoError) textoError.innerText = "El PIN ingresado es incorrecto para este emprendimiento.";
+            if (errorDiv) errorDiv.classList.remove('hidden');
+            return;
           }
+        } else {
+          if (textoError) textoError.innerText = `No encontramos "${nombreInput}". Hacé clic en "Registrarse" para crearlo.`;
+          if (errorDiv) errorDiv.classList.remove('hidden');
         }
       } catch (err) {
-        console.warn(err);
+        console.warn("Firestore offline, intentando crear sesión local:", err);
+        sesionActiva = { id: idEmprendimiento, nombre: nombreInput, pin: pinInput };
+        localStorage.setItem(`sgpp_emp_${idEmprendimiento}`, JSON.stringify(sesionActiva));
+        localStorage.setItem('sgpp_sesion_activa', JSON.stringify(sesionActiva));
+        iniciarSincronizacionEmprendimiento();
       }
-
-      // Si no existe, permitir ingresar creando sesión local directa
-      sesionActiva = { id: idEmprendimiento, nombre: nombreInput, pin: pinInput };
-      localStorage.setItem(`sgpp_emp_${idEmprendimiento}`, JSON.stringify(sesionActiva));
-      localStorage.setItem('sgpp_sesion_activa', JSON.stringify(sesionActiva));
-      iniciarSincronizacionEmprendimiento();
     }
 
-    async function procesarRegistro() {
+    async function procesarRegistro(e) {
+      if (e && e.preventDefault) e.preventDefault();
       const nombreInput = document.getElementById('regNombre').value.trim();
       const pinInput = document.getElementById('regPin').value.trim();
       const pinConfirmaInput = document.getElementById('regPinConfirma').value.trim();
@@ -1504,11 +1598,12 @@
         id: idEmprendimiento,
         nombre: nombreInput,
         pin: pinInput,
+        estado: 'activo',
         fechaRegistro: new Date().toISOString()
       };
 
       localStorage.setItem(`sgpp_emp_${idEmprendimiento}`, JSON.stringify(nuevoEmprendimiento));
-      sesionActiva = nuevoEmprendimiento;
+      sesionActiva = { id: idEmprendimiento, nombre: nombreInput, pin: pinInput };
       localStorage.setItem('sgpp_sesion_activa', JSON.stringify(sesionActiva));
 
       iniciarSincronizacionEmprendimiento();
@@ -1518,7 +1613,7 @@
         const docRef = doc(db, 'emprendimientos', idEmprendimiento);
         setDoc(docRef, nuevoEmprendimiento).catch(err => console.warn("Firestore diferido:", err));
       } catch (err) {
-        console.warn(err);
+        console.warn("Firestore error:", err);
       }
     }
 
@@ -1530,62 +1625,73 @@
       document.getElementById('barraUsuarioSesion').classList.remove('hidden');
       document.getElementById('vistaAuth').classList.add('hidden');
 
-      // 1. Cargar Despensa del Emprendimiento
-      const despensaLocal = localStorage.getItem(`sgpp_despensa_${sesionActiva.id}`);
-      if (despensaLocal) {
-        try {
-          insumosDespensa = JSON.parse(despensaLocal);
-        } catch (e) {
-          console.warn(e);
-        }
-      } else {
-        localStorage.setItem(`sgpp_despensa_${sesionActiva.id}`, JSON.stringify(insumosDespensa));
-      }
-
-      // 2. Cargar Productos del Emprendimiento
-      const prodsLocales = localStorage.getItem(`sgpp_prods_${sesionActiva.id}`);
-      if (prodsLocales) {
-        try {
+      // 1. Cargar productos
+      try {
+        const prodsLocales = localStorage.getItem(`sgpp_prods_${sesionActiva.id}`);
+        if (prodsLocales) {
           productosGuardados = JSON.parse(prodsLocales);
-        } catch (e) {
-          console.warn(e);
+        } else {
+          productosGuardados = [
+            {
+              id: "prod-1",
+              emprendimientoId: sesionActiva.id,
+              nombre: "Dulce de Durazno Casero",
+              fecha: "2026-09-05",
+              estado: "terminado",
+              unidadesProducidas: 12,
+              tipoUnidad: "frascos",
+              costoUnitario: 2450,
+              costoTotal: 29400,
+              horasTotales: 3.5,
+              minutosPorUnidad: 18,
+              preciosVenta: { margenMinorista: 50, margenMayorista: 45, precioMinorista: 3675, precioMayorista: 3553 },
+              insumos: [
+                { nombre: "Azúcar Común", detalle: "4 kg", costo: 4600 },
+                { nombre: "Frascos de Vidrio 360cc", detalle: "12 unid", costo: 5400 }
+              ],
+              subtotalInsumos: 18000,
+              subtotalTrabajo: 10500,
+              subtotalLuz: 218.75,
+              subtotalExtra: 5743.75,
+              datosFormulario: {
+                nombre: "Dulce de Durazno Casero",
+                compras: [
+                  { id: 1, nombre: "Azúcar Común", cantidad: 10, unidad: "kg", costo: 11500 },
+                  { id: 2, nombre: "Frascos de Vidrio 360cc", cantidad: 24, unidad: "unid", costo: 10800 }
+                ],
+                cosechoPropio: false,
+                insumosReceta: [
+                  { id: 101, tipo: "compra", compraId: 1, cantidadUsada: 4 },
+                  { id: 102, tipo: "compra", compraId: 2, cantidadUsada: 12 }
+                ],
+                horasCoccion: 2,
+                horasEnvasado: 1.5,
+                valorHoraTrabajo: 3000,
+                facturaLuzMensual: 45000,
+                unidadesProducidas: 12,
+                tipoUnidad: "frascos"
+              }
+            }
+          ];
+          localStorage.setItem(`sgpp_prods_${sesionActiva.id}`, JSON.stringify(productosGuardados));
         }
-      } else {
-        productosGuardados = [
-          {
-            id: "prod-demo-1",
-            emprendimientoId: sesionActiva.id,
-            nombre: "Mermelada de Ciruela (360g)",
-            fecha: new Date().toISOString().split('T')[0],
-            estado: "terminado",
-            unidadesProducidas: 24,
-            tipoUnidad: "frascos",
-            costoUnitario: 1550,
-            costoTotal: 37200,
-            horasTotales: 4.0,
-            minutosPorUnidad: 10,
-            preciosVenta: {
-              margenMinorista: 50,
-              margenMayorista: 45,
-              precioMinorista: 2325,
-              precioMayorista: 2248
-            },
-            insumos: [
-              { nombre: "Azúcar Común", detalle: "6 kg", costo: 6900 },
-              { nombre: "Frascos de Vidrio 360cc", detalle: "24 unid", costo: 10800 },
-              { nombre: "Tapas Twist Off Doradas", detalle: "24 unid", costo: 2880 },
-              { nombre: "Ciruelas de chacra", detalle: "10 kg", costo: 8000 }
-            ],
-            subtotalInsumos: 28580,
-            subtotalTrabajo: 12000,
-            subtotalLuz: 250,
-            subtotalExtra: 8166
-          }
-        ];
-        localStorage.setItem(`sgpp_prods_${sesionActiva.id}`, JSON.stringify(productosGuardados));
+      } catch (e) {
+        console.warn(e);
       }
 
-      renderizarListaProductos();
+      // 2. Cargar despensa
+      try {
+        const despensaLocal = localStorage.getItem(`sgpp_despensa_${sesionActiva.id}`);
+        if (despensaLocal) {
+          insumosDespensa = JSON.parse(despensaLocal);
+        } else {
+          localStorage.setItem(`sgpp_despensa_${sesionActiva.id}`, JSON.stringify(insumosDespensa));
+        }
+      } catch (e) {
+        console.warn(e);
+      }
+
+      renderizarBorradores();
       renderEstantes();
       calcularDisponibilidad();
       verificarAlertaGuardian();
@@ -1594,8 +1700,10 @@
     }
 
     function mostrarPantallaAuth(forzarReinicio = false) {
-      if (unsubscribeProductos) unsubscribeProductos();
-      if (unsubscribeDespensa) unsubscribeDespensa();
+      if (unsubscribeProductos) {
+        unsubscribeProductos();
+        unsubscribeProductos = null;
+      }
       sesionActiva = null;
       localStorage.removeItem('sgpp_sesion_activa');
 
@@ -1609,13 +1717,16 @@
       if (forzarReinicio) {
         document.getElementById('loginNombre').value = '';
         document.getElementById('loginPin').value = '';
+        document.getElementById('regNombre').value = '';
+        document.getElementById('regPin').value = '';
+        document.getElementById('regPinConfirma').value = '';
         alternarTabAuth('login');
       }
     }
 
     function irAInicioSiAutenticado() {
       if (sesionActiva) cambiarVista('inicio');
-      else mostrarPantallaAuth();
+      else mostrarPantallaAuth(false);
     }
 
     function solicitarCerrarSesion() {
@@ -1640,41 +1751,99 @@
       document.getElementById('vistaDetalle').classList.add('hidden');
       document.getElementById('vistaCalculadora').classList.add('hidden');
 
-      const btnProd = document.getElementById('navBtnProductos');
-      const btnCalc = document.getElementById('navBtnCalculadora');
-      const btnDesp = document.getElementById('navBtnDespensa');
-
-      const setNavActive = (activeBtn) => {
-        [btnProd, btnCalc, btnDesp].forEach(b => {
-          if (b === activeBtn) {
-            b.className = "px-2.5 sm:px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 bg-emerald-800 text-white shadow-sm font-bold";
-          } else {
-            b.className = "px-2.5 sm:px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 text-emerald-200 hover:text-white font-medium";
-          }
-        });
-      };
+      const btnVolver = document.getElementById('btnVolverInicio');
 
       if (vista === 'inicio') {
         document.getElementById('vistaInicio').classList.remove('hidden');
-        setNavActive(btnProd);
+        btnVolver.classList.add('hidden');
         borradorEnEdicionId = null;
-        renderizarListaProductos();
+        renderizarBorradores();
+        actualizarContadorDespensaBanner();
       } else if (vista === 'despensa') {
         document.getElementById('vistaDespensa').classList.remove('hidden');
-        setNavActive(btnDesp);
+        btnVolver.classList.remove('hidden');
         renderEstantes();
         calcularDisponibilidad();
       } else if (vista === 'detalle') {
         document.getElementById('vistaDetalle').classList.remove('hidden');
+        btnVolver.classList.remove('hidden');
       } else if (vista === 'calculadora') {
         document.getElementById('vistaCalculadora').classList.remove('hidden');
-        setNavActive(btnCalc);
+        btnVolver.classList.remove('hidden');
         actualizarNombreResumen();
         calcular();
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    function actualizarContadorDespensaBanner() {
+      const badge = document.getElementById('badgeTotalInsumosDespensa');
+      if (badge) {
+        badge.innerText = `${insumosDespensa.length} Insumos Registrados`;
+      }
+    }
+
+    // RENDERIZAR SOLO BORRADORES (SIN TERMINADOS) EN PANEL PRINCIPAL
+    function renderizarBorradores() {
+      const seccionBorradores = document.getElementById('seccionBorradores');
+      const contenedorBorradores = document.getElementById('contenedorBorradores');
+      const contadorBorradores = document.getElementById('contadorBorradores');
+
+      const borradores = productosGuardados.filter(p => p.estado === 'borrador');
+
+      if (borradores.length > 0) {
+        seccionBorradores.classList.remove('hidden');
+        contadorBorradores.innerText = `${borradores.length} en proceso`;
+        contenedorBorradores.innerHTML = '';
+
+        borradores.forEach(b => {
+          const card = document.createElement('div');
+          card.className = "bg-amber-50/70 rounded-2xl p-5 border-2 border-amber-300 shadow-sm hover:border-amber-400 hover:shadow-md transition flex flex-col justify-between text-left group";
+          card.innerHTML = `
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <span class="text-[11px] font-bold text-amber-800 bg-amber-100/90 px-2.5 py-0.5 rounded-full border border-amber-200 flex items-center gap-1">
+                  <i class="ph-bold ph-hourglass-high"></i> Sin terminar / Borrador
+                </span>
+                <span class="text-[11px] font-semibold text-stone-400">${b.fecha || '--'}</span>
+              </div>
+
+              <h4 class="text-base font-black text-stone-900 group-hover:text-amber-900 transition leading-snug mb-3">
+                ${b.nombre}
+              </h4>
+
+              <div class="bg-white/80 p-3 rounded-xl border border-amber-200/80 mb-3 space-y-1 text-xs">
+                <div class="flex justify-between text-stone-600">
+                  <span>Costo acumulado hasta hoy:</span>
+                  <span class="font-bold text-stone-900">$ ${formatearNumero(b.costoTotal)}</span>
+                </div>
+                <div class="flex justify-between text-stone-600">
+                  <span>Horas registradas:</span>
+                  <span class="font-bold text-amber-900">${(b.horasTotales || 0).toFixed(1)} hs</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-2 flex items-center gap-2">
+              <button onclick="window.continuarBorradorDesdeId('${b.id}')" class="flex-1 bg-amber-500 hover:bg-amber-600 text-stone-950 font-extrabold text-xs py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm active:scale-95">
+                <i class="ph-bold ph-pencil-simple text-sm"></i> Continuar completando
+              </button>
+              <button onclick="window.verDetalleProducto('${b.id}')" class="bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold py-2.5 px-3 rounded-xl transition active:scale-95" title="Ver ficha técnica">
+                <i class="ph-bold ph-eye text-sm"></i>
+              </button>
+            </div>
+          `;
+          contenedorBorradores.appendChild(card);
+        });
+      } else {
+        seccionBorradores.classList.add('hidden');
+        contenedorBorradores.innerHTML = '';
+      }
+    }
+
+    // =======================================================
+    // MÓDULO MI DESPENSA (CONTROL FÍSICO Y ESTANTES)
+    // =======================================================
     function renderEstantes(lista = insumosDespensa) {
       const contenedor = document.getElementById('contenedor-estante');
       if (!contenedor) return;
@@ -1685,7 +1854,7 @@
           <div class="col-span-full text-center py-10 bg-white rounded-2xl border border-dashed border-stone-300 p-6 text-stone-400">
             <i class="ph-bold ph-archive text-4xl mb-2 text-stone-300"></i>
             <p class="font-bold text-stone-600 text-sm">Tu despensa está vacía</p>
-            <p class="text-xs text-stone-400 mt-1">Cargá tu primer insumo o registrá una compra mayorista.</p>
+            <p class="text-xs text-stone-400 mt-1">Cargá tu primer insumo o registrá una compra con el botón de arriba.</p>
           </div>
         `;
         return;
@@ -1693,86 +1862,46 @@
 
       lista.forEach(item => {
         const tarjeta = document.createElement('div');
-        tarjeta.className = "bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex items-center justify-between hover:border-emerald-600/60 transition";
+        tarjeta.className = "bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 shadow-sm flex items-center justify-between hover:border-amber-400 transition gap-3";
         tarjeta.innerHTML = `
           <div>
-            <h3 class="font-bold text-stone-900 text-sm leading-snug">${item.nombre}</h3>
+            <h3 class="font-black text-stone-900 text-base leading-snug">${item.nombre}</h3>
             <p class="text-xs text-stone-500 mt-1">
-              Físico en estante: <span class="font-black text-stone-900 text-sm">${item.cantidad} ${item.unidad}</span>
+              Físico en estante: <span class="font-black text-stone-900 text-base ml-0.5">${item.cantidad} ${item.unidad}</span>
             </p>
-            <p class="text-[11px] text-stone-400 mt-0.5">
-              Promedio: <span class="font-semibold text-emerald-800">$${formatearNumero(item.costoPromedio)} / ${item.unidad}</span>
+            <p class="text-[11px] text-stone-400 mt-0.5 font-medium">
+              Costo real: <span class="font-bold text-emerald-800">$${formatearNumero(item.costoPromedio)} / ${item.unidad}</span>
             </p>
           </div>
-          <button onclick="abrirVerEstante(${item.id})" class="bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 active:scale-95 transition shrink-0">
-            <i class="ph-bold ph-sliders text-sm"></i> Ajustar
+          <button onclick="abrirVerEstante(${item.id})" class="bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-amber-950 font-black text-xs px-4 py-3 rounded-2xl flex items-center gap-1.5 active:scale-95 transition shrink-0 select-none border border-amber-300 shadow-sm">
+            <i class="ph-bold ph-sliders text-base"></i> Ver estante
           </button>
         `;
         contenedor.appendChild(tarjeta);
       });
 
-      // Actualizar selectores que usan la lista de insumos
       const selectCompra = document.getElementById('compra-insumo-select');
       if (selectCompra) {
         selectCompra.innerHTML = insumosDespensa.map(i => `<option value="${i.id}">${i.nombre} (${i.unidad})</option>`).join('');
       }
 
-      // Actualizar selector del simulador
       const selectSimulador = document.getElementById('simulador-receta');
       if (selectSimulador) {
         const terminados = productosGuardados.filter(p => p.estado !== 'borrador');
         if (terminados.length > 0) {
           selectSimulador.innerHTML = terminados.map(p => `<option value="${p.id}">${p.nombre} (${p.unidadesProducidas} ${p.tipoUnidad})</option>`).join('');
         } else {
-          selectSimulador.innerHTML = `<option value="">Registrá un producto terminado primero</option>`;
+          selectSimulador.innerHTML = `<option value="">No hay recetas guardadas todavía</option>`;
         }
       }
+
+      actualizarContadorDespensaBanner();
     }
 
     function filtrarInsumos() {
       const q = document.getElementById('input-buscador').value.toLowerCase();
       const filtrados = insumosDespensa.filter(i => i.nombre.toLowerCase().includes(q));
       renderEstantes(filtrados);
-    }
-
-    function abrirModalNuevoInsumo() {
-      document.getElementById('nuevoInsumoNombre').value = '';
-      document.getElementById('nuevoInsumoCantidad').value = '';
-      document.getElementById('nuevoInsumoCostoUnitario').value = '';
-      abrirModal('modal-nuevo-insumo');
-    }
-
-    function guardarNuevoInsumoEstante() {
-      const nom = document.getElementById('nuevoInsumoNombre').value.trim();
-      const cant = parseFloat(document.getElementById('nuevoInsumoCantidad').value) || 0;
-      const un = document.getElementById('nuevoInsumoUnidad').value;
-      const unitario = parseFloat(document.getElementById('nuevoInsumoCostoUnitario').value) || 0;
-
-      if (!nom) {
-        return mostrarToast("Por favor escribí el nombre del insumo");
-      }
-
-      const nuevo = {
-        id: Date.now(),
-        nombre: nom,
-        cantidad: cant,
-        unidad: un,
-        costoPromedio: unitario,
-        costoHistorico: unitario
-      };
-
-      insumosDespensa.push(nuevo);
-      guardarDespensaLocal();
-      cerrarModales();
-      renderEstantes();
-      calcularDisponibilidad();
-      mostrarToast(`Insumo "${nom}" añadido al estante`);
-    }
-
-    function guardarDespensaLocal() {
-      if (sesionActiva) {
-        localStorage.setItem(`sgpp_despensa_${sesionActiva.id}`, JSON.stringify(insumosDespensa));
-      }
     }
 
     function abrirVerEstante(id) {
@@ -1932,6 +2061,46 @@
       mostrarToast(`Compra de ${item.nombre} guardada en el estante`);
     }
 
+    function abrirModalNuevoInsumo() {
+      document.getElementById('nuevoInsumoNombre').value = '';
+      document.getElementById('nuevoInsumoCantidad').value = '';
+      document.getElementById('nuevoInsumoCostoUnitario').value = '';
+      abrirModal('modal-nuevo-insumo');
+    }
+
+    function guardarNuevoInsumoEstante() {
+      const nom = document.getElementById('nuevoInsumoNombre').value.trim();
+      const cant = parseFloat(document.getElementById('nuevoInsumoCantidad').value) || 0;
+      const un = document.getElementById('nuevoInsumoUnidad').value;
+      const unitario = parseFloat(document.getElementById('nuevoInsumoCostoUnitario').value) || 0;
+
+      if (!nom) {
+        return mostrarToast("Por favor escribí el nombre del insumo");
+      }
+
+      const nuevo = {
+        id: Date.now(),
+        nombre: nom,
+        cantidad: cant,
+        unidad: un,
+        costoPromedio: unitario,
+        costoHistorico: unitario
+      };
+
+      insumosDespensa.push(nuevo);
+      guardarDespensaLocal();
+      cerrarModales();
+      renderEstantes();
+      calcularDisponibilidad();
+      mostrarToast(`Insumo "${nom}" creado en tu estante`);
+    }
+
+    function guardarDespensaLocal() {
+      if (sesionActiva) {
+        localStorage.setItem(`sgpp_despensa_${sesionActiva.id}`, JSON.stringify(insumosDespensa));
+      }
+    }
+
     function verificarAlertaGuardian() {
       const alerta = document.getElementById('alerta-impacto');
       if (!alerta) return;
@@ -1961,7 +2130,7 @@
           div.innerHTML = `
             <div class="flex justify-between items-center font-bold text-stone-900">
               <span>${i.nombre}</span>
-              <span class="text-amber-800 bg-amber-100 px-2 py-0.5 rounded text-[11px]">+${porc}% aumento</span>
+              <span class="text-amber-800 bg-amber-100 px-2 py-0.5 rounded text-[11px] font-black">+${porc}% aumento</span>
             </div>
             <div class="flex justify-between text-stone-500 text-[11px]">
               <span>Costo anterior de receta: $${i.costoHistorico || i.costoPromedio}</span>
@@ -1976,9 +2145,7 @@
     }
 
     function actualizarCostosReceta() {
-      insumosDespensa.forEach(i => {
-        i.costoHistorico = i.costoPromedio;
-      });
+      insumosDespensa.forEach(i => i.costoHistorico = i.costoPromedio);
       guardarDespensaLocal();
       verificarAlertaGuardian();
       cerrarModales();
@@ -1998,7 +2165,6 @@
         return;
       }
 
-      // Si el producto tiene datos de insumos de receta
       let cuellosDeBotella = [];
       let maximoTandas = 9999;
 
@@ -2024,7 +2190,6 @@
       }
 
       if (cuellosDeBotella.length === 0) {
-        // Fallback usando azúcar y frascos si coincide
         const frascos = (insumosDespensa.find(i => i.nombre.toLowerCase().includes("frasco")) || { cantidad: 0 }).cantidad;
         const azucar = (insumosDespensa.find(i => i.nombre.toLowerCase().includes("azúcar")) || { cantidad: 0 }).cantidad;
         const porAzucar = Math.floor(azucar / 0.5);
@@ -2036,7 +2201,7 @@
             <span class="text-amber-400 text-sm font-black">${posibles} ${prod.tipoUnidad}</span>
           </div>
           <p class="text-stone-400 text-[11px] mt-1">
-            Basado en stock físico disponible de envases e insumos base.
+            Basado en stock físico de frascos y azúcar.
           </p>
         `;
         return;
@@ -2052,283 +2217,14 @@
           <span class="text-amber-400 text-sm font-black">${unidadesPosibles} ${prod.tipoUnidad}</span>
         </div>
         <p class="text-stone-400 text-[11px] mt-1">
-          Insumo limitante: <strong class="text-stone-200">${limitante.insumo}</strong> (${limitante.disponible} ${limitante.unidad} en estante).
+          Insumo cuello de botella: <strong class="text-stone-200">${limitante.insumo}</strong> (${limitante.disponible} ${limitante.unidad} en estante).
         </p>
       `;
     }
 
-    function renderizarListaProductos() {
-      const seccionBorradores = document.getElementById('seccionBorradores');
-      const contenedorBorradores = document.getElementById('contenedorBorradores');
-      const contadorBorradores = document.getElementById('contadorBorradores');
-      const contenedorTerminados = document.getElementById('contenedorTerminados');
-      const contadorTerminados = document.getElementById('contadorTerminados');
-      const estadoVacio = document.getElementById('estadoVacioProductos');
-
-      const borradores = productosGuardados.filter(p => p.estado === 'borrador');
-      const terminados = productosGuardados.filter(p => p.estado !== 'borrador');
-
-      if (borradores.length > 0) {
-        seccionBorradores.classList.remove('hidden');
-        contadorBorradores.innerText = `${borradores.length} en proceso`;
-        contenedorBorradores.innerHTML = '';
-
-        borradores.forEach(b => {
-          const card = document.createElement('div');
-          card.className = "bg-amber-50/70 rounded-2xl p-5 border-2 border-amber-300 shadow-sm hover:border-amber-400 hover:shadow-md transition flex flex-col justify-between text-left group";
-          card.innerHTML = `
-            <div>
-              <div class="flex items-start justify-between gap-2 mb-2">
-                <span class="text-[11px] font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-200 flex items-center gap-1">
-                  <i class="ph-bold ph-hourglass-high"></i> Sin terminar / Borrador
-                </span>
-                <span class="text-[11px] font-semibold text-stone-400">${b.fecha || '--'}</span>
-              </div>
-              <h4 class="text-base font-black text-stone-900 group-hover:text-amber-900 transition leading-snug mb-3">${b.nombre}</h4>
-              <div class="bg-white/80 p-3 rounded-xl border border-amber-200/80 mb-3 space-y-1 text-xs">
-                <div class="flex justify-between text-stone-600">
-                  <span>Costo acumulado:</span>
-                  <span class="font-bold text-stone-900">$ ${formatearNumero(b.costoTotal)}</span>
-                </div>
-                <div class="flex justify-between text-stone-600">
-                  <span>Horas:</span>
-                  <span class="font-bold text-amber-900">${(b.horasTotales || 0).toFixed(1)} hs</span>
-                </div>
-              </div>
-            </div>
-            <div class="pt-2 flex items-center gap-2">
-              <button onclick="window.continuarBorradorDesdeId('${b.id}')" class="flex-1 bg-amber-500 hover:bg-amber-600 text-stone-950 font-extrabold text-xs py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
-                <i class="ph-bold ph-pencil-simple text-sm"></i> Continuar completando
-              </button>
-              <button onclick="window.verDetalleProducto('${b.id}')" class="bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold py-2 px-3 rounded-xl transition">
-                <i class="ph-bold ph-eye text-sm"></i>
-              </button>
-            </div>
-          `;
-          contenedorBorradores.appendChild(card);
-        });
-      } else {
-        seccionBorradores.classList.add('hidden');
-        contenedorBorradores.innerHTML = '';
-      }
-
-      contadorTerminados.innerText = `${terminados.length} ${terminados.length === 1 ? 'producto' : 'productos'}`;
-
-      if (terminados.length === 0 && borradores.length === 0) {
-        contenedorTerminados.innerHTML = '';
-        estadoVacio.classList.remove('hidden');
-        return;
-      }
-
-      estadoVacio.classList.add('hidden');
-      contenedorTerminados.innerHTML = '';
-
-      terminados.forEach(prod => {
-        const tarjeta = document.createElement('div');
-        tarjeta.className = "bg-white rounded-2xl p-5 shadow-sm border border-stone-200/90 hover:border-emerald-600 hover:shadow-md transition cursor-pointer flex flex-col justify-between text-left group";
-        tarjeta.onclick = () => verDetalleProducto(prod.id);
-
-        let badgePrecio = '';
-        if (prod.preciosVenta && prod.preciosVenta.precioMinorista) {
-          badgePrecio = `
-            <span class="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-300">
-              Feria: $ ${formatearNumero(prod.preciosVenta.precioMinorista)}
-            </span>
-          `;
-        }
-
-        tarjeta.innerHTML = `
-          <div>
-            <div class="flex items-start justify-between gap-2 mb-2">
-              <span class="text-[11px] font-semibold text-stone-400 flex items-center gap-1">
-                <i class="ph-bold ph-calendar-blank"></i> ${prod.fecha || '--'}
-              </span>
-              <div class="flex items-center gap-1.5">
-                ${badgePrecio}
-                <span class="text-[11px] font-bold bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">
-                  ${prod.unidadesProducidas} ${prod.tipoUnidad}
-                </span>
-              </div>
-            </div>
-
-            <h4 class="text-base font-black text-stone-800 group-hover:text-emerald-700 transition leading-snug mb-3">
-              ${prod.nombre}
-            </h4>
-
-            <div class="grid grid-cols-2 gap-2 bg-stone-50 p-2.5 rounded-xl border border-stone-200/60">
-              <div>
-                <span class="text-[10px] uppercase font-bold text-stone-400 block">Costo / Unidad</span>
-                <span class="text-lg font-black text-emerald-700 block">$ ${formatearNumero(prod.costoUnitario)}</span>
-              </div>
-              <div>
-                <span class="text-[10px] uppercase font-bold text-stone-400 block">Costo Tanda</span>
-                <span class="text-sm font-bold text-stone-700 block mt-0.5">$ ${formatearNumero(prod.costoTotal)}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
-            <span class="flex items-center gap-1 font-medium">
-              <i class="ph-bold ph-clock text-emerald-700"></i> ${(prod.horasTotales || 0).toFixed(1)} hs (${prod.minutosPorUnidad || 0} min/u)
-            </span>
-            <span class="text-emerald-700 font-bold flex items-center gap-0.5 group-hover:translate-x-1 transition-transform">
-              Ficha y Precios <i class="ph-bold ph-caret-right"></i>
-            </span>
-          </div>
-        `;
-        contenedorTerminados.appendChild(tarjeta);
-      });
-    }
-
-    function verDetalleProducto(id, hacerCambioVista = true) {
-      const prod = productosGuardados.find(p => p.id === id);
-      if (!prod) return;
-
-      idProductoSeleccionado = id;
-
-      document.getElementById('detalleNombre').innerText = prod.nombre;
-      document.getElementById('detalleFecha').innerText = `Tanda registrada el ${prod.fecha || '--'}`;
-      document.getElementById('detalleRinde').innerText = `${prod.unidadesProducidas} ${prod.tipoUnidad}`;
-
-      const badgeEstado = document.getElementById('detalleBadgeEstado');
-      const btnContinuar = document.getElementById('btnContinuarBorradorDetalle');
-      const btnReutilizar = document.getElementById('btnReutilizarTerminado');
-      const moduloPrecios = document.getElementById('moduloPreciosVenta');
-
-      if (prod.estado === 'borrador') {
-        badgeEstado.innerText = "Sin Terminar";
-        badgeEstado.className = "text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40";
-        btnContinuar.classList.remove('hidden');
-        btnReutilizar.classList.add('hidden');
-        moduloPrecios.classList.add('opacity-50', 'pointer-events-none');
-      } else {
-        badgeEstado.innerText = "Terminado";
-        badgeEstado.className = "text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
-        btnContinuar.classList.add('hidden');
-        btnReutilizar.classList.remove('hidden');
-        moduloPrecios.classList.remove('opacity-50', 'pointer-events-none');
-      }
-
-      document.getElementById('detalleCostoUnitario').innerText = `$ ${formatearNumero(prod.costoUnitario)}`;
-      document.getElementById('detalleCostoTotal').innerText = `$ ${formatearNumero(prod.costoTotal)}`;
-      document.getElementById('detalleHorasTotales').innerText = `${(prod.horasTotales || 0).toFixed(1)} hs`;
-      document.getElementById('detalleTiempoPorUnidad').innerText = `${prod.minutosPorUnidad || 0} min`;
-
-      // Insumos
-      const listaInsumosEl = document.getElementById('detalleListaInsumos');
-      listaInsumosEl.innerHTML = '';
-      if (!prod.insumos || prod.insumos.length === 0) {
-        listaInsumosEl.innerHTML = '<p class="text-xs text-stone-400 italic">No se detallaron insumos para esta tanda.</p>';
-      } else {
-        prod.insumos.forEach(ins => {
-          const item = document.createElement('div');
-          item.className = "flex items-center justify-between p-2 rounded-lg bg-stone-50 border border-stone-200 text-xs";
-          item.innerHTML = `
-            <div>
-              <span class="font-bold text-stone-800">${ins.nombre}</span>
-              <span class="text-[10px] text-stone-500 block">${ins.detalle}</span>
-            </div>
-            <span class="font-bold text-stone-700">$ ${formatearNumero(ins.costo)}</span>
-          `;
-          listaInsumosEl.appendChild(item);
-        });
-      }
-
-      // Desglose
-      document.getElementById('detalleSubtotalInsumos').innerText = `$ ${formatearNumero(prod.subtotalInsumos || 0)}`;
-      document.getElementById('detalleSubtotalTrabajo').innerText = `$ ${formatearNumero(prod.subtotalTrabajo || 0)}`;
-      document.getElementById('detalleSubtotalLuz').innerText = `$ ${formatearNumero(prod.subtotalLuz || 0)}`;
-      document.getElementById('detalleSubtotalExtra').innerText = `$ ${formatearNumero(prod.subtotalExtra || 0)}`;
-
-      if (prod.preciosVenta) {
-        margenMinoristaSeleccionado = prod.preciosVenta.margenMinorista || 50;
-        margenMayoristaSeleccionado = prod.preciosVenta.margenMayorista || 45;
-      } else {
-        margenMinoristaSeleccionado = 50;
-        margenMayoristaSeleccionado = 45;
-      }
-      actualizarEstilosBotonesEstrategia();
-      calcularPreciosVenta(prod);
-
-      if (hacerCambioVista) {
-        cambiarVista('detalle');
-      }
-    }
-
-    function seleccionarNivelEstrategia(mMin, mMay) {
-      margenMinoristaSeleccionado = mMin;
-      margenMayoristaSeleccionado = mMay;
-      actualizarEstilosBotonesEstrategia();
-      
-      const prod = productosGuardados.find(p => p.id === idProductoSeleccionado);
-      if (prod) calcularPreciosVenta(prod);
-    }
-
-    function actualizarEstilosBotonesEstrategia() {
-      const botones = [25, 50, 75, 100];
-      botones.forEach(m => {
-        const btn = document.getElementById(`btnMargen-${m}`);
-        if (!btn) return;
-        if (m === margenMinoristaSeleccionado) {
-          btn.className = "btn-estrategia py-2.5 px-3 rounded-xl border text-xs font-bold text-left transition flex flex-col justify-between border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm";
-        } else {
-          btn.className = "btn-estrategia py-2.5 px-3 rounded-xl border text-xs font-bold text-left transition flex flex-col justify-between border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-800";
-        }
-      });
-    }
-
-    function calcularPreciosVenta(prod) {
-      const costo = prod.costoUnitario || 0;
-      const rinde = Math.max(1, prod.unidadesProducidas || 1);
-
-      const precioMinorista = Math.round(costo * (1 + margenMinoristaSeleccionado / 100));
-      const precioMayorista = Math.round(costo * (1 + margenMayoristaSeleccionado / 100));
-
-      const gananciaUnidadMin = precioMinorista - costo;
-      const gananciaUnidadMay = precioMayorista - costo;
-
-      const gananciaTandaMin = gananciaUnidadMin * rinde;
-      const gananciaTandaMay = gananciaUnidadMay * rinde;
-
-      const costoTotalTanda = prod.costoTotal || (costo * rinde);
-      const unidadesEquilibrio = precioMinorista > 0 ? Math.ceil(costoTotalTanda / precioMinorista) : 0;
-      const puntosMenos = margenMinoristaSeleccionado - margenMayoristaSeleccionado;
-
-      document.getElementById('tagMargenMinorista').innerText = `+${margenMinoristaSeleccionado}% ganancia`;
-      document.getElementById('tagMargenMayorista').innerText = `+${margenMayoristaSeleccionado}% ganancia`;
-
-      document.getElementById('simPrecioMinorista').innerText = `$ ${formatearNumero(precioMinorista)}`;
-      const unidadLimpia = (prod.tipoUnidad || 'unidades').replace(/s$/, '');
-      document.getElementById('simGananciaUnidadMinorista').innerText = `+$ ${formatearNumero(gananciaUnidadMin)} / ${unidadLimpia}`;
-      document.getElementById('simGananciaTandaMinorista').innerText = `$ ${formatearNumero(gananciaTandaMin)}`;
-      document.getElementById('simEquilibrioMinorista').innerText = `Con vender ${unidadesEquilibrio} de ${rinde} ${prod.tipoUnidad} pagás todos los costos.`;
-
-      document.getElementById('simPrecioMayorista').innerText = `$ ${formatearNumero(precioMayorista)}`;
-      document.getElementById('simGananciaUnidadMayorista').innerText = `+$ ${formatearNumero(gananciaUnidadMay)} / ${unidadLimpia}`;
-      document.getElementById('simGananciaTandaMayorista').innerText = `$ ${formatearNumero(gananciaTandaMay)}`;
-      document.getElementById('simAhorroComercio').innerText = `-${puntosMenos} puntos de margen`;
-    }
-
-    async function guardarPreciosFijados() {
-      const prod = productosGuardados.find(p => p.id === idProductoSeleccionado);
-      if (!prod || !sesionActiva) return;
-
-      const costo = prod.costoUnitario || 0;
-      const precioMinorista = Math.round(costo * (1 + margenMinoristaSeleccionado / 100));
-      const precioMayorista = Math.round(costo * (1 + margenMayoristaSeleccionado / 100));
-
-      const preciosActualizados = {
-        margenMinorista: margenMinoristaSeleccionado,
-        margenMayorista: margenMayoristaSeleccionado,
-        precioMinorista: precioMinorista,
-        precioMayorista: precioMayorista
-      };
-
-      prod.preciosVenta = preciosActualizados;
-      localStorage.setItem(`sgpp_prods_${sesionActiva.id}`, JSON.stringify(productosGuardados));
-      mostrarToast(`Precios guardados: Feria $${formatearNumero(precioMinorista)} | Mayorista $${formatearNumero(precioMayorista)}`);
-    }
-
+    // =======================================================
+    // MÓDULO CALCULADORA Y DETALLES DE PRODUCTO
+    // =======================================================
     function agregarCompraDesdeDespensa() {
       if (insumosDespensa.length === 0) {
         mostrarToast("No tenés insumos en Mi Despensa. Creá uno primero.");
@@ -2425,11 +2321,8 @@
       const c = compras.find(item => item.id === id);
       if (!c) return;
 
-      if (campo === 'cantidad' || campo === 'costo') {
-        c[campo] = parseFloat(valor) || 0;
-      } else {
-        c[campo] = valor;
-      }
+      if (campo === 'cantidad' || campo === 'costo') c[campo] = parseFloat(valor) || 0;
+      else c[campo] = valor;
 
       const badge = document.getElementById(`costoUnitarioCompra-${id}`);
       if (badge) {
@@ -2437,10 +2330,7 @@
         badge.innerText = `$ ${uCost}/${c.unidad}`;
       }
 
-      if (campo === 'nombre' || campo === 'unidad') {
-        renderizarInsumosReceta();
-      }
-
+      if (campo === 'nombre' || campo === 'unidad') renderizarInsumosReceta();
       calcular();
     }
 
@@ -2475,7 +2365,7 @@
           ).join('');
 
           div.innerHTML = `
-            <span class="text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 px-2 py-1 rounded">Paso 2</span>
+            <span class="text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 px-2 py-1 rounded">Compra</span>
             <select onchange="window.actualizarInsumoRecetaSilencioso(${item.id}, 'compraId', this.value)"
                     class="flex-1 min-w-[150px] bg-white border border-stone-300 rounded px-2 py-1.5 font-medium text-stone-800">
               ${opciones || '<option value="">No hay compras en Paso 2</option>'}
@@ -2730,7 +2620,7 @@
               costo: cost
             });
 
-            // Si es terminado, descontar opcionalmente del estante físico
+            // Si es terminado, descontar del estante físico de Mi Despensa
             if (esTerminado) {
               const estante = insumosDespensa.find(e => e.nombre.toLowerCase().includes(compra.nombre.toLowerCase()));
               if (estante) {
@@ -2801,12 +2691,159 @@
       borradorEnEdicionId = null;
 
       if (esTerminado) {
-        mostrarToast(`"${nombreInput}" guardado y descontado de Mi Despensa.`);
+        mostrarToast(`"${nombreInput}" terminado y descontado de Mi Despensa.`);
         verDetalleProducto(targetId);
       } else {
-        mostrarToast(`Borrador "${nombreInput}" guardado.`);
+        mostrarToast(`Borrador "${nombreInput}" guardado sin terminar.`);
         cambiarVista('inicio');
       }
+    }
+
+    function verDetalleProducto(id, hacerCambioVista = true) {
+      const prod = productosGuardados.find(p => p.id === id);
+      if (!prod) return;
+
+      idProductoSeleccionado = id;
+
+      document.getElementById('detalleNombre').innerText = prod.nombre;
+      document.getElementById('detalleFecha').innerText = `Tanda registrada el ${prod.fecha || '--'}`;
+      document.getElementById('detalleRinde').innerText = `${prod.unidadesProducidas} ${prod.tipoUnidad}`;
+
+      const badgeEstado = document.getElementById('detalleBadgeEstado');
+      const btnContinuar = document.getElementById('btnContinuarBorradorDetalle');
+      const btnReutilizar = document.getElementById('btnReutilizarTerminado');
+      const moduloPrecios = document.getElementById('moduloPreciosVenta');
+
+      if (prod.estado === 'borrador') {
+        badgeEstado.innerText = "Sin Terminar";
+        badgeEstado.className = "text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40";
+        btnContinuar.classList.remove('hidden');
+        btnReutilizar.classList.add('hidden');
+        moduloPrecios.classList.add('opacity-50', 'pointer-events-none');
+      } else {
+        badgeEstado.innerText = "Terminado";
+        badgeEstado.className = "text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
+        btnContinuar.classList.add('hidden');
+        btnReutilizar.classList.remove('hidden');
+        moduloPrecios.classList.remove('opacity-50', 'pointer-events-none');
+      }
+
+      document.getElementById('detalleCostoUnitario').innerText = `$ ${formatearNumero(prod.costoUnitario)}`;
+      document.getElementById('detalleCostoTotal').innerText = `$ ${formatearNumero(prod.costoTotal)}`;
+      document.getElementById('detalleHorasTotales').innerText = `${(prod.horasTotales || 0).toFixed(1)} hs`;
+      document.getElementById('detalleTiempoPorUnidad').innerText = `${prod.minutosPorUnidad || 0} min`;
+
+      // Insumos
+      const listaInsumosEl = document.getElementById('detalleListaInsumos');
+      listaInsumosEl.innerHTML = '';
+      if (!prod.insumos || prod.insumos.length === 0) {
+        listaInsumosEl.innerHTML = '<p class="text-xs text-stone-400 italic">No se detallaron insumos para esta tanda.</p>';
+      } else {
+        prod.insumos.forEach(ins => {
+          const item = document.createElement('div');
+          item.className = "flex items-center justify-between p-2 rounded-lg bg-stone-50 border border-stone-200 text-xs";
+          item.innerHTML = `
+            <div>
+              <span class="font-bold text-stone-800">${ins.nombre}</span>
+              <span class="text-[10px] text-stone-500 block">${ins.detalle}</span>
+            </div>
+            <span class="font-bold text-stone-700">$ ${formatearNumero(ins.costo)}</span>
+          `;
+          listaInsumosEl.appendChild(item);
+        });
+      }
+
+      // Desglose
+      document.getElementById('detalleSubtotalInsumos').innerText = `$ ${formatearNumero(prod.subtotalInsumos || 0)}`;
+      document.getElementById('detalleSubtotalTrabajo').innerText = `$ ${formatearNumero(prod.subtotalTrabajo || 0)}`;
+      document.getElementById('detalleSubtotalLuz').innerText = `$ ${formatearNumero(prod.subtotalLuz || 0)}`;
+      document.getElementById('detalleSubtotalExtra').innerText = `$ ${formatearNumero(prod.subtotalExtra || 0)}`;
+
+      if (prod.preciosVenta) {
+        margenMinoristaSeleccionado = prod.preciosVenta.margenMinorista || 50;
+        margenMayoristaSeleccionado = prod.preciosVenta.margenMayorista || 45;
+      } else {
+        margenMinoristaSeleccionado = 50;
+        margenMayoristaSeleccionado = 45;
+      }
+      actualizarEstilosBotonesEstrategia();
+      calcularPreciosVenta(prod);
+
+      if (hacerCambioVista) cambiarVista('detalle');
+    }
+
+    function seleccionarNivelEstrategia(mMin, mMay) {
+      margenMinoristaSeleccionado = mMin;
+      margenMayoristaSeleccionado = mMay;
+      actualizarEstilosBotonesEstrategia();
+      
+      const prod = productosGuardados.find(p => p.id === idProductoSeleccionado);
+      if (prod) calcularPreciosVenta(prod);
+    }
+
+    function actualizarEstilosBotonesEstrategia() {
+      const botones = [25, 50, 75, 100];
+      botones.forEach(m => {
+        const btn = document.getElementById(`btnMargen-${m}`);
+        if (!btn) return;
+        if (m === margenMinoristaSeleccionado) {
+          btn.className = "btn-estrategia py-2.5 px-3 rounded-xl border text-xs font-bold text-left transition flex flex-col justify-between border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm";
+        } else {
+          btn.className = "btn-estrategia py-2.5 px-3 rounded-xl border text-xs font-bold text-left transition flex flex-col justify-between border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-800";
+        }
+      });
+    }
+
+    function calcularPreciosVenta(prod) {
+      const costo = prod.costoUnitario || 0;
+      const rinde = Math.max(1, prod.unidadesProducidas || 1);
+
+      const precioMinorista = Math.round(costo * (1 + margenMinoristaSeleccionado / 100));
+      const precioMayorista = Math.round(costo * (1 + margenMayoristaSeleccionado / 100));
+
+      const gananciaUnidadMin = precioMinorista - costo;
+      const gananciaUnidadMay = precioMayorista - costo;
+
+      const gananciaTandaMin = gananciaUnidadMin * rinde;
+      const gananciaTandaMay = gananciaUnidadMay * rinde;
+
+      const costoTotalTanda = prod.costoTotal || (costo * rinde);
+      const unidadesEquilibrio = precioMinorista > 0 ? Math.ceil(costoTotalTanda / precioMinorista) : 0;
+      const puntosMenos = margenMinoristaSeleccionado - margenMayoristaSeleccionado;
+
+      document.getElementById('tagMargenMinorista').innerText = `+${margenMinoristaSeleccionado}% ganancia`;
+      document.getElementById('tagMargenMayorista').innerText = `+${margenMayoristaSeleccionado}% ganancia`;
+
+      document.getElementById('simPrecioMinorista').innerText = `$ ${formatearNumero(precioMinorista)}`;
+      const unidadLimpia = (prod.tipoUnidad || 'unidades').replace(/s$/, '');
+      document.getElementById('simGananciaUnidadMinorista').innerText = `+$ ${formatearNumero(gananciaUnidadMin)} / ${unidadLimpia}`;
+      document.getElementById('simGananciaTandaMinorista').innerText = `$ ${formatearNumero(gananciaTandaMin)}`;
+      document.getElementById('simEquilibrioMinorista').innerText = `Con vender ${unidadesEquilibrio} de ${rinde} ${prod.tipoUnidad} cubrís todos los costos.`;
+
+      document.getElementById('simPrecioMayorista').innerText = `$ ${formatearNumero(precioMayorista)}`;
+      document.getElementById('simGananciaUnidadMayorista').innerText = `+$ ${formatearNumero(gananciaUnidadMay)} / ${unidadLimpia}`;
+      document.getElementById('simGananciaTandaMayorista').innerText = `$ ${formatearNumero(gananciaTandaMay)}`;
+      document.getElementById('simAhorroComercio').innerText = `-${puntosMenos} puntos de margen`;
+    }
+
+    async function guardarPreciosFijados() {
+      const prod = productosGuardados.find(p => p.id === idProductoSeleccionado);
+      if (!prod || !sesionActiva) return;
+
+      const costo = prod.costoUnitario || 0;
+      const precioMinorista = Math.round(costo * (1 + margenMinoristaSeleccionado / 100));
+      const precioMayorista = Math.round(costo * (1 + margenMayoristaSeleccionado / 100));
+
+      const preciosActualizados = {
+        margenMinorista: margenMinoristaSeleccionado,
+        margenMayorista: margenMayoristaSeleccionado,
+        precioMinorista: precioMinorista,
+        precioMayorista: precioMayorista
+      };
+
+      prod.preciosVenta = preciosActualizados;
+      localStorage.setItem(`sgpp_prods_${sesionActiva.id}`, JSON.stringify(productosGuardados));
+      mostrarToast(`Precios guardados: Feria $${formatearNumero(precioMinorista)} | Mayorista $${formatearNumero(precioMayorista)}`);
     }
 
     function iniciarNuevoCalculo() {
@@ -2948,6 +2985,10 @@
       document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
     }
 
+    function cerrarSiClicFondo(event, idModal) {
+      if (event.target.id === idModal) cerrarModal(idModal);
+    }
+
     function abrirModalBackup() {
       abrirModal('modalBackup');
     }
@@ -2982,7 +3023,7 @@
           localStorage.setItem(`sgpp_prods_${sesionActiva.id}`, JSON.stringify(productosGuardados));
           localStorage.setItem(`sgpp_despensa_${sesionActiva.id}`, JSON.stringify(insumosDespensa));
           cerrarModal('modalBackup');
-          renderizarListaProductos();
+          renderizarBorradores();
           renderEstantes();
           calcularDisponibilidad();
           mostrarToast("Datos restaurados correctamente.");
@@ -2993,12 +3034,13 @@
       reader.readAsText(file);
     }
 
-    window.procesarLogin = procesarLogin;
-    window.procesarRegistro = procesarRegistro;
+    // Exponer al ámbito global para los botones onclick
     window.cambiarVista = cambiarVista;
     window.irAInicioSiAutenticado = irAInicioSiAutenticado;
     window.solicitarCerrarSesion = solicitarCerrarSesion;
     window.confirmarCerrarSesion = confirmarCerrarSesion;
+    window.procesarLogin = procesarLogin;
+    window.procesarRegistro = procesarRegistro;
     window.iniciarNuevoCalculo = iniciarNuevoCalculo;
     window.reiniciarCalculo = reiniciarCalculo;
     window.actualizarNombreResumen = actualizarNombreResumen;
@@ -3025,6 +3067,7 @@
     window.abrirModal = abrirModal;
     window.cerrarModal = cerrarModal;
     window.cerrarModales = cerrarModales;
+    window.cerrarSiClicFondo = cerrarSiClicFondo;
     window.abrirModalBackup = abrirModalBackup;
     window.exportarCopiaJSON = exportarCopiaJSON;
     window.importarCopiaJSON = importarCopiaJSON;
