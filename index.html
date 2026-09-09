@@ -31,7 +31,7 @@
       -moz-appearance: textfield;
     }
     .fade-in {
-      animation: fadeIn 0.2s ease-out;
+      animation: fadeIn 0.18s ease-out;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(4px); }
@@ -43,7 +43,6 @@
   </style>
 
   <script>
-    // Tab switcher pre-cargado síncrono para evitar retrasos de módulo
     function alternarTabAuth(tab) {
       const btnLogin = document.getElementById('tabBtnLogin');
       const btnRegistro = document.getElementById('tabBtnRegistro');
@@ -70,7 +69,7 @@
     window.alternarTabAuth = alternarTabAuth;
   </script>
 </head>
-<body class="bg-stone-100 text-stone-800 antialiased min-h-screen flex flex-col justify-between selection:bg-amber-200">
+<body class="bg-stone-100 text-stone-800 antialiased min-h-screen flex flex-col justify-start selection:bg-amber-200">
 
   <!-- APP BAR SUPERIOR -->
   <header class="bg-emerald-950 text-white sticky top-0 z-40 shadow-md border-b border-emerald-900 px-4 py-3">
@@ -95,14 +94,14 @@
       <div id="barraUsuarioSesion" class="hidden flex items-center gap-1.5">
         <div class="bg-emerald-900/90 border border-emerald-800 rounded-xl px-2.5 py-1 flex items-center gap-2">
           <div class="text-right">
-            <span class="text-[8px] uppercase tracking-wider text-emerald-300 font-extrabold block leading-none">Chacra</span>
-            <span id="nombreEmprendimientoHeader" class="text-xs font-black text-white max-w-[110px] truncate block leading-tight">--</span>
+            <span class="text-[8px] uppercase tracking-wider text-emerald-300 font-extrabold block leading-none">Emprendimiento</span>
+            <span id="nombreEmprendimientoHeader" class="text-xs font-black text-white max-w-[120px] truncate block leading-tight">--</span>
           </div>
-          <button onclick="solicitarCerrarSesion()" class="text-emerald-300 hover:text-white p-1 rounded-lg hover:bg-emerald-800 transition" title="Cambiar emprendimiento">
+          <button onclick="solicitarCerrarSesion()" class="text-emerald-300 hover:text-white p-1 rounded-lg hover:bg-emerald-800 transition cursor-pointer" title="Cambiar emprendimiento">
             <i class="ph-bold ph-sign-out text-base"></i>
           </button>
         </div>
-        <button onclick="abrirModalBackup()" class="bg-emerald-900 border border-emerald-800 text-emerald-200 hover:text-white p-2 rounded-xl transition" title="Copia de seguridad">
+        <button onclick="abrirModalBackup()" class="bg-emerald-900 border border-emerald-800 text-emerald-200 hover:text-white p-2 rounded-xl transition cursor-pointer" title="Copia de seguridad">
           <i class="ph-bold ph-floppy-disk text-base"></i>
         </button>
       </div>
@@ -110,12 +109,13 @@
     </div>
   </header>
 
-  <main class="max-w-2xl mx-auto w-full px-4 pt-4 safe-bottom flex-1 flex flex-col justify-center">
+  <!-- CONTENEDOR PRINCIPAL: SIEMPRE ALINEADO ARRIBA -->
+  <main class="max-w-2xl mx-auto w-full px-4 pt-4 safe-bottom flex-1 flex flex-col justify-start">
 
     <!-- ======================================================= -->
     <!-- VISTA 0: ACCESO (INGRESAR / REGISTRARSE)                 -->
     <!-- ======================================================= -->
-    <div id="vistaAuth" class="fade-in max-w-sm w-full mx-auto my-auto space-y-4">
+    <div id="vistaAuth" class="fade-in max-w-sm w-full mx-auto mt-6 mb-8 space-y-4">
       <div class="bg-white rounded-3xl p-6 shadow-xl border border-stone-200 text-center space-y-4">
         <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto text-2xl border border-emerald-200 shadow-sm">
           <i class="ph-bold ph-lock-key"></i>
@@ -140,7 +140,7 @@
         <form id="formAuthLogin" onsubmit="event.preventDefault(); procesarLogin(); return false;" class="space-y-3.5 text-left">
           <div>
             <label class="block text-[11px] font-bold text-stone-700 uppercase tracking-wider mb-1">Nombre de tu Emprendimiento</label>
-            <input type="text" id="loginNombre" required placeholder="Ej: Huerta Santa Rita, SimonDice" 
+            <input type="text" id="loginNombre" required placeholder="Ej: Sabores Caseros, SimonDice" 
                    class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2.5 text-sm font-semibold text-stone-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition">
           </div>
           <div>
@@ -161,7 +161,7 @@
         <form id="formAuthRegistro" onsubmit="event.preventDefault(); procesarRegistro(); return false;" class="hidden space-y-3.5 text-left">
           <div>
             <label class="block text-[11px] font-bold text-stone-700 uppercase tracking-wider mb-1">Nombre del nuevo emprendimiento</label>
-            <input type="text" id="regNombre" required placeholder="Ej: Sabores de la Chacra" 
+            <input type="text" id="regNombre" required placeholder="Ej: Huerta y Cocina del Valle" 
                    class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2.5 text-sm font-semibold text-stone-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition">
           </div>
           <div>
@@ -196,7 +196,7 @@
           <span class="text-[10px] font-black uppercase text-emerald-800 tracking-wider bg-emerald-100 px-2 py-0.5 rounded-md">Panel Principal</span>
           <h2 class="text-xl font-black text-stone-900 mt-1" id="saludoEmprendimiento">Hola, Productor</h2>
         </div>
-        <span class="text-xs text-stone-400 font-medium">Gestión de Campo</span>
+        <span class="text-xs text-stone-400 font-medium">Gestión Diaria</span>
       </div>
 
       <!-- LOS 2 BLOQUES GIGANTES CON IDÉNTICA JERARQUÍA -->
@@ -235,7 +235,7 @@
                 <h3 class="text-lg font-black text-stone-900 leading-tight">Mi Despensa</h3>
                 <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">Estantes</span>
               </div>
-              <p class="text-xs text-stone-500 mt-1 leading-snug">Controlá el stock físico de azúcar, frascos, tapas y fruta cosechada de tu tierra.</p>
+              <p class="text-xs text-stone-500 mt-1 leading-snug">Controlá el stock físico de insumos comprados y materias primas de producción propia.</p>
             </div>
           </div>
 
@@ -270,15 +270,20 @@
     </div>
 
     <!-- ======================================================= -->
-    <!-- VISTA 2: LISTADO DE PRODUCTOS (CATÁLOGO DEDICADO)      -->
+    <!-- VISTA 2: MIS PRODUCTOS CALCULADOS (CATÁLOGO DEDICADO)   -->
     <!-- ======================================================= -->
     <div id="vistaProductos" class="hidden space-y-4 fade-in w-full">
       <div class="flex items-center justify-between pb-1 border-b border-stone-200">
-        <div>
-          <h2 class="text-xl font-black text-stone-900 leading-tight">Mis Productos Terminados</h2>
-          <p class="text-xs text-stone-500">Recetas listas para elaborar, costos unitarios y precios de feria.</p>
+        <div class="flex items-center gap-2">
+          <button onclick="cambiarVista('inicio')" class="text-xs font-bold text-stone-700 bg-white border border-stone-300 px-2.5 py-1.5 rounded-xl hover:bg-stone-50 flex items-center gap-1 cursor-pointer transition">
+            <i class="ph-bold ph-arrow-left text-sm"></i> Volver
+          </button>
+          <div>
+            <h2 class="text-lg font-black text-stone-900 leading-tight">Mis Productos Calculados</h2>
+            <p class="text-[11px] text-stone-500">Recetas, costos unitarios y precios de feria.</p>
+          </div>
         </div>
-        <button onclick="iniciarNuevoCalculo()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-1 active:scale-95 shadow-sm cursor-pointer">
+        <button onclick="iniciarNuevoCalculo()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs px-3 py-2 rounded-xl transition flex items-center gap-1 active:scale-95 shadow-sm cursor-pointer">
           <i class="ph-bold ph-plus"></i> Nueva Tanda
         </button>
       </div>
@@ -289,7 +294,7 @@
 
       <div id="estadoVacioProductos" class="hidden text-center py-14 px-4 bg-white rounded-3xl border-2 border-dashed border-stone-200">
         <i class="ph-duotone ph-basket text-4xl text-stone-300 mb-2"></i>
-        <h4 class="text-sm font-bold text-stone-700">Aún no registraste productos terminados</h4>
+        <h4 class="text-sm font-bold text-stone-700">Aún no registraste productos calculados</h4>
         <p class="text-xs text-stone-400 mt-1 mb-4">Comenzá calculando tu primera tanda de mermelada, conserva o verdura.</p>
         <button onclick="iniciarNuevoCalculo()" class="bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition cursor-pointer">
           + Calcular Primer Producto
@@ -302,19 +307,24 @@
     <!-- ======================================================= -->
     <div id="vistaDespensa" class="hidden space-y-4 fade-in w-full">
       
-      <!-- Encabezado de Mi Despensa -->
+      <!-- Encabezado de Mi Despensa con botón Volver -->
       <div class="flex items-center justify-between pb-1 border-b border-stone-200">
-        <div>
-          <div class="flex items-center gap-1.5">
-            <h2 class="text-xl font-black text-stone-900 leading-tight">Mi Despensa</h2>
-            <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900">Stock</span>
+        <div class="flex items-center gap-2">
+          <button onclick="cambiarVista('inicio')" class="text-xs font-bold text-stone-700 bg-white border border-stone-300 px-2.5 py-1.5 rounded-xl hover:bg-stone-50 flex items-center gap-1 cursor-pointer transition">
+            <i class="ph-bold ph-arrow-left text-sm"></i> Volver
+          </button>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <h2 class="text-lg font-black text-stone-900 leading-tight">Mi Despensa</h2>
+              <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900">Stock</span>
+            </div>
+            <p class="text-[11px] text-stone-500">Control físico de insumos y producción propia.</p>
           </div>
-          <p class="text-xs text-stone-500 mt-0.5">Control físico de frascos, tapas, azúcar y cosecha.</p>
         </div>
 
         <div class="flex items-center gap-1.5">
-          <button onclick="abrirModalNuevoInsumo()" class="bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-xs px-2.5 py-2 rounded-xl transition active:scale-95 cursor-pointer">
-            + Insumo
+          <button onclick="abrirModalNuevoInsumo()" class="bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-xs px-2.5 py-2 rounded-xl transition active:scale-95 cursor-pointer flex items-center gap-1">
+            <i class="ph-bold ph-plus text-sm"></i> Agregar Insumo
           </button>
           <button onclick="abrirModalCompra()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1 active:scale-95 shadow-sm cursor-pointer">
             <i class="ph-bold ph-shopping-cart-simple"></i> Compra
@@ -402,44 +412,44 @@
                class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-xs font-bold text-stone-800 focus:ring-2 focus:ring-emerald-600 focus:bg-white transition">
       </section>
 
-      <!-- PASO 2: Compras nuevas -->
+      <!-- PASO 2: Insumos Comprados y Traer de Mi Despensa -->
       <section class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 space-y-2.5">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold flex items-center justify-center">2</span>
-            <h3 class="font-bold text-stone-800 text-xs uppercase tracking-wider">Compras Nuevas de Insumos</h3>
+            <h3 class="font-bold text-stone-800 text-xs uppercase tracking-wider">Insumos y Compras de la Tanda</h3>
           </div>
-          <button type="button" onclick="cambiarVista('despensa')" class="text-[10px] text-emerald-700 font-bold hover:underline cursor-pointer">
-            Ver Despensa →
+          <button type="button" onclick="agregarInsumoDesdeDespensaDirecto()" class="text-xs text-emerald-900 bg-emerald-100 hover:bg-emerald-200 font-black px-2.5 py-1 rounded-xl transition flex items-center gap-1 cursor-pointer border border-emerald-300 shadow-xs">
+            <i class="ph-bold ph-archive"></i> Traer de Mi Despensa
           </button>
         </div>
-        <p class="text-[11px] text-stone-500 leading-snug">Si compraste materia prima hoy (bolsas, cajones, frascos), agregala acá. Lo que no uses en la receta pasará directo a tu despensa.</p>
+        <p class="text-[11px] text-stone-500 leading-snug">Podés traer materias primas de tus estantes o ingresar compras mayoristas que hiciste hoy (lo que sobre pasará al estante al terminar).</p>
 
         <div id="contenedorCompras" class="space-y-2">
           <!-- Render compras -->
         </div>
 
-        <button onclick="agregarCompra()" class="text-xs text-emerald-800 bg-emerald-50 hover:bg-emerald-100 font-bold flex items-center gap-1.5 py-2 px-3 rounded-xl border border-emerald-300 transition active:scale-95 cursor-pointer">
-          <i class="ph-bold ph-plus-circle text-base"></i> + Cargar nueva compra mayorista
+        <button onclick="agregarCompra()" class="text-xs text-stone-800 bg-stone-100 hover:bg-stone-200 font-bold flex items-center gap-1.5 py-2 px-3 rounded-xl border border-stone-300 transition active:scale-95 cursor-pointer">
+          <i class="ph-bold ph-shopping-cart-simple text-base"></i> + Cargar nueva compra mayorista
         </button>
       </section>
 
-      <!-- PASO 3: Cosecha Propia con Nombre -->
+      <!-- PASO 3: Producción Propia -->
       <section class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 space-y-2.5">
         <div class="flex items-center gap-2">
           <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold flex items-center justify-center">3</span>
-          <h3 class="font-bold text-stone-800 text-xs uppercase tracking-wider">Cosecha Propia (Chacra / Huerta)</h3>
+          <h3 class="font-bold text-stone-800 text-xs uppercase tracking-wider">Producción Propia (Huerta / Taller)</h3>
         </div>
-        <p class="text-[11px] text-stone-500">¿Utilizaste verdura o fruta que cosechaste con tus propias manos?</p>
+        <p class="text-[11px] text-stone-500">¿Utilizaste materia prima que produjiste o cosechaste con tus propias manos?</p>
 
         <div class="grid grid-cols-2 gap-2">
           <button type="button" id="btnCosechaNo" onclick="setearCosecha(false)" 
                   class="py-2 px-2.5 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1 bg-stone-100 border-stone-300 text-stone-700 cursor-pointer">
-            <i class="ph-bold ph-x-circle text-sm"></i> No coseché
+            <i class="ph-bold ph-x-circle text-sm"></i> No produje
           </button>
           <button type="button" id="btnCosechaSi" onclick="setearCosecha(true)" 
                   class="py-2 px-2.5 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1 bg-white border-stone-300 text-stone-600 cursor-pointer">
-            <i class="ph-bold ph-plant text-sm"></i> Sí, coseché
+            <i class="ph-bold ph-plant text-sm"></i> Sí, producción propia
           </button>
         </div>
 
@@ -454,12 +464,13 @@
 
           <div class="grid grid-cols-2 gap-2.5">
             <div>
-              <label class="block text-[11px] font-semibold text-stone-600 mb-1">Cantidad cosechada</label>
+              <label class="block text-[11px] font-semibold text-stone-600 mb-1">Cantidad producida</label>
               <div class="flex gap-1">
                 <input type="number" id="cosechaCantidad" value="0" min="0" step="0.5" oninput="calcular()" 
                        class="w-full bg-white border border-stone-300 rounded-lg px-2 py-1.5 text-xs font-bold text-stone-800">
                 <select id="cosechaUnidad" onchange="calcular()" class="bg-white border border-stone-300 rounded-lg px-1.5 py-1.5 text-xs text-stone-700">
                   <option value="kg">kg</option>
+                  <option value="litros">litros</option>
                   <option value="atados">atados</option>
                   <option value="cajones">cajones</option>
                   <option value="unidades">unid.</option>
@@ -467,7 +478,7 @@
               </div>
             </div>
             <div>
-              <label class="block text-[11px] font-semibold text-stone-600 mb-1">Horas cosechando</label>
+              <label class="block text-[11px] font-semibold text-stone-600 mb-1">Horas dedicadas</label>
               <input type="number" id="cosechaHoras" value="0" min="0" step="0.25" oninput="calcular()" 
                      class="w-full bg-white border border-stone-300 rounded-lg px-2 py-1.5 text-xs font-bold text-stone-800">
             </div>
@@ -479,9 +490,9 @@
       <section class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 space-y-2.5">
         <div class="flex items-center gap-2">
           <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold flex items-center justify-center">4</span>
-          <h3 class="font-bold text-stone-800 text-xs uppercase tracking-wider">Insumos de la Receta / Tanda</h3>
+          <h3 class="font-bold text-stone-800 text-xs uppercase tracking-wider">Insumos que van a la Olla / Tanda</h3>
         </div>
-        <p class="text-[11px] text-stone-500">Elegí lo que va a la olla: tomalo directo de <strong>Mi Despensa</strong>, de tu <strong>cosecha de hoy (Paso 3)</strong> o de tus <strong>compras (Paso 2)</strong>.</p>
+        <p class="text-[11px] text-stone-500">Indicá qué materias primas entran en la receta de hoy. Las unidades se adaptan automáticamente a lo que elegís.</p>
 
         <div id="contenedorInsumosReceta" class="space-y-2">
           <!-- Render dinámico de insumos -->
@@ -489,7 +500,7 @@
 
         <div class="flex flex-wrap gap-2 pt-1">
           <button onclick="agregarInsumoReceta()" class="text-xs text-emerald-800 bg-emerald-50 hover:bg-emerald-100 font-bold flex items-center gap-1.5 py-2 px-3 rounded-xl border border-emerald-300 transition active:scale-95 cursor-pointer">
-            <i class="ph-bold ph-plus-circle text-base"></i> + Usar insumo (Despensa / Cosecha / Compra)
+            <i class="ph-bold ph-plus-circle text-base"></i> + Usar insumo (Despensa / Producción / Compra)
           </button>
           <button onclick="agregarInsumoLibreReceta()" class="text-xs text-stone-700 bg-stone-100 hover:bg-stone-200 font-semibold flex items-center gap-1.5 py-2 px-3 rounded-xl border border-stone-300 transition active:scale-95 cursor-pointer">
             <i class="ph-bold ph-pencil-simple-line text-sm"></i> Otro insumo directo
@@ -580,6 +591,7 @@
               <option value="frascos">Frascos</option>
               <option value="atados">Atados</option>
               <option value="kg">Kilos (kg)</option>
+              <option value="litros">Litros (l)</option>
               <option value="docenas">Docenas</option>
               <option value="paquetes">Paquetes</option>
               <option value="bolsones">Bolsones</option>
@@ -631,8 +643,8 @@
     <!-- ======================================================= -->
     <div id="vistaDetalle" class="hidden space-y-4 fade-in w-full">
       <div class="flex items-center justify-between pb-1 border-b border-stone-200">
-        <button onclick="cambiarVista('productos')" class="text-xs font-bold text-stone-600 hover:text-stone-900 bg-white border border-stone-300 px-3 py-1.5 rounded-xl flex items-center gap-1 cursor-pointer">
-          ← Volver
+        <button onclick="cambiarVista('productos')" class="text-xs font-bold text-stone-700 hover:text-stone-900 bg-white border border-stone-300 px-3 py-1.5 rounded-xl flex items-center gap-1 cursor-pointer transition">
+          <i class="ph-bold ph-arrow-left text-sm"></i> Volver a Productos
         </button>
         <div class="flex items-center gap-1.5">
           <button id="btnContinuarBorradorDetalle" onclick="continuarEditandoBorrador()" class="hidden text-xs font-bold text-amber-900 bg-amber-100 border border-amber-300 px-3 py-1.5 rounded-xl cursor-pointer">
@@ -767,7 +779,7 @@
           − Retirar del estante
         </button>
         <button id="tab-sumar" onclick="setModoMovimiento('sumar')" class="py-2.5 rounded-xl font-bold text-xs text-stone-500 hover:text-stone-900 transition cursor-pointer">
-          + Sumar remanente
+          + Sumar al estante
         </button>
       </div>
 
@@ -796,12 +808,12 @@
         </div>
       </div>
 
-      <!-- Costo al sumar -->
+      <!-- Costo al sumar al estante -->
       <div id="bloque-costo-sumar" class="hidden space-y-1.5 bg-stone-50 border border-stone-200 rounded-2xl p-3">
         <label class="block text-xs font-bold text-stone-800">¿Cuánto pagaste por este ingreso? ($)</label>
         <div class="relative">
           <span class="absolute left-3 top-2.5 font-bold text-stone-400 text-sm">$</span>
-          <input type="number" id="input-costo-sumar" step="any" oninput="actualizarCostoUnitarioEnVivo()" placeholder="Dejá vacío si es remanente viejo" 
+          <input type="number" id="input-costo-sumar" step="any" oninput="actualizarCostoUnitarioEnVivo()" placeholder="Dejá vacío si es remanente previo" 
                  class="w-full pl-7 pr-3 py-2 bg-white border border-stone-300 rounded-xl text-stone-900 font-bold text-xs focus:ring-2 focus:ring-emerald-600">
         </div>
         <div class="flex justify-between text-[11px] pt-0.5">
@@ -810,7 +822,7 @@
         </div>
       </div>
 
-      <!-- Motivos genéricos de baja -->
+      <!-- Motivos de baja -->
       <div id="bloque-motivos" class="space-y-2">
         <p class="text-xs font-bold text-stone-700">Motivo del retiro (obligatorio):</p>
         <div class="grid grid-cols-1 gap-1.5">
@@ -879,12 +891,12 @@
     </div>
   </div>
 
-  <!-- MODAL: NUEVO INSUMO (COMPRA VS COSECHA) -->
+  <!-- MODAL: AGREGAR INSUMO EN DESPENSA (COMPRA VS PRODUCCIÓN PROPIA) -->
   <div id="modal-nuevo-insumo" class="fixed inset-0 bg-stone-900/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
     <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-4 animate-in fade-in max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-center">
         <div>
-          <h2 class="text-lg font-black text-stone-900">Crear Insumo en Despensa</h2>
+          <h2 class="text-lg font-black text-stone-900">Agregar Insumo en Despensa</h2>
           <p class="text-[11px] text-stone-500">Elegí el origen para calcular el costo en segundo plano</p>
         </div>
         <button type="button" onclick="cerrarModales()" class="bg-stone-100 text-stone-700 font-bold text-xs px-3 py-1.5 rounded-xl cursor-pointer">
@@ -892,13 +904,13 @@
         </button>
       </div>
 
-      <!-- Selector Compra vs Cosecha -->
+      <!-- Selector Compra vs Producción Propia -->
       <div class="grid grid-cols-2 gap-2 bg-stone-100 p-1 rounded-2xl">
         <button type="button" id="tabNuevoCompra" onclick="alternarOrigenNuevoInsumo('compra')" class="py-2.5 rounded-xl font-bold text-xs bg-white text-stone-900 shadow-sm transition flex items-center justify-center gap-1 cursor-pointer">
           <i class="ph-bold ph-shopping-cart-simple"></i> Lo compré
         </button>
         <button type="button" id="tabNuevoCosecha" onclick="alternarOrigenNuevoInsumo('cosecha')" class="py-2.5 rounded-xl font-bold text-xs text-stone-500 hover:text-stone-900 transition flex items-center justify-center gap-1 cursor-pointer">
-          <i class="ph-bold ph-plant"></i> Lo coseché
+          <i class="ph-bold ph-plant"></i> Producción Propia
         </button>
       </div>
 
@@ -922,7 +934,7 @@
             <select id="nuevoInsumoUnidad" onchange="actualizarCalculoNuevoInsumo()" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-800 text-xs">
               <option value="kg">kg</option>
               <option value="g">g</option>
-              <option value="l">litros (l)</option>
+              <option value="litros">litros (l)</option>
               <option value="ml">ml</option>
               <option value="unid">unidades</option>
               <option value="paquetes">paquetes</option>
@@ -942,11 +954,11 @@
         </div>
       </div>
 
-      <!-- Formulario 2: Cosecha Propia -->
+      <!-- Formulario 2: Producción Propia -->
       <div id="bloqueNuevoInsumoCosecha" class="hidden space-y-3 pt-1">
         <div>
-          <label class="block text-xs font-bold text-stone-700 mb-1">Nombre de lo cosechado</label>
-          <input type="text" id="cosechaInsumoNombre" placeholder="Ej: Ciruela remolacha, Tomate perita" 
+          <label class="block text-xs font-bold text-stone-700 mb-1">Nombre de lo producido</label>
+          <input type="text" id="cosechaInsumoNombre" placeholder="Ej: Ciruela remolacha, Tomate triturado" 
                  oninput="chequearOrtografiaInput(this, 'sugCosechaInsumoNombre', () => actualizarCalculoCosecha())" 
                  class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-800 text-xs">
           <div id="sugCosechaInsumoNombre" class="hidden mt-1"></div>
@@ -954,13 +966,14 @@
 
         <div class="grid grid-cols-2 gap-2.5">
           <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">Cantidad cosechada</label>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Cantidad producida</label>
             <input type="number" id="cosechaInsumoCantidad" step="any" placeholder="Ej: 30" oninput="actualizarCalculoCosecha()" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 text-xs">
           </div>
           <div>
             <label class="block text-xs font-bold text-stone-700 mb-1">Unidad</label>
             <select id="cosechaInsumoUnidad" onchange="actualizarCalculoCosecha()" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-800 text-xs">
               <option value="kg">kg</option>
+              <option value="litros">litros (l)</option>
               <option value="atados">atados</option>
               <option value="cajones">cajones</option>
               <option value="unid">unidades</option>
@@ -981,7 +994,7 @@
 
         <div>
           <label class="block text-xs font-bold text-stone-700 mb-1">Gasto directo puntual ($)</label>
-          <input type="number" id="cosechaInsumoGastoDirecto" step="any" placeholder="Ej: 2000 (cajones alquilados, jornal)" oninput="actualizarCalculoCosecha()" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 text-xs">
+          <input type="number" id="cosechaInsumoGastoDirecto" step="any" placeholder="Ej: 2000 (cajones alquilados, jornal puntual)" oninput="actualizarCalculoCosecha()" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 text-xs">
         </div>
 
         <div class="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-[11px] text-emerald-950 flex justify-between">
@@ -1085,11 +1098,9 @@
       getDoc, 
       setDoc, 
       deleteDoc, 
-      onSnapshot,
-      getDocs
+      onSnapshot 
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // Configuración oficial y soporte de entorno
     let firebaseConfig = {
       apiKey: "AIzaSyBviogAyKkUmH8clQ2wl7F40thSVv4fE7I",
       authDomain: "calculocostosdeproductos.firebaseapp.com",
@@ -1118,23 +1129,19 @@
       console.warn("Error iniciando Firebase:", e);
     }
 
-    // Funciones auxiliares de rutas Firestore para cumplir las reglas de permisos
     const colPublica = (nombreCol) => collection(db, 'artifacts', appId, 'public', 'data', nombreCol);
     const docPublico = (nombreCol, idDoc) => doc(db, 'artifacts', appId, 'public', 'data', nombreCol, idDoc);
 
-    // Estado sesión y listeners
     let sesionActiva = null;
     let firebaseUser = null;
     let unsubscribeProductos = null;
     let unsubscribeDespensa = null;
 
-    // Estado productos
     let productosGuardados = [];
     let idProductoSeleccionado = null;
     let productoAEliminarId = null;
     let borradorEnEdicionId = null;
 
-    // Estado Mi Despensa
     let insumosDespensa = [
       { id: 1, nombre: "Azúcar Común", cantidad: 12.5, unidad: "kg", costoPromedio: 1150, costoHistorico: 950 },
       { id: 2, nombre: "Frascos de Vidrio 360cc", cantidad: 48, unidad: "unid", costoPromedio: 450, costoHistorico: 420 },
@@ -1145,7 +1152,6 @@
     let modoMovimientoEstante = 'restar';
     let origenNuevoInsumo = 'compra';
 
-    // Estado Calculadora
     let compras = [];
     let insumosReceta = [];
     let cosechoPropio = false;
@@ -1155,7 +1161,6 @@
     let margenMinoristaSeleccionado = 50;
     let margenMayoristaSeleccionado = 45;
 
-    // Diccionario artesanal para corrector ortográfico amable
     const DICCIONARIO_CHACRA = [
       "Azúcar común", "Azúcar mascabo", "Azúcar", "Frascos 360cc", "Frascos 250cc", 
       "Frascos de Vidrio", "Tapas Twist Off Doradas", "Tapas Doradas", "Tapas corona", 
@@ -1271,7 +1276,6 @@
           if (user) {
             if (badgeNube) badgeNube.className = "text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-800 text-emerald-200 border border-emerald-700 flex items-center gap-0.5";
             if (textoNube) textoNube.innerText = "Nube Conectada";
-            // Si ya hay sesión activa, reenganchar sincronización con Firestore
             if (sesionActiva) {
               iniciarSincronizacionEmprendimiento();
             }
@@ -1316,7 +1320,6 @@
 
       const idEmprendimiento = slugificarNombre(nombreInput);
 
-      // Verificación en Firestore si hay usuario autenticado
       if (firebaseUser && db) {
         try {
           const docRef = docPublico('emprendimientos', idEmprendimiento);
@@ -1339,7 +1342,6 @@
         }
       }
 
-      // Verificación en almacenamiento local
       const localData = localStorage.getItem(`sgpp_emp_${idEmprendimiento}`);
       if (localData) {
         try {
@@ -1356,7 +1358,6 @@
       localStorage.setItem(`sgpp_emp_${idEmprendimiento}`, JSON.stringify(sesionActiva));
       localStorage.setItem('sgpp_sesion_activa', JSON.stringify(sesionActiva));
 
-      // Guardar también en Firestore si es la primera vez que se conecta
       if (firebaseUser && db) {
         try {
           await setDoc(docPublico('emprendimientos', idEmprendimiento), {
@@ -1418,7 +1419,6 @@
       document.getElementById('barraNavegacionInferior')?.classList.remove('hidden');
       document.getElementById('vistaAuth')?.classList.add('hidden');
 
-      // 1. Cargar datos locales primero (disponibilidad inmediata sin esperas)
       const despensaLocal = localStorage.getItem(`sgpp_despensa_${sesionActiva.id}`);
       if (despensaLocal) {
         try { insumosDespensa = JSON.parse(despensaLocal); } catch (e) {}
@@ -1441,19 +1441,16 @@
       calcularDisponibilidad();
       verificarAlertaGuardian();
 
-      // 2. Conectar Listeners Firestore en tiempo real
       if (firebaseUser && db) {
-        // Limpiar listeners previos si existían
         if (unsubscribeDespensa) unsubscribeDespensa();
         if (unsubscribeProductos) unsubscribeProductos();
 
-        // A) Sincronización de Mi Despensa
         try {
           const docDespensaRef = docPublico('despensas', sesionActiva.id);
           unsubscribeDespensa = onSnapshot(docDespensaRef, (snap) => {
             if (snap.exists()) {
               const data = snap.data();
-              if (Array.isArray(data.items) && data.items.length > 0) {
+              if (Array.isArray(data.items)) {
                 insumosDespensa = data.items;
                 localStorage.setItem(`sgpp_despensa_${sesionActiva.id}`, JSON.stringify(insumosDespensa));
                 renderEstantes();
@@ -1461,7 +1458,6 @@
                 verificarAlertaGuardian();
               }
             } else {
-              // Si no existe en la nube aún, subir la despensa base
               guardarDespensaLocal();
             }
           }, (err) => {
@@ -1471,7 +1467,6 @@
           console.warn("Error suscribiendo despensa:", e);
         }
 
-        // B) Sincronización de Productos y Tandas
         try {
           const colProdsRef = colPublica('productos');
           unsubscribeProductos = onSnapshot(colProdsRef, (snap) => {
@@ -1579,7 +1574,7 @@
         actualizarNombreResumen();
         calcular();
       }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'instant' });
     }
 
     function renderEstantes(lista = insumosDespensa) {
@@ -1591,7 +1586,7 @@
         contenedor.innerHTML = `
           <div class="text-center py-8 bg-white rounded-3xl border border-dashed border-stone-300 text-stone-400 p-4">
             <p class="font-bold text-xs text-stone-600">Tu despensa está vacía</p>
-            <p class="text-[11px] mt-1">Cargá insumos con "+ Insumo" o sumá una compra.</p>
+            <p class="text-[11px] mt-1">Cargá insumos con "+ Agregar Insumo" o sumá una compra.</p>
           </div>
         `;
         return;
@@ -1628,7 +1623,7 @@
         if (terminados.length > 0) {
           selectSimulador.innerHTML = terminados.map(p => `<option value="${p.id}">${p.nombre} (${p.unidadesProducidas} ${p.tipoUnidad})</option>`).join('');
         } else {
-          selectSimulador.innerHTML = `<option value="">Registrá productos terminados primero</option>`;
+          selectSimulador.innerHTML = `<option value="">Registrá productos calculados primero</option>`;
         }
       }
     }
@@ -1727,7 +1722,7 @@
         const vHora = parseFloat(document.getElementById('cosechaInsumoValorHora')?.value) || valorHoraHabitual;
         const directo = parseFloat(document.getElementById('cosechaInsumoGastoDirecto')?.value) || 0;
 
-        if (!nom) return mostrarToast("Escribí el nombre de la cosecha.");
+        if (!nom) return mostrarToast("Escribí el nombre de la producción propia.");
 
         valorHoraHabitual = vHora;
         if (sesionActiva) localStorage.setItem(`sgpp_valor_hora_${sesionActiva.id}`, valorHoraHabitual);
@@ -1743,7 +1738,7 @@
           unidad: un,
           costoPromedio: Math.round(uCost),
           costoHistorico: Math.round(uCost),
-          origen: 'cosecha'
+          origen: 'produccion_propia'
         });
       }
 
@@ -1756,10 +1751,8 @@
 
     async function guardarDespensaLocal() {
       if (!sesionActiva) return;
-      // Guardado local
       localStorage.setItem(`sgpp_despensa_${sesionActiva.id}`, JSON.stringify(insumosDespensa));
 
-      // Guardado en Firestore
       if (firebaseUser && db) {
         try {
           const docRef = docPublico('despensas', sesionActiva.id);
@@ -1810,7 +1803,7 @@
         tabRestar.className = "py-2.5 rounded-xl font-bold text-xs text-stone-500 hover:text-stone-900 transition cursor-pointer";
         bloqueMotivos.classList.add('hidden');
         bloqueCostoSumar.classList.remove('hidden');
-        lbl.textContent = "¿Cuánto vas a sumar?";
+        lbl.textContent = "¿Cuánto vas a sumar al estante?";
         btnTodo.classList.add('hidden');
         actualizarCostoUnitarioEnVivo();
       }
@@ -1819,7 +1812,7 @@
     function obtenerPasoInsumo() {
       if (!insumoSeleccionadoEstante) return 1;
       const u = insumoSeleccionadoEstante.unidad.toLowerCase();
-      if (u === 'kg' || u === 'l') return 0.5;
+      if (u === 'kg' || u === 'litros' || u === 'l') return 0.5;
       if (u === 'g' || u === 'ml') return 50;
       return 1;
     }
@@ -1888,7 +1881,7 @@
           verificarAlertaGuardian();
           mostrarToast(`Sumados ${cant} ${insumoSeleccionadoEstante.unidad} ($${costoAbonado})`);
         } else {
-          mostrarToast(`Sumados ${cant} ${insumoSeleccionadoEstante.unidad}`);
+          mostrarToast(`Sumados ${cant} ${insumoSeleccionadoEstante.unidad} al estante`);
         }
         insumoSeleccionadoEstante.cantidad = Math.round((stockAnterior + cant) * 100) / 100;
       }
@@ -2006,13 +1999,35 @@
       `;
     }
 
+    // PASO 2: Traer insumo desde Mi Despensa directamente
+    function agregarInsumoDesdeDespensaDirecto() {
+      if (insumosDespensa.length === 0) {
+        mostrarToast("Tu despensa está vacía. Creá uno en 'Mi Despensa'.");
+        return;
+      }
+      const primerInsumo = insumosDespensa[0];
+      compras.push({
+        id: Date.now(),
+        nombre: primerInsumo.nombre,
+        cantidad: 1,
+        unidad: primerInsumo.unidad,
+        costo: primerInsumo.costoPromedio,
+        origenDespensaId: primerInsumo.id
+      });
+      renderizarTablaCompras();
+      renderizarInsumosReceta();
+      calcular();
+      mostrarToast(`Insumo "${primerInsumo.nombre}" sumado a la tanda.`);
+    }
+
     function agregarCompra() {
       compras.push({
         id: Date.now(),
         nombre: "",
         cantidad: 1,
         unidad: "kg",
-        costo: 0
+        costo: 0,
+        origenDespensaId: null
       });
       renderizarTablaCompras();
       renderizarInsumosReceta();
@@ -2026,8 +2041,8 @@
 
       if (compras.length === 0) {
         contenedor.innerHTML = `
-          <div class="text-center py-2 bg-stone-50 rounded-xl border border-dashed border-stone-200 text-xs text-stone-400">
-            No cargaste compras en esta tanda.
+          <div class="text-center py-3 bg-stone-50 rounded-2xl border border-dashed border-stone-200 text-xs text-stone-400">
+            No cargaste insumos en este paso. Podés traerlos de tu despensa con el botón de arriba.
           </div>
         `;
         return;
@@ -2035,31 +2050,75 @@
 
       compras.forEach((c) => {
         const div = document.createElement('div');
-        div.className = "flex flex-wrap items-center gap-1.5 bg-stone-50 p-2 rounded-xl border border-stone-200 text-xs";
+        div.className = "bg-stone-50 p-3 rounded-2xl border border-stone-200 text-xs space-y-2";
+        
+        let bloqueNombre = '';
+        if (c.origenDespensaId) {
+          const opciones = insumosDespensa.map(d => 
+            `<option value="${d.id}" ${d.id === c.origenDespensaId ? 'selected' : ''}>${d.nombre} (${d.cantidad} ${d.unidad} disp.)</option>`
+          ).join('');
+          bloqueNombre = `
+            <div class="flex items-center gap-1.5">
+              <span class="text-[9px] font-black uppercase bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded-md shrink-0">Estante</span>
+              <select onchange="window.cambiarInsumoDespensaCompra(${c.id}, this.value)" class="flex-1 bg-white border border-stone-300 rounded-xl px-2.5 py-1.5 font-bold text-stone-800">
+                ${opciones}
+              </select>
+            </div>
+          `;
+        } else {
+          bloqueNombre = `
+            <div class="flex items-center gap-1.5">
+              <span class="text-[9px] font-black uppercase bg-stone-200 text-stone-700 px-2 py-0.5 rounded-md shrink-0">Compra</span>
+              <input type="text" value="${c.nombre}" placeholder="Nombre del insumo (ej: Azúcar)"
+                     oninput="window.actualizarCompraSilencioso(${c.id}, 'nombre', this.value)"
+                     class="flex-1 bg-white border border-stone-300 rounded-xl px-2.5 py-1.5 font-bold text-stone-800">
+            </div>
+          `;
+        }
+
         div.innerHTML = `
-          <input type="text" value="${c.nombre}" placeholder="Nombre del insumo"
-                 oninput="window.actualizarCompraSilencioso(${c.id}, 'nombre', this.value)"
-                 class="flex-1 min-w-[120px] bg-white border border-stone-300 rounded-lg px-2 py-1.5 font-semibold text-stone-800">
-          <div class="flex items-center gap-1">
-            <input type="number" value="${c.cantidad}" min="0.1" step="0.1" placeholder="Cant."
-                   oninput="window.actualizarCompraSilencioso(${c.id}, 'cantidad', this.value)"
-                   class="w-14 bg-white border border-stone-300 rounded-lg px-1.5 py-1.5 text-center font-bold text-stone-800">
-            <select onchange="window.actualizarCompraSilencioso(${c.id}, 'unidad', this.value)" class="bg-white border border-stone-300 rounded-lg px-1 py-1.5 text-stone-700">
-              <option value="kg" ${c.unidad === 'kg' ? 'selected' : ''}>kg</option>
-              <option value="g" ${c.unidad === 'g' ? 'selected' : ''}>g</option>
-              <option value="litros" ${c.unidad === 'litros' ? 'selected' : ''}>l</option>
-              <option value="unidades" ${c.unidad === 'unidades' ? 'selected' : ''}>u</option>
-            </select>
+          ${bloqueNombre}
+          <div class="grid grid-cols-12 gap-2 items-end pt-1">
+            <div class="col-span-5">
+              <label class="block text-[10px] font-bold text-stone-600 mb-0.5">Cantidad</label>
+              <div class="flex items-center gap-1">
+                <input type="number" value="${c.cantidad}" min="0.1" step="0.1"
+                       oninput="window.actualizarCompraSilencioso(${c.id}, 'cantidad', this.value)"
+                       class="w-full bg-white border border-stone-300 rounded-lg px-2 py-1.5 text-center font-black text-stone-800">
+                <span class="font-bold text-stone-500 text-[11px]">${c.unidad}</span>
+              </div>
+            </div>
+
+            <div class="col-span-5">
+              <label class="block text-[10px] font-bold text-stone-600 mb-0.5">Total Pagado ($)</label>
+              <input type="number" value="${c.costo}" min="0" placeholder="$"
+                     oninput="window.actualizarCompraSilencioso(${c.id}, 'costo', this.value)"
+                     class="w-full bg-white border border-stone-300 rounded-lg px-2 py-1.5 font-black text-stone-800 text-right">
+            </div>
+
+            <div class="col-span-2 flex justify-end">
+              <button onclick="window.eliminarCompra(${c.id})" class="text-stone-400 hover:text-rose-600 p-2 rounded-xl bg-white border border-stone-200 cursor-pointer">
+                <i class="ph-bold ph-trash text-sm"></i>
+              </button>
+            </div>
           </div>
-          <input type="number" value="${c.costo}" min="0" placeholder="Total $"
-                 oninput="window.actualizarCompraSilencioso(${c.id}, 'costo', this.value)"
-                 class="w-20 bg-white border border-stone-300 rounded-lg px-2 py-1.5 font-bold text-stone-800 text-right">
-          <button onclick="window.eliminarCompra(${c.id})" class="text-stone-400 hover:text-rose-600 p-1 cursor-pointer">
-            <i class="ph-bold ph-trash"></i>
-          </button>
         `;
         contenedor.appendChild(div);
       });
+    }
+
+    function cambiarInsumoDespensaCompra(idCompra, idDespensa) {
+      const c = compras.find(item => item.id === idCompra);
+      const d = insumosDespensa.find(item => item.id == idDespensa);
+      if (!c || !d) return;
+
+      c.origenDespensaId = d.id;
+      c.nombre = d.nombre;
+      c.unidad = d.unidad;
+      c.costo = Math.round(d.costoPromedio * (c.cantidad || 1));
+      renderizarTablaCompras();
+      renderizarInsumosReceta();
+      calcular();
     }
 
     function actualizarCompraSilencioso(id, campo, valor) {
@@ -2135,15 +2194,15 @@
       if (el) el.innerText = nom || "Producto sin nombre";
     }
 
-    // Hiperconectividad de Insumos para la Receta
+    // HIPERCONECTIVIDAD: Opciones de origen para el Paso 4
     function obtenerOpcionesOrigenReceta() {
       const opciones = [];
 
-      // 1. Despensa
+      // 1. Mi Despensa
       insumosDespensa.forEach(d => {
         opciones.push({
           refId: `despensa_${d.id}`,
-          nombre: `[Despensa] ${d.nombre} (${d.cantidad} ${d.unidad} disp.)`,
+          nombre: `[Despensa] ${d.nombre} (${d.cantidad} ${d.unidad})`,
           costoUnitario: d.costoPromedio,
           unidad: d.unidad,
           tipoOrigen: 'despensa',
@@ -2151,9 +2210,9 @@
         });
       });
 
-      // 2. Cosecha del Paso 3
+      // 2. Producción Propia del Paso 3
       if (cosechoPropio) {
-        const nom = (document.getElementById('cosechaNombre')?.value || cosechaNombre || 'Cosecha de hoy').trim();
+        const nom = (document.getElementById('cosechaNombre')?.value || cosechaNombre || 'Producción propia').trim();
         const cant = parseFloat(document.getElementById('cosechaCantidad')?.value) || 0;
         const un = document.getElementById('cosechaUnidad')?.value || 'kg';
         const hs = parseFloat(document.getElementById('cosechaHoras')?.value) || 0;
@@ -2164,7 +2223,7 @@
 
         opciones.push({
           refId: 'cosecha_paso3',
-          nombre: `[Cosecha de hoy] ${nom} (${cant} ${un} disp.)`,
+          nombre: `[Producción Propia] ${nom} (${cant} ${un})`,
           costoUnitario: uCost,
           unidad: un,
           tipoOrigen: 'cosecha',
@@ -2178,7 +2237,7 @@
         const uCost = c.cantidad > 0 ? (c.costo / c.cantidad) : 0;
         opciones.push({
           refId: `compra_${c.id}`,
-          nombre: `[Compra de hoy] ${c.nombre || 'Insumo'} (${c.cantidad} ${c.unidad})`,
+          nombre: `[Paso 2] ${c.nombre || 'Insumo'} (${c.cantidad} ${c.unidad})`,
           costoUnitario: uCost,
           unidad: c.unidad,
           tipoOrigen: 'compra',
@@ -2207,25 +2266,29 @@
 
       insumosReceta.forEach((item) => {
         const div = document.createElement('div');
-        div.className = "flex flex-wrap items-center gap-1.5 bg-stone-50 p-2 rounded-xl border border-stone-200 text-xs";
+        div.className = "flex flex-wrap items-center gap-1.5 bg-stone-50 p-2.5 rounded-2xl border border-stone-200 text-xs";
 
         if (item.tipo !== 'libre') {
           let selectHtml = opciones.map(o => 
             `<option value="${o.refId}" ${o.refId === item.refId ? 'selected' : ''}>${o.nombre}</option>`
           ).join('');
 
+          const datosActual = obtenerDatosOrigen(item.refId) || (opciones.length > 0 ? opciones[0] : null);
+          const unidadActual = datosActual ? datosActual.unidad : 'u';
+
           div.innerHTML = `
             <select onchange="window.actualizarInsumoRecetaSilencioso(${item.id}, 'refId', this.value)"
-                    class="flex-1 min-w-[150px] bg-white border border-stone-300 rounded-lg px-2 py-1.5 font-semibold text-stone-800">
-              ${selectHtml || '<option value="">No hay insumos disponibles</option>'}
+                    class="flex-1 min-w-[150px] bg-white border border-stone-300 rounded-xl px-2 py-1.5 font-bold text-stone-800">
+              ${selectHtml || '<option value="">Sin insumos disponibles</option>'}
             </select>
-            <div class="flex items-center gap-1">
-              <span class="text-stone-500 font-bold">Usé:</span>
+            <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-xl border border-stone-300">
+              <span class="text-stone-500 font-bold text-[11px]">Usé:</span>
               <input type="number" value="${item.cantidadUsada}" min="0" step="0.1"
                      oninput="window.actualizarInsumoRecetaSilencioso(${item.id}, 'cantidadUsada', this.value)"
-                     class="w-14 bg-white border border-stone-300 rounded-lg px-1 py-1 text-center font-black text-stone-900">
+                     class="w-14 text-center font-black text-stone-900 focus:outline-none">
+              <span class="font-black text-emerald-800 text-[11px]" id="unidadInsumoReceta-${item.id}">${unidadActual}</span>
             </div>
-            <div class="font-black text-stone-800 bg-white px-2 py-1 rounded-lg border border-stone-200 text-right min-w-[65px]" id="costoBadgeReceta-${item.id}">
+            <div class="font-black text-stone-800 bg-white px-2 py-1 rounded-xl border border-stone-200 text-right min-w-[65px]" id="costoBadgeReceta-${item.id}">
               $ 0
             </div>
             <button onclick="window.eliminarInsumoReceta(${item.id})" class="text-stone-400 hover:text-rose-600 p-1 cursor-pointer">
@@ -2236,10 +2299,10 @@
           div.innerHTML = `
             <input type="text" value="${item.nombreLibre || ''}" placeholder="Nombre insumo directo"
                    oninput="window.actualizarInsumoRecetaSilencioso(${item.id}, 'nombreLibre', this.value)"
-                   class="flex-1 min-w-[130px] bg-white border border-stone-300 rounded-lg px-2 py-1.5 font-semibold text-stone-800">
+                   class="flex-1 min-w-[130px] bg-white border border-stone-300 rounded-xl px-2.5 py-1.5 font-semibold text-stone-800">
             <input type="number" value="${item.costoLibre || 0}" min="0" placeholder="Costo $"
                    oninput="window.actualizarInsumoRecetaSilencioso(${item.id}, 'costoLibre', this.value)"
-                   class="w-20 bg-white border border-stone-300 rounded-lg px-2 py-1 font-black text-stone-800 text-right">
+                   class="w-20 bg-white border border-stone-300 rounded-xl px-2 py-1.5 font-black text-stone-800 text-right">
             <button onclick="window.eliminarInsumoReceta(${item.id})" class="text-stone-400 hover:text-rose-600 p-1 cursor-pointer">
               <i class="ph-bold ph-trash"></i>
             </button>
@@ -2284,7 +2347,12 @@
       const item = insumosReceta.find(i => i.id === id);
       if (!item) return;
 
-      if (campo === 'refId') item.refId = valor;
+      if (campo === 'refId') {
+        item.refId = valor;
+        const d = obtenerDatosOrigen(valor);
+        const unEl = document.getElementById(`unidadInsumoReceta-${id}`);
+        if (unEl && d) unEl.innerText = d.unidad;
+      }
       else if (campo === 'cantidadUsada' || campo === 'costoLibre') item[campo] = parseFloat(valor) || 0;
       else item[campo] = valor;
 
@@ -2393,6 +2461,7 @@
       };
     }
 
+    // SINCRONIZACIÓN Y GUARDADO: Traspaso de información entre módulos garantizado
     async function guardarProducto(esTerminado = true) {
       if (!sesionActiva) return mostrarToast("Iniciá sesión para guardar.");
 
@@ -2406,7 +2475,7 @@
       const res = calcular();
       const listaInsumosDetalle = [];
 
-      // A) Procesar insumos usados en receta
+      // 1. Procesar insumos usados en receta
       insumosReceta.forEach(item => {
         if (item.tipo !== 'libre') {
           const info = obtenerDatosOrigen(item.refId);
@@ -2418,9 +2487,12 @@
               costo: cost
             });
 
-            // Si es terminado y viene de la despensa, descontar
+            // Si es terminado y proviene de Mi Despensa, descontar del estante
             if (esTerminado && info.tipoOrigen === 'despensa' && info.obj) {
-              info.obj.cantidad = Math.max(0, Math.round((info.obj.cantidad - item.cantidadUsada) * 100) / 100);
+              const estante = insumosDespensa.find(i => i.id === info.obj.id);
+              if (estante) {
+                estante.cantidad = Math.max(0, Math.round((estante.cantidad - item.cantidadUsada) * 100) / 100);
+              }
             }
           }
         } else {
@@ -2432,16 +2504,16 @@
         }
       });
 
-      // B) Cargar compras a la despensa (remanente si se usó)
+      // 2. Traspasar compras del Paso 2 a Mi Despensa (remanente)
       compras.forEach(c => {
         if (!c.nombre || c.cantidad <= 0) return;
-        let estante = insumosDespensa.find(e => e.nombre.trim().toLowerCase() === c.nombre.trim().toLowerCase());
         const uCost = c.costo / c.cantidad;
 
         const usoReceta = insumosReceta.find(ir => ir.refId === `compra_${c.id}`);
         const cantUsada = usoReceta ? (usoReceta.cantidadUsada || 0) : 0;
         const remanente = Math.max(0, c.cantidad - (esTerminado ? cantUsada : 0));
 
+        let estante = insumosDespensa.find(e => e.nombre.trim().toLowerCase() === c.nombre.trim().toLowerCase());
         if (remanente > 0) {
           if (estante) {
             const valViejo = estante.cantidad * estante.costoPromedio;
@@ -2461,24 +2533,24 @@
         }
       });
 
-      // C) Cargar cosecha a la despensa (remanente)
+      // 3. Traspasar producción propia del Paso 3 a Mi Despensa (remanente)
       if (cosechoPropio) {
-        const nomCos = (document.getElementById('cosechaNombre')?.value || cosechaNombre || 'Cosecha propia').trim();
-        const cantCos = parseFloat(document.getElementById('cosechaCantidad')?.value) || 0;
-        const unCos = document.getElementById('cosechaUnidad')?.value || 'kg';
-        const hsCos = parseFloat(document.getElementById('cosechaHoras')?.value) || 0;
+        const nomProd = (document.getElementById('cosechaNombre')?.value || cosechaNombre || 'Producción propia').trim();
+        const cantProd = parseFloat(document.getElementById('cosechaCantidad')?.value) || 0;
+        const unProd = document.getElementById('cosechaUnidad')?.value || 'kg';
+        const hsProd = parseFloat(document.getElementById('cosechaHoras')?.value) || 0;
         const vHora = parseFloat(document.getElementById('valorHoraTrabajo')?.value) || valorHoraHabitual;
 
-        if (nomCos && cantCos > 0) {
-          const totalCosecha = (hsCos * vHora) * 1.20;
-          const uCost = totalCosecha / cantCos;
+        if (nomProd && cantProd > 0) {
+          const totalProduccion = (hsProd * vHora) * 1.20;
+          const uCost = totalProduccion / cantProd;
 
-          const usoCos = insumosReceta.find(ir => ir.refId === 'cosecha_paso3');
-          const cantUsada = usoCos ? (usoCos.cantidadUsada || 0) : 0;
-          const remanente = Math.max(0, cantCos - (esTerminado ? cantUsada : 0));
+          const usoProd = insumosReceta.find(ir => ir.refId === 'cosecha_paso3');
+          const cantUsada = usoProd ? (usoProd.cantidadUsada || 0) : 0;
+          const remanente = Math.max(0, cantProd - (esTerminado ? cantUsada : 0));
 
           if (remanente > 0) {
-            let estante = insumosDespensa.find(e => e.nombre.trim().toLowerCase() === nomCos.toLowerCase());
+            let estante = insumosDespensa.find(e => e.nombre.trim().toLowerCase() === nomProd.toLowerCase());
             if (estante) {
               const valViejo = estante.cantidad * estante.costoPromedio;
               const nuevoStock = Math.round((estante.cantidad + remanente) * 100) / 100;
@@ -2487,18 +2559,19 @@
             } else {
               insumosDespensa.push({
                 id: Date.now() + Math.floor(Math.random() * 1000),
-                nombre: nomCos,
+                nombre: nomProd,
                 cantidad: remanente,
-                unidad: unCos,
+                unidad: unProd,
                 costoPromedio: Math.round(uCost),
                 costoHistorico: Math.round(uCost),
-                origen: 'cosecha'
+                origen: 'produccion_propia'
               });
             }
           }
         }
       }
 
+      // Guardar despensa local e iniciar sincronización Firestore
       guardarDespensaLocal();
       renderEstantes();
       calcularDisponibilidad();
@@ -2549,7 +2622,6 @@
 
       localStorage.setItem(`sgpp_prods_${sesionActiva.id}`, JSON.stringify(productosGuardados));
 
-      // Guardar en Firestore si está conectado
       if (firebaseUser && db) {
         try {
           const docProdRef = docPublico('productos', targetId);
@@ -2562,7 +2634,7 @@
       borradorEnEdicionId = null;
 
       if (esTerminado) {
-        mostrarToast(`"${nombre}" terminado. Despensa actualizada.`);
+        mostrarToast(`"${nombre}" calculado. Despensa actualizada.`);
         verDetalleProducto(targetId);
       } else {
         mostrarToast(`Borrador guardado.`);
@@ -2870,7 +2942,7 @@
       const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
       const a = document.createElement('a');
       a.href = str;
-      a.download = `backup_${sesionActiva?.id || 'chacra'}.json`;
+      a.download = `backup_${sesionActiva?.id || 'emprendimiento'}.json`;
       a.click();
       a.remove();
     }
@@ -2895,7 +2967,6 @@
       r.readAsText(file);
     }
 
-    // Exposición de funciones a nivel global de ventana
     window.alternarTabAuth = alternarTabAuth;
     window.procesarLogin = procesarLogin;
     window.procesarRegistro = procesarRegistro;
@@ -2923,6 +2994,8 @@
     window.filtrarInsumos = filtrarInsumos;
     window.calcularDisponibilidad = calcularDisponibilidad;
     window.agregarCompra = agregarCompra;
+    window.agregarInsumoDesdeDespensaDirecto = agregarInsumoDesdeDespensaDirecto;
+    window.cambiarInsumoDespensaCompra = cambiarInsumoDespensaCompra;
     window.actualizarCompraSilencioso = actualizarCompraSilencioso;
     window.eliminarCompra = eliminarCompra;
     window.setearCosecha = setearCosecha;
