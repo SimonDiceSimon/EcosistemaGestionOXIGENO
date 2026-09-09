@@ -49,19 +49,20 @@
           <div class="flex items-center gap-1.5">
             <span class="text-[10px] text-emerald-300 font-medium">Pequeño Productor</span>
             <span id="badgeEstadoNube" class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-900 text-emerald-300 flex items-center gap-1 border border-emerald-800">
-              <i class="ph-bold ph-shield-check text-[10px]"></i> <span id="textoEstadoNube">Conectando...</span>
+              <i class="ph-bold ph-cloud-check text-[10px]"></i> <span id="textoEstadoNube">Conectando...</span>
             </span>
           </div>
         </div>
       </div>
 
+      <!-- Barra de usuario activo -->
       <div id="barraUsuarioSesion" class="hidden flex items-center gap-2">
         <div class="flex items-center bg-emerald-900/80 border border-emerald-800 rounded-xl px-2.5 py-1.5 gap-2">
           <div class="text-left hidden sm:block">
             <span class="text-[9px] uppercase tracking-wider text-emerald-300 font-bold block leading-none">Emprendimiento</span>
             <span id="nombreEmprendimientoHeader" class="text-xs font-bold text-white max-w-[130px] truncate block leading-tight">Mi Emprendimiento</span>
           </div>
-          <button onclick="window.solicitarCerrarSesion()" class="text-emerald-300 hover:text-white p-1 rounded-lg hover:bg-emerald-800 transition cursor-pointer" title="Cerrar sesión / Cambiar usuario">
+          <button onclick="window.solicitarCerrarSesion()" class="text-emerald-300 hover:text-white p-1 rounded-lg hover:bg-emerald-800 transition cursor-pointer" title="Cerrar sesión / Cambiar emprendimiento">
             <i class="ph-bold ph-sign-out text-base"></i>
           </button>
         </div>
@@ -77,17 +78,15 @@
   <!-- CONTENEDOR PRINCIPAL -->
   <main class="max-w-5xl mx-auto px-4 py-5 flex-1 w-full pb-20">
 
+    <!-- Mensaje de aviso de estado -->
     <div id="alertaPermisosFirebase" class="hidden mb-4 p-3.5 rounded-2xl bg-amber-50 border-2 border-amber-400 text-amber-950 text-xs flex items-start gap-3 shadow-sm">
-      <i class="ph-bold ph-shield-warning text-xl text-amber-700 shrink-0 mt-0.5"></i>
+      <i class="ph-bold ph-warning-circle text-xl text-amber-700 shrink-0 mt-0.5"></i>
       <div class="space-y-1">
-        <p class="font-black text-sm">Aviso de Configuración Firebase</p>
-        <p class="leading-relaxed" id="textoAlertaPermisos">Asegurate de que las reglas en tu consola de Firestore permitan el acceso a usuarios autenticados: <code>match /usuarios/{userId}/{document=**} { allow read, write: if request.auth != null && request.auth.uid == userId; }</code></p>
+        <p class="font-black text-sm" id="tituloAlertaPermisos">Aviso del Sistema</p>
+        <p class="leading-relaxed" id="textoAlertaPermisos">Verificando conexión con el servidor...</p>
       </div>
     </div>
 
-    <!-- ======================================================= -->
-    <!-- VISTA 0: INGRESO Y REGISTRO EXCLUSIVO                   -->
-    <!-- ======================================================= -->
     <div id="vistaAuth" class="fade-in max-w-md mx-auto pt-4 sm:pt-8">
       <div class="bg-white rounded-3xl p-6 sm:p-7 shadow-xl border border-stone-200 space-y-5">
         
@@ -98,7 +97,7 @@
         <div class="text-center">
           <h2 class="text-xl sm:text-2xl font-black text-stone-900">Acceso a tu Emprendimiento</h2>
           <p class="text-xs text-stone-500 mt-1 leading-relaxed">
-            Ingresá con tu nombre y PIN de 4 números sin correos difíciles.
+            Ingresá con tu nombre y PIN de 4 números. Tus datos se sincronizan en vivo entre tus dispositivos.
           </p>
         </div>
 
@@ -143,12 +142,13 @@
             <span id="textoErrorLogin">El PIN es incorrecto.</span>
           </div>
 
-          <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm cursor-pointer">
+          <button type="submit" id="btnSubmitLogin" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm cursor-pointer">
             <i class="ph-bold ph-sign-in text-base"></i>
             <span>Ingresar al Sistema</span>
           </button>
         </form>
 
+        <!-- FORMULARIO 2: REGISTRAR -->
         <form id="formAuthRegistro" onsubmit="event.preventDefault(); window.procesarRegistro(); return false;" class="hidden space-y-3.5 text-left">
           <div>
             <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
@@ -188,7 +188,7 @@
             <span id="textoErrorRegistro">Error en el registro.</span>
           </div>
 
-          <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm cursor-pointer">
+          <button type="submit" id="btnSubmitRegistro" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm cursor-pointer">
             <i class="ph-bold ph-plus-circle text-base"></i>
             <span>Crear y Registrar Emprendimiento</span>
           </button>
@@ -197,9 +197,6 @@
       </div>
     </div>
 
-    <!-- ======================================================= -->
-    <!-- VISTA 1: PANEL PRINCIPAL (DOS GRANDES RECUADROS)        -->
-    <!-- ======================================================= -->
     <div id="vistaInicio" class="hidden space-y-5 fade-in">
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
@@ -275,9 +272,6 @@
 
     </div>
 
-    <!-- ======================================================= -->
-    <!-- VISTA: MIS PRODUCTOS CALCULADOS (CATÁLOGO SEPARADO)     -->
-    <!-- ======================================================= -->
     <div id="vistaProductos" class="hidden space-y-4 fade-in">
       
       <div class="flex items-center justify-between pb-2 border-b border-stone-200">
@@ -307,9 +301,6 @@
 
     </div>
 
-    <!-- ======================================================= -->
-    <!-- VISTA: MI DESPENSA (CONTROL DE ESTANTE Y REMANENTES)    -->
-    <!-- ======================================================= -->
     <div id="vistaDespensa" class="hidden space-y-4 fade-in">
       
       <div class="flex items-center justify-between pb-2 border-b border-stone-200">
@@ -378,9 +369,6 @@
 
     </div>
 
-    <!-- ======================================================= -->
-    <!-- VISTA: DETALLE DEL PRODUCTO + PRECIOS DE VENTA          -->
-    <!-- ======================================================= -->
     <div id="vistaDetalle" class="hidden space-y-5 fade-in">
       
       <div class="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-stone-200">
@@ -445,6 +433,7 @@
         </div>
       </div>
 
+      <!-- Estrategia de precios -->
       <div id="moduloPreciosVenta" class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200/90 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-stone-200">
           <div>
@@ -548,9 +537,6 @@
 
     </div>
 
-    <!-- ======================================================= -->
-    <!-- VISTA: CALCULADORA DE TANDA (SIN CEROS BLOQUEANTES)     -->
-    <!-- ======================================================= -->
     <div id="vistaCalculadora" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-5 fade-in">
       
       <!-- FORMULARIO DE 7 PASOS -->
@@ -585,7 +571,7 @@
                  class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-xs font-bold text-stone-800 focus:ring-2 focus:ring-emerald-600">
         </section>
 
-        <!-- PASO 2: Insumos de la Despensa y Compras -->
+        <!-- PASO 2: Insumos de la Despensa y Compras (Campos Limpios sin precarga) -->
         <section class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 space-y-2.5">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -630,7 +616,7 @@
 
           <div id="bloqueCosechaCampos" class="hidden p-3 bg-stone-50 border border-stone-200 rounded-2xl space-y-2.5">
             <div>
-              <label class="block text-[11px] font-bold text-stone-700 mb-1">Nombre</label>
+              <label class="block text-[11px] font-bold text-stone-700 mb-1">Nombre de lo producido</label>
               <input type="text" id="cosechaNombre" placeholder="Ej: Durazno, Frutilla, Madera de monte" 
                      class="w-full bg-white border border-stone-300 rounded-xl px-3 py-2 text-xs font-bold text-stone-800 focus:ring-2 focus:ring-emerald-600">
             </div>
@@ -639,9 +625,9 @@
               <div>
                 <label class="block text-[11px] font-semibold text-stone-600 mb-1">Cantidad producida</label>
                 <div class="flex gap-1">
-                  <input type="number" id="cosechaCantidad" value="" placeholder="0" min="0" step="0.5" onfocus="this.select()" oninput="window.calcular()" 
+                  <input type="number" id="cosechaCantidad" value="" placeholder="0" min="0" step="any" onfocus="this.select()" oninput="window.calcular()" 
                          class="w-full bg-white border border-stone-300 rounded-lg px-2 py-1.5 text-xs font-bold text-stone-800">
-                  <select id="cosechaUnidad" onchange="window.calcular()" class="bg-white border border-stone-300 rounded-lg px-1.5 py-1.5 text-xs text-stone-700">
+                  <select id="cosechaUnidad" onchange="window.calcular()" class="bg-white border border-stone-300 rounded-lg px-1.5 py-1.5 text-xs text-stone-700 font-bold">
                     <option value="kg">kg</option>
                     <option value="litros">litros</option>
                     <option value="atados">atados</option>
@@ -652,7 +638,7 @@
               </div>
               <div>
                 <label class="block text-[11px] font-semibold text-stone-600 mb-1">Horas dedicadas</label>
-                <input type="number" id="cosechaHoras" value="" placeholder="0" min="0" step="0.25" onfocus="this.select()" oninput="window.calcular()" 
+                <input type="number" id="cosechaHoras" value="" placeholder="0" min="0" step="any" onfocus="this.select()" oninput="window.calcular()" 
                        class="w-full bg-white border border-stone-300 rounded-lg px-2 py-1.5 text-xs font-bold text-stone-800">
               </div>
             </div>
@@ -683,14 +669,14 @@
           <div class="mt-3 pt-3 border-t border-stone-200">
             <label class="block text-[11px] font-bold text-stone-700 mb-1">Horas de cocción / elaboración</label>
             <div class="flex items-center gap-2">
-              <input type="number" id="horasCoccion" value="" placeholder="0" min="0" step="0.25" onfocus="this.select()" oninput="window.calcular()" 
+              <input type="number" id="horasCoccion" value="" placeholder="0" min="0" step="any" onfocus="this.select()" oninput="window.calcular()" 
                      class="w-24 bg-stone-50 border border-stone-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-stone-800">
               <span class="text-xs text-stone-500 font-semibold">horas en el fuego / taller</span>
             </div>
           </div>
         </section>
 
-        <!-- PASO 5: Envasado y Mano de obra -->
+        <!-- PASO 5: Envasado y Mano de obra (Sin números 3000 precargados) -->
         <section class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 space-y-2.5">
           <div class="flex items-center gap-2">
             <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold flex items-center justify-center">5</span>
@@ -699,7 +685,7 @@
           <div class="grid grid-cols-2 gap-2.5">
             <div>
               <label class="block text-[11px] font-semibold text-stone-600 mb-1">Horas envasando</label>
-              <input type="number" id="horasEnvasado" value="" placeholder="0" min="0" step="0.25" onfocus="this.select()" oninput="window.calcular()" 
+              <input type="number" id="horasEnvasado" value="" placeholder="0" min="0" step="any" onfocus="this.select()" oninput="window.calcular()" 
                      class="w-full bg-stone-50 border border-stone-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-stone-800">
             </div>
             <div>
@@ -818,10 +804,10 @@
       </div>
 
       <div class="grid grid-cols-2 gap-2 bg-stone-100 p-1 rounded-2xl">
-        <button id="tab-restar" onclick="window.setModoMovimiento('restar')" class="py-2 rounded-xl font-bold text-xs bg-white text-stone-900 shadow-sm">
+        <button id="tab-restar" onclick="window.setModoMovimiento('restar')" class="py-2 rounded-xl font-bold text-xs bg-white text-stone-900 shadow-sm cursor-pointer">
           − Retirar del estante
         </button>
-        <button id="tab-sumar" onclick="window.setModoMovimiento('sumar')" class="py-2 rounded-xl font-bold text-xs text-stone-500 hover:text-stone-900">
+        <button id="tab-sumar" onclick="window.setModoMovimiento('sumar')" class="py-2 rounded-xl font-bold text-xs text-stone-500 hover:text-stone-900 cursor-pointer">
           + Sumar al estante
         </button>
       </div>
@@ -837,7 +823,7 @@
 
       <div id="bloque-costo-sumar" class="hidden space-y-2 bg-stone-50 border border-stone-200 rounded-2xl p-3">
         <label class="block text-xs font-bold text-stone-800">¿Cuánto pagaste en total por este ingreso? ($)</label>
-        <input type="number" id="input-costo-sumar" step="any" placeholder="Ej: 6000 (o vacío si es remanente)" onfocus="this.select()"
+        <input type="number" id="input-costo-sumar" step="any" placeholder="Ej: 6000 (o vacío si es producción propia)" onfocus="this.select()"
                class="w-full px-3 py-2 bg-white border border-stone-300 rounded-xl text-stone-900 font-bold text-xs">
         <span class="text-[10px] text-stone-500 block">Si lo dejás en blanco, mantiene el costo promedio previo del estante.</span>
       </div>
@@ -895,11 +881,11 @@
         <div class="grid grid-cols-2 gap-2.5">
           <div>
             <label class="block text-xs font-bold text-stone-700 mb-1">Cantidad</label>
-            <input type="number" id="compra-cant" step="any" placeholder="Ej: 10" onfocus="this.select()" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 text-xs">
+            <input type="number" id="compra-cant" step="any" placeholder="0" onfocus="this.select()" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 text-xs">
           </div>
           <div>
             <label class="block text-xs font-bold text-stone-700 mb-1">Total pagado ($)</label>
-            <input type="number" id="compra-total" step="any" placeholder="Ej: 14000" onfocus="this.select()" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 text-xs">
+            <input type="number" id="compra-total" step="any" placeholder="0" onfocus="this.select()" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 text-xs">
           </div>
         </div>
       </div>
@@ -924,10 +910,10 @@
       </div>
 
       <div class="grid grid-cols-2 gap-2 bg-stone-100 p-1 rounded-2xl">
-        <button type="button" id="tabNuevoCompra" onclick="window.setOrigenNuevoInsumo('compra')" class="py-2 text-xs font-bold rounded-xl bg-white text-emerald-950 shadow-sm">
+        <button type="button" id="tabNuevoCompra" onclick="window.setOrigenNuevoInsumo('compra')" class="py-2 text-xs font-bold rounded-xl bg-white text-emerald-950 shadow-sm cursor-pointer">
           🛒 Lo Compré
         </button>
-        <button type="button" id="tabNuevoPropio" onclick="window.setOrigenNuevoInsumo('propio')" class="py-2 text-xs font-bold rounded-xl text-stone-500 hover:text-stone-900">
+        <button type="button" id="tabNuevoPropio" onclick="window.setOrigenNuevoInsumo('propio')" class="py-2 text-xs font-bold rounded-xl text-stone-500 hover:text-stone-900 cursor-pointer">
           🌱 Producción Propia
         </button>
       </div>
@@ -957,7 +943,7 @@
         </div>
         <div>
           <label class="block text-xs font-bold text-stone-700 mb-1">Total pagado por todo ($)</label>
-          <input type="number" id="nuevoInsumoTotalPagado" step="any" placeholder="Ej: 55000" onfocus="this.select()" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-800 text-xs">
+          <input type="number" id="nuevoInsumoTotalPagado" step="any" placeholder="0" onfocus="this.select()" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-800 text-xs">
         </div>
       </div>
 
@@ -989,7 +975,7 @@
           </div>
           <div>
             <label class="block text-xs font-bold text-stone-700 mb-1">Valor hora ($)</label>
-            <input type="number" id="cosechaInsumoValorHora" step="any" placeholder="3000" onfocus="this.select()" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-800 text-xs">
+            <input type="number" id="cosechaInsumoValorHora" step="any" placeholder="Ej: 3000" onfocus="this.select()" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-800 text-xs">
           </div>
         </div>
         <div>
@@ -1040,7 +1026,7 @@
       </div>
       <div class="text-center">
         <h3 class="text-base font-bold text-stone-800">¿Cambiar de emprendimiento?</h3>
-        <p class="text-xs text-stone-500 mt-1">Se cerrará la sesión activa. Podrás volver a entrar con tu nombre y PIN.</p>
+        <p class="text-xs text-stone-500 mt-1">Se cerrará la sesión activa. Podrás volver a entrar con tu nombre y PIN en cualquier dispositivo.</p>
       </div>
       <div class="grid grid-cols-2 gap-2 pt-2">
         <button onclick="window.cerrarModal('modalCerrarSesion')" class="py-2.5 px-3 rounded-xl border border-stone-300 text-xs font-bold text-stone-700 hover:bg-stone-50 cursor-pointer">
@@ -1111,15 +1097,14 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { 
       getAuth, 
-      signInWithEmailAndPassword,
-      createUserWithEmailAndPassword,
-      signOut,
+      signInAnonymously,
       onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { 
       getFirestore, 
       collection,
       doc, 
+      getDoc,
       setDoc, 
       deleteDoc, 
       onSnapshot 
@@ -1141,14 +1126,12 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let usuarioActual = null;
-    let sesionActiva = null;
+    let sesionActiva = null; // { slug: 'simondice', nombre: 'SimonDice' }
     let productosGuardados = [];
     let insumosDespensa = [];
     let idProductoSeleccionado = null;
     let productoAEliminarId = null;
     let borradorEnEdicionId = null;
-    let valorHoraHabitual = 3000;
 
     // Desuscriptores en tiempo real
     let unsubscribeDespensa = null;
@@ -1177,14 +1160,6 @@
         .replace(/^-+|-+$/g, '');
     }
 
-    // Convierte el nombre de emprendimiento y PIN de 4 números en credenciales Firebase Auth
-    function generarCredencialesSeguras(nombre, pin) {
-      const slug = slugificarNombre(nombre);
-      const email = `${slug}@despensa-sgpp.app`;
-      const password = `sgpp_sec_${slug}_${pin}`;
-      return { email, password, slug };
-    }
-
     function actualizarIndicadorNube(online, textoPersonalizado) {
       const badgeNube = document.getElementById('badgeEstadoNube');
       const textoNube = document.getElementById('textoEstadoNube');
@@ -1199,37 +1174,49 @@
       }
     }
 
-    function mostrarAlertaPermisos(mensaje) {
+    function mostrarAlerta(titulo, mensaje) {
       const alerta = document.getElementById('alertaPermisosFirebase');
-      const texto = document.getElementById('textoAlertaPermisos');
-      if (alerta) {
-        if (mensaje && texto) texto.innerText = mensaje;
+      const t = document.getElementById('tituloAlertaPermisos');
+      const m = document.getElementById('textoAlertaPermisos');
+      if (alerta && t && m) {
+        t.innerText = titulo || "Aviso del Sistema";
+        m.innerText = mensaje || "";
         alerta.classList.remove('hidden');
       }
-      actualizarIndicadorNube(false, "Permisos Pendientes");
     }
 
-    function inicializarAuth() {
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          usuarioActual = user;
-          const sesionGuardada = localStorage.getItem(`sgpp_sesion_${user.uid}`);
-          if (sesionGuardada) {
-            try {
-              sesionActiva = JSON.parse(sesionGuardada);
-            } catch (e) {
-              sesionActiva = { id: user.uid, nombre: "Mi Emprendimiento" };
-            }
-          } else {
-            sesionActiva = { id: user.uid, nombre: user.displayName || "Mi Emprendimiento" };
+    function ocultarAlerta() {
+      const alerta = document.getElementById('alertaPermisosFirebase');
+      if (alerta) alerta.classList.add('hidden');
+    }
+
+    async function inicializarAuth() {
+      // Asegurar que el cliente tenga sesión en Firebase Auth para cumplir con 'request.auth != null'
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          try {
+            await signInAnonymously(auth);
+          } catch (e) {
+            console.warn("Fallo autenticación base:", e);
           }
-          iniciarSincronizacionBovedaPersonal(user.uid);
-        } else {
-          usuarioActual = null;
-          sesionActiva = null;
-          mostrarPantallaAuth();
         }
       });
+
+      // Chequear si hay un emprendimiento activo en este dispositivo
+      const sesionGuardada = localStorage.getItem('sgpp_sesion_activa_v2');
+      if (sesionGuardada) {
+        try {
+          sesionActiva = JSON.parse(sesionGuardada);
+          if (sesionActiva && sesionActiva.slug) {
+            iniciarSincronizacionEmprendimiento(sesionActiva.slug, sesionActiva.nombre);
+            return;
+          }
+        } catch (e) {
+          localStorage.removeItem('sgpp_sesion_activa_v2');
+        }
+      }
+
+      mostrarPantallaAuth();
     }
 
     function alternarTabAuth(tab) {
@@ -1275,25 +1262,45 @@
         return;
       }
 
-      const { email, password, slug } = generarCredencialesSeguras(nomInput, pinInput);
+      const slug = slugificarNombre(nomInput);
+      actualizarIndicadorNube(false, "Verificando en la nube...");
 
       try {
-        actualizarIndicadorNube(false, "Validando PIN...");
-        const cred = await signInWithEmailAndPassword(auth, email, password);
-        usuarioActual = cred.user;
-        sesionActiva = { id: cred.user.uid, slug, nombre: nomInput };
-        localStorage.setItem(`sgpp_sesion_${cred.user.uid}`, JSON.stringify(sesionActiva));
-      } catch (err) {
-        console.warn("Error en login Firebase:", err.code, err.message);
-        if (errDiv) errDiv.classList.remove('hidden');
-        if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-          if (errTxt) errTxt.innerText = "PIN incorrecto o emprendimiento no registrado. Verificá los datos o registralo en la pestaña 'Registrarse'.";
-        } else if (err.code === 'auth/network-request-failed') {
-          if (errTxt) errTxt.innerText = "No se pudo conectar a internet. Revisá tu conexión.";
-        } else {
-          if (errTxt) errTxt.innerText = `Error de acceso: ${err.message}`;
+        // Asegurar que auth exista
+        if (!auth.currentUser) {
+          await signInAnonymously(auth);
         }
-        actualizarIndicadorNube(false, "Acceso Denegado");
+
+        // Consultar el registro central del emprendimiento
+        const docAccesoRef = doc(db, 'emprendimientos', slug, 'seguridad', 'acceso');
+        const snap = await getDoc(docAccesoRef);
+
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.pin === pinInput) {
+            sesionActiva = { slug: slug, nombre: data.nombre || nomInput };
+            localStorage.setItem('sgpp_sesion_activa_v2', JSON.stringify(sesionActiva));
+            iniciarSincronizacionEmprendimiento(slug, sesionActiva.nombre);
+            mostrarToast(`¡Bienvenido de nuevo a ${sesionActiva.nombre}!`);
+            return;
+          } else {
+            if (errTxt) errTxt.innerText = "El PIN de 4 números es incorrecto.";
+            if (errDiv) errDiv.classList.remove('hidden');
+            actualizarIndicadorNube(false, "PIN incorrecto");
+            return;
+          }
+        } else {
+          // Si no está registrado en la nube, verificar si existe en la pestaña de registro
+          if (errTxt) errTxt.innerText = `El emprendimiento "${nomInput}" no está registrado aún. Hacé clic en "Registrarse" arriba para crearlo.`;
+          if (errDiv) errDiv.classList.remove('hidden');
+          actualizarIndicadorNube(false, "No registrado");
+          return;
+        }
+      } catch (err) {
+        console.warn("Error en login:", err);
+        if (errTxt) errTxt.innerText = "Error de conexión con la nube. Verificá tu internet o las reglas de Firebase.";
+        if (errDiv) errDiv.classList.remove('hidden');
+        actualizarIndicadorNube(false, "Error de red");
       }
     }
 
@@ -1322,58 +1329,64 @@
         return;
       }
 
-      const { email, password, slug } = generarCredencialesSeguras(nomInput, pinInput);
+      const slug = slugificarNombre(nomInput);
+      actualizarIndicadorNube(false, "Registrando...");
 
       try {
-        actualizarIndicadorNube(false, "Creando cuenta segura...");
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
-        usuarioActual = cred.user;
-        sesionActiva = { id: cred.user.uid, slug, nombre: nomInput };
-        localStorage.setItem(`sgpp_sesion_${cred.user.uid}`, JSON.stringify(sesionActiva));
+        if (!auth.currentUser) {
+          await signInAnonymously(auth);
+        }
 
-        // Guardar perfil inicial en la bóveda privada del usuario
-        await setDoc(doc(db, 'usuarios', cred.user.uid, 'perfil', 'info'), {
+        const docAccesoRef = doc(db, 'emprendimientos', slug, 'seguridad', 'acceso');
+        const snap = await getDoc(docAccesoRef);
+
+        if (snap.exists()) {
+          if (errTxt) errTxt.innerText = `El emprendimiento "${nomInput}" ya está registrado. Ingresá con tu PIN en la pestaña "Ingresar".`;
+          if (errDiv) errDiv.classList.remove('hidden');
+          actualizarIndicadorNube(false, "Ya registrado");
+          return;
+        }
+
+        // Crear registro central del emprendimiento en la nube
+        await setDoc(docAccesoRef, {
           nombre: nomInput,
           slug: slug,
+          pin: pinInput,
           fechaRegistro: new Date().toISOString()
         });
 
-        // Crear despensa inicial limpia para el nuevo productor
+        // Crear despensa inicial limpia para el nuevo emprendimiento
         const despensaInicial = [
           { id: 1, nombre: "Azúcar Común", cantidad: 10, unidad: "kg", costoPromedio: 1150, costoHistorico: 1150, aumentosAbsorbidos: 0, origenes: { comprado: { cantidad: 10, costoUnitario: 1150 }, propio: { cantidad: 0, costoUnitario: 0 } } },
-          { id: 2, nombre: "Frascos de Vidrio 360cc", cantidad: 30, unidad: "unid", costoPromedio: 450, costoHistorico: 450, aumentosAbsorbidos: 0, origenes: { comprado: { cantidad: 30, costoUnitario: 450 }, propio: { cantidad: 0, costoUnitario: 0 } } },
-          { id: 3, nombre: "Tapas Twist Off", cantidad: 30, unidad: "unid", costoPromedio: 120, costoHistorico: 120, aumentosAbsorbidos: 0, origenes: { comprado: { cantidad: 30, costoUnitario: 120 }, propio: { cantidad: 0, costoUnitario: 0 } } }
+          { id: 2, nombre: "Frascos de Vidrio 360cc", cantidad: 30, unidad: "unid", costoPromedio: 450, costoHistorico: 450, aumentosAbsorbidos: 0, origenes: { comprado: { cantidad: 30, costoUnitario: 450 }, propio: { cantidad: 0, costoUnitario: 0 } } }
         ];
 
-        await setDoc(doc(db, 'usuarios', cred.user.uid, 'datos', 'despensa'), {
+        await setDoc(doc(db, 'emprendimientos', slug, 'datos', 'despensa'), {
           insumos: despensaInicial,
           actualizadoEl: new Date().toISOString()
         });
 
-        mostrarToast(`¡Bienvenido! Emprendimiento "${nomInput}" registrado.`);
+        sesionActiva = { slug: slug, nombre: nomInput };
+        localStorage.setItem('sgpp_sesion_activa_v2', JSON.stringify(sesionActiva));
+
+        iniciarSincronizacionEmprendimiento(slug, nomInput);
+        mostrarToast(`¡Emprendimiento "${nomInput}" registrado con éxito!`);
       } catch (err) {
-        console.warn("Error en registro Firebase:", err.code, err.message);
+        console.warn("Error en registro:", err);
+        if (errTxt) errTxt.innerText = `No se pudo registrar: ${err.message}`;
         if (errDiv) errDiv.classList.remove('hidden');
-        if (err.code === 'auth/email-already-in-use') {
-          if (errTxt) errTxt.innerText = "Ese emprendimiento ya está registrado. Ingresá con tu PIN desde la pestaña 'Ingresar'.";
-        } else if (err.code === 'auth/operation-not-allowed') {
-          if (errTxt) errTxt.innerText = "Habilitá 'Correo/Contraseña' en Firebase: Authentication > Sign-in method.";
-          mostrarAlertaPermisos("Habilitá 'Correo electrónico y contraseña' en Firebase: Authentication > Sign-in method.");
-        } else {
-          if (errTxt) errTxt.innerText = `No se pudo registrar: ${err.message}`;
-        }
-        actualizarIndicadorNube(false, "Registro Interrumpido");
+        actualizarIndicadorNube(false, "Error al registrar");
       }
     }
 
-    function iniciarSincronizacionBovedaPersonal(userId) {
-      if (!userId) return;
+    function iniciarSincronizacionEmprendimiento(slug, nombreEmprendimiento) {
+      if (!slug) return;
 
       const headerName = document.getElementById('nombreEmprendimientoHeader');
-      if (headerName && sesionActiva) headerName.innerText = sesionActiva.nombre;
+      if (headerName) headerName.innerText = nombreEmprendimiento;
 
       const badgeActivo = document.getElementById('badgeEmprendimientoActivo');
-      if (badgeActivo && sesionActiva) badgeActivo.innerText = sesionActiva.nombre;
+      if (badgeActivo) badgeActivo.innerText = nombreEmprendimiento;
 
       const barra = document.getElementById('barraUsuarioSesion');
       if (barra) barra.classList.remove('hidden');
@@ -1381,15 +1394,14 @@
       const vAuth = document.getElementById('vistaAuth');
       if (vAuth) vAuth.classList.add('hidden');
 
-      const alerta = document.getElementById('alertaPermisosFirebase');
-      if (alerta) alerta.classList.add('hidden');
+      ocultarAlerta();
 
-      // 1. Cargar respaldo local previo del usuario
-      const despensaLocal = localStorage.getItem(`sgpp_despensa_${userId}`);
+      // Cargar respaldo local previo mientras conecta la nube
+      const despensaLocal = localStorage.getItem(`sgpp_despensa_${slug}`);
       if (despensaLocal) {
         try { insumosDespensa = JSON.parse(despensaLocal); } catch (e) {}
       }
-      const prodsLocales = localStorage.getItem(`sgpp_prods_${userId}`);
+      const prodsLocales = localStorage.getItem(`sgpp_prods_${slug}`);
       if (prodsLocales) {
         try { productosGuardados = JSON.parse(prodsLocales); } catch (e) {}
       }
@@ -1399,44 +1411,35 @@
       calcularDisponibilidad();
       verificarAlertaGuardian();
 
-      // 2. RADAR EN TIEMPO REAL: DESPENSA PRIVADA (/usuarios/{userId}/datos/despensa)
+      // 1. RADAR EN VIVO: MI DESPENSA (/emprendimientos/{slug}/datos/despensa)
       if (unsubscribeDespensa) unsubscribeDespensa();
       try {
-        const docDespensaRef = doc(db, 'usuarios', userId, 'datos', 'despensa');
+        const docDespensaRef = doc(db, 'emprendimientos', slug, 'datos', 'despensa');
         unsubscribeDespensa = onSnapshot(docDespensaRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
             if (data && Array.isArray(data.insumos)) {
               insumosDespensa = data.insumos;
-              localStorage.setItem(`sgpp_despensa_${userId}`, JSON.stringify(insumosDespensa));
+              localStorage.setItem(`sgpp_despensa_${slug}`, JSON.stringify(insumosDespensa));
               renderEstantes();
               calcularDisponibilidad();
               verificarAlertaGuardian();
             }
-          } else {
-            if (insumosDespensa.length === 0) {
-              insumosDespensa = [
-                { id: 1, nombre: "Azúcar Común", cantidad: 10, unidad: "kg", costoPromedio: 1150, costoHistorico: 1150, aumentosAbsorbidos: 0, origenes: { comprado: { cantidad: 10, costoUnitario: 1150 }, propio: { cantidad: 0, costoUnitario: 0 } } },
-                { id: 2, nombre: "Frascos de Vidrio 360cc", cantidad: 30, unidad: "unid", costoPromedio: 450, costoHistorico: 450, aumentosAbsorbidos: 0, origenes: { comprado: { cantidad: 30, costoUnitario: 450 }, propio: { cantidad: 0, costoUnitario: 0 } } }
-              ];
-            }
-            guardarDespensaNube();
           }
           actualizarIndicadorNube(true, "Bóveda Sincronizada");
         }, (err) => {
-          console.warn("Error radar despensa privada:", err);
-          if (err.code === 'permission-denied') {
-            mostrarAlertaPermisos("Permisos denegados en Firestore. Verificá las reglas para /usuarios/{userId}/...");
-          }
+          console.warn("Error radar despensa:", err);
+          actualizarIndicadorNube(false, "Permiso Denegado");
+          mostrarAlerta("Permiso Denegado en Firestore", "Revisá las reglas en tu consola de Firebase: match /{document=**} { allow read, write: if request.auth != null; }");
         });
       } catch (e) {
-        console.warn("Fallo listener despensa:", e);
+        console.warn("Fallo suscripción despensa:", e);
       }
 
-      // 3. RADAR EN TIEMPO REAL: PRODUCTOS PRIVADOS (/usuarios/{userId}/productos)
+      // 2. RADAR EN VIVO: MIS PRODUCTOS (/emprendimientos/{slug}/productos)
       if (unsubscribeProductos) unsubscribeProductos();
       try {
-        const colProductosRef = collection(db, 'usuarios', userId, 'productos');
+        const colProductosRef = collection(db, 'emprendimientos', slug, 'productos');
         unsubscribeProductos = onSnapshot(colProductosRef, (snapshot) => {
           const prodsActualizados = [];
           snapshot.forEach(docSnap => {
@@ -1445,55 +1448,39 @@
 
           prodsActualizados.sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
           productosGuardados = prodsActualizados;
-          localStorage.setItem(`sgpp_prods_${userId}`, JSON.stringify(productosGuardados));
+          localStorage.setItem(`sgpp_prods_${slug}`, JSON.stringify(productosGuardados));
           renderizarListaProductos();
           calcularDisponibilidad();
           actualizarIndicadorNube(true, "Bóveda Sincronizada");
         }, (err) => {
-          console.warn("Error radar productos privados:", err);
-          if (err.code === 'permission-denied') {
-            mostrarAlertaPermisos("Permisos denegados en Firestore. Verificá las reglas para /usuarios/{userId}/...");
-          }
+          console.warn("Error radar productos:", err);
         });
       } catch (e) {
-        console.warn("Fallo listener productos:", e);
+        console.warn("Fallo suscripción productos:", e);
       }
 
       cambiarVista('inicio');
     }
 
     async function guardarDespensaNube() {
-      if (!usuarioActual) return;
-      localStorage.setItem(`sgpp_despensa_${usuarioActual.uid}`, JSON.stringify(insumosDespensa));
+      if (!sesionActiva || !sesionActiva.slug) return;
+      localStorage.setItem(`sgpp_despensa_${sesionActiva.slug}`, JSON.stringify(insumosDespensa));
       try {
-        await setDoc(doc(db, 'usuarios', usuarioActual.uid, 'datos', 'despensa'), { 
+        await setDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'datos', 'despensa'), { 
           insumos: insumosDespensa,
           actualizadoEl: new Date().toISOString()
         });
+        actualizarIndicadorNube(true, "Bóveda Sincronizada");
       } catch (e) {
-        console.warn("Guardado nube despensa privada:", e);
-        if (e.code === 'permission-denied') {
-          mostrarAlertaPermisos("Error de permisos al guardar en la nube. Cambios guardados solo en este teléfono.");
-        }
+        console.warn("Guardado nube despensa:", e);
       }
-    }
-
-    async function confirmarCerrarSesion() {
-      cerrarModal('modalCerrarSesion');
-      try {
-        await signOut(auth);
-      } catch (e) {}
-      usuarioActual = null;
-      sesionActiva = null;
-      mostrarPantallaAuth();
-      mostrarToast("Sesión cerrada correctamente.");
     }
 
     function mostrarPantallaAuth() {
       if (unsubscribeDespensa) { unsubscribeDespensa(); unsubscribeDespensa = null; }
       if (unsubscribeProductos) { unsubscribeProductos(); unsubscribeProductos = null; }
-      usuarioActual = null;
       sesionActiva = null;
+      localStorage.removeItem('sgpp_sesion_activa_v2');
 
       const barra = document.getElementById('barraUsuarioSesion');
       if (barra) barra.classList.add('hidden');
@@ -1510,13 +1497,18 @@
       actualizarIndicadorNube(false, "Sin Sesión");
     }
 
+    function confirmarCerrarSesion() {
+      cerrarModal('modalCerrarSesion');
+      mostrarPantallaAuth();
+      mostrarToast("Sesión cerrada correctamente.");
+    }
+
     function cambiarVista(vista) {
-      if (!usuarioActual && vista !== 'auth') {
+      if (!sesionActiva && vista !== 'auth') {
         mostrarPantallaAuth();
         return;
       }
 
-      // Ocultar todas las vistas
       ['vistaAuth', 'vistaInicio', 'vistaProductos', 'vistaDespensa', 'vistaDetalle', 'vistaCalculadora'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
@@ -1698,12 +1690,11 @@
         const cant = parseFloat(document.getElementById('cosechaInsumoCantidad')?.value) || 0;
         const un = document.getElementById('cosechaInsumoUnidad')?.value || 'kg';
         const hs = parseFloat(document.getElementById('cosechaInsumoHoras')?.value) || 0;
-        const vHora = parseFloat(document.getElementById('cosechaInsumoValorHora')?.value) || valorHoraHabitual;
+        const vHora = parseFloat(document.getElementById('cosechaInsumoValorHora')?.value) || 0;
         const directo = parseFloat(document.getElementById('cosechaInsumoGastoDirecto')?.value) || 0;
 
         if (!nom) return mostrarToast("Escribí el nombre de la producción propia.");
 
-        valorHoraHabitual = vHora;
         const subtotal = (hs * vHora) + directo;
         const totalConDesgaste = subtotal * 1.20;
         const uCost = cant > 0 ? (totalConDesgaste / cant) : 0;
@@ -1872,7 +1863,7 @@
         const cant = parseFloat(document.getElementById('cosechaCantidad')?.value) || 0;
         const un = document.getElementById('cosechaUnidad')?.value || 'kg';
         const hs = parseFloat(document.getElementById('cosechaHoras')?.value) || 0;
-        const vHora = parseFloat(document.getElementById('valorHoraTrabajo')?.value) || valorHoraHabitual;
+        const vHora = parseFloat(document.getElementById('valorHoraTrabajo')?.value) || 0;
 
         const costoTotal = (hs * vHora) * 1.20;
         const uCost = cant > 0 ? (costoTotal / cant) : 0;
@@ -1890,10 +1881,10 @@
       }
 
       compras.forEach(c => {
-        const uCost = c.cantidad > 0 ? (c.costo / c.cantidad) : 0;
+        const uCost = (c.cantidad && c.costo) ? (c.costo / c.cantidad) : 0;
         opciones.push({
           refId: `compra_${c.id}`,
-          nombre: `[🛒 Compra Tanda] ${c.nombre || 'Insumo'} (${c.cantidad} ${c.unidad})`,
+          nombre: `[🛒 Compra Tanda] ${c.nombre || 'Insumo'} (${c.cantidad || 0} ${c.unidad})`,
           costoUnitario: uCost,
           unidad: c.unidad,
           tipoOrigen: 'compra',
@@ -1913,7 +1904,7 @@
       if (compras.length === 0) {
         contenedor.innerHTML = `
           <div class="text-center py-3 bg-stone-50 rounded-2xl border border-dashed border-stone-200 text-xs text-stone-400">
-            No cargaste insumos en este paso. Podés traerlos de tu despensa con el botón de arriba.
+            No cargaste compras en este paso. Podés traer materias primas de tu despensa con el botón verde.
           </div>
         `;
         return;
@@ -1952,7 +1943,7 @@
           <div class="grid grid-cols-12 gap-2 items-end pt-1">
             <div class="col-span-4">
               <label class="block text-[10px] font-bold text-stone-600 mb-0.5">Cantidad</label>
-              <input type="number" value="${c.cantidad !== undefined && c.cantidad !== null && c.cantidad !== 0 ? c.cantidad : ''}" placeholder="0" min="0.1" step="any"
+              <input type="number" value="${c.cantidad !== null && c.cantidad !== undefined ? c.cantidad : ''}" placeholder="0" min="0" step="any"
                      onfocus="this.select()"
                      oninput="window.actualizarCompraSilencioso(${c.id}, 'cantidad', this.value)"
                      class="w-full bg-white border border-stone-300 rounded-lg px-2 py-1.5 text-center font-black text-stone-800">
@@ -1975,7 +1966,7 @@
 
             <div class="col-span-4">
               <label class="block text-[10px] font-bold text-stone-600 mb-0.5">Total Pagado ($)</label>
-              <input type="number" value="${c.costo !== undefined && c.costo !== null && c.costo !== 0 ? c.costo : ''}" placeholder="0" min="0"
+              <input type="number" value="${c.costo !== null && c.costo !== undefined ? c.costo : ''}" placeholder="0" min="0" step="any"
                      onfocus="this.select()"
                      oninput="window.actualizarCompraSilencioso(${c.id}, 'costo', this.value)"
                      class="w-full bg-white border border-stone-300 rounded-lg px-2 py-1.5 font-black text-stone-800 text-right">
@@ -2033,7 +2024,7 @@
             <div class="flex items-center justify-between gap-2 pt-0.5">
               <div class="flex items-center gap-1.5">
                 <span class="text-stone-500 font-bold">Usé:</span>
-                <input type="number" value="${item.cantidadUsada !== undefined && item.cantidadUsada !== null && item.cantidadUsada !== 0 ? item.cantidadUsada : ''}" placeholder="0" min="0" step="any"
+                <input type="number" value="${item.cantidadUsada !== null && item.cantidadUsada !== undefined ? item.cantidadUsada : ''}" placeholder="0" min="0" step="any"
                        onfocus="this.select()"
                        oninput="window.actualizarInsumoRecetaSilencioso(${item.id}, 'cantidadUsada', this.value)"
                        class="w-20 bg-white border border-stone-300 rounded-lg px-2 py-1 text-center font-black text-stone-800">
@@ -2057,7 +2048,7 @@
             </div>
             <div class="flex items-center justify-end gap-1.5 pt-0.5">
               <span class="text-stone-500 font-bold">Costo: $</span>
-              <input type="number" value="${item.costoLibre !== undefined && item.costoLibre !== null && item.costoLibre !== 0 ? item.costoLibre : ''}" placeholder="0" min="0"
+              <input type="number" value="${item.costoLibre !== null && item.costoLibre !== undefined ? item.costoLibre : ''}" placeholder="0" min="0" step="any"
                      onfocus="this.select()"
                      oninput="window.actualizarInsumoRecetaSilencioso(${item.id}, 'costoLibre', this.value)"
                      class="w-24 bg-white border border-stone-300 rounded-lg px-2 py-1 text-right font-black text-stone-800">
@@ -2078,7 +2069,7 @@
           const opt = opciones.find(o => o.refId === item.refId) || opciones[0];
           const badge = document.getElementById(`costoReceta-${item.id}`);
           if (badge && opt) {
-            const costo = Math.round(opt.costoUnitario * (item.cantidadUsada || 0));
+            const costo = Math.round((opt.costoUnitario || 0) * (item.cantidadUsada || 0));
             badge.innerText = `$${formatearNumero(costo)}`;
           }
         }
@@ -2093,7 +2084,7 @@
         if (item.tipo !== 'libre') {
           const opt = opciones.find(o => o.refId === item.refId) || opciones[0];
           if (opt) {
-            totalCostoInsumos += opt.costoUnitario * (item.cantidadUsada || 0);
+            totalCostoInsumos += (opt.costoUnitario || 0) * (item.cantidadUsada || 0);
           }
         } else {
           totalCostoInsumos += (item.costoLibre || 0);
@@ -2105,10 +2096,7 @@
       const hsEnvasado = parseFloat(document.getElementById('horasEnvasado')?.value) || 0;
       const hsTotales = hsCosecha + hsCoccion + hsEnvasado;
 
-      const valorHora = parseFloat(document.getElementById('valorHoraTrabajo')?.value) || valorHoraHabitual;
-      if (document.getElementById('valorHoraTrabajo')?.value) {
-        valorHoraHabitual = valorHora;
-      }
+      const valorHora = parseFloat(document.getElementById('valorHoraTrabajo')?.value) || 0;
       const totalTrabajo = hsTotales * valorHora;
 
       const facturaLuz = parseFloat(document.getElementById('facturaLuzMensual')?.value) || 0;
@@ -2154,7 +2142,7 @@
     }
 
     async function guardarProducto(esTerminado = true) {
-      if (!usuarioActual) {
+      if (!sesionActiva || !sesionActiva.slug) {
         mostrarToast("Iniciá sesión para guardar.");
         return;
       }
@@ -2174,7 +2162,7 @@
         if (item.tipo !== 'libre') {
           const info = opciones.find(o => o.refId === item.refId) || opciones[0];
           if (info) {
-            const cost = info.costoUnitario * (item.cantidadUsada || 0);
+            const cost = (info.costoUnitario || 0) * (item.cantidadUsada || 0);
             listaInsumosDetalle.push({
               nombre: info.nombreLimpio || info.obj?.nombre || 'Insumo',
               detalle: `${item.cantidadUsada} ${info.unidad} (${info.subOrigen === 'propio' ? 'Propia' : 'Comprada'})`,
@@ -2203,8 +2191,8 @@
 
       // 2. Traspasar compras del Paso 2 a Mi Despensa
       compras.forEach(c => {
-        if (!c.nombre || c.cantidad <= 0) return;
-        const uCost = c.costo / c.cantidad;
+        if (!c.nombre || !c.cantidad || c.cantidad <= 0) return;
+        const uCost = (c.costo || 0) / c.cantidad;
 
         const usoReceta = insumosReceta.find(ir => ir.refId === `compra_${c.id}`);
         const cantUsada = usoReceta ? (usoReceta.cantidadUsada || 0) : 0;
@@ -2227,7 +2215,7 @@
         const cantProd = parseFloat(document.getElementById('cosechaCantidad')?.value) || 0;
         const unProd = document.getElementById('cosechaUnidad')?.value || 'kg';
         const hsProd = parseFloat(document.getElementById('cosechaHoras')?.value) || 0;
-        const vHora = parseFloat(document.getElementById('valorHoraTrabajo')?.value) || valorHoraHabitual;
+        const vHora = parseFloat(document.getElementById('valorHoraTrabajo')?.value) || 0;
 
         if (nomProd && cantProd > 0) {
           const totalProduccion = (hsProd * vHora) * 1.20;
@@ -2282,12 +2270,11 @@
       if (idx >= 0) productosGuardados[idx] = productoObj;
       else productosGuardados.unshift(productoObj);
 
-      localStorage.setItem(`sgpp_prods_${usuarioActual.uid}`, JSON.stringify(productosGuardados));
+      localStorage.setItem(`sgpp_prods_${sesionActiva.slug}`, JSON.stringify(productosGuardados));
       try {
-        await setDoc(doc(db, 'usuarios', usuarioActual.uid, 'productos', targetId), productoObj);
+        await setDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'productos', targetId), productoObj);
       } catch (e) {
-        console.warn("Guardado nube producto privado:", e);
-        if (e.code === 'permission-denied') mostrarAlertaPermisos();
+        console.warn("Guardado nube producto:", e);
       }
 
       borradorEnEdicionId = null;
@@ -2384,7 +2371,7 @@
 
     async function guardarPreciosFijados() {
       const prod = productosGuardados.find(p => p.id === idProductoSeleccionado);
-      if (!prod || !usuarioActual) return;
+      if (!prod || !sesionActiva) return;
 
       const costo = prod.costoUnitario || 0;
       prod.preciosVenta = {
@@ -2394,10 +2381,10 @@
         precioMayorista: Math.round(costo * (1 + margenMayoristaSeleccionado / 100))
       };
 
-      localStorage.setItem(`sgpp_prods_${usuarioActual.uid}`, JSON.stringify(productosGuardados));
+      localStorage.setItem(`sgpp_prods_${sesionActiva.slug}`, JSON.stringify(productosGuardados));
 
       try {
-        await setDoc(doc(db, 'usuarios', usuarioActual.uid, 'productos', prod.id), prod);
+        await setDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'productos', prod.id), prod);
         mostrarToast("Precios de venta sincronizados.");
       } catch (e) {
         console.warn("Precios nube:", e);
@@ -2411,8 +2398,12 @@
       insumosReceta = [];
       cosechoPropio = false;
 
+      // Limpiar estrictamente todos los campos a vacío "" (sin ceros ni 3000)
       const nom = document.getElementById('nombreProducto');
       if (nom) nom.value = '';
+
+      const cNombre = document.getElementById('cosechaNombre');
+      if (cNombre) cNombre.value = '';
 
       const cantCosecha = document.getElementById('cosechaCantidad');
       if (cantCosecha) cantCosecha.value = '';
@@ -2430,7 +2421,10 @@
       if (uProd) uProd.value = '';
 
       const vHora = document.getElementById('valorHoraTrabajo');
-      if (vHora) vHora.value = valorHoraHabitual;
+      if (vHora) vHora.value = '';
+
+      const facLuz = document.getElementById('facturaLuzMensual');
+      if (facLuz) facLuz.value = '';
 
       setearCosecha(false);
       renderizarTablaCompras();
@@ -2468,11 +2462,11 @@
     }
 
     async function confirmarEliminarProducto() {
-      if (!productoAEliminarId || !usuarioActual) return;
+      if (!productoAEliminarId || !sesionActiva) return;
       productosGuardados = productosGuardados.filter(p => p.id !== productoAEliminarId);
-      localStorage.setItem(`sgpp_prods_${usuarioActual.uid}`, JSON.stringify(productosGuardados));
+      localStorage.setItem(`sgpp_prods_${sesionActiva.slug}`, JSON.stringify(productosGuardados));
       try {
-        await deleteDoc(doc(db, 'usuarios', usuarioActual.uid, 'productos', productoAEliminarId));
+        await deleteDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'productos', productoAEliminarId));
       } catch (e) {}
       cerrarModal('modalEliminar');
       productoAEliminarId = null;
@@ -2491,9 +2485,9 @@
       compras.push({
         id: Date.now(),
         nombre: prim.nombre,
-        cantidad: prim.cantidad > 0 ? prim.cantidad : 1,
+        cantidad: null, // Limpio sin precarga
         unidad: prim.unidad,
-        costo: Math.round(prim.costoPromedio * (prim.cantidad > 0 ? prim.cantidad : 1)),
+        costo: null,    // Limpio sin precarga
         origenDespensaId: prim.id
       });
       renderizarTablaCompras();
@@ -2505,9 +2499,9 @@
       compras.push({
         id: Date.now(),
         nombre: "",
-        cantidad: 1,
+        cantidad: null, // Totalmente limpio sin 1
         unidad: "kg",
-        costo: 0
+        costo: null     // Totalmente limpio sin 0
       });
       renderizarTablaCompras();
       renderizarInsumosReceta();
@@ -2518,7 +2512,7 @@
       const c = compras.find(item => item.id === id);
       if (!c) return;
       if (campo === 'cantidad' || campo === 'costo') {
-        c[campo] = parseFloat(val) || 0;
+        c[campo] = val === '' ? null : parseFloat(val);
       } else {
         c[campo] = val;
       }
@@ -2532,8 +2526,8 @@
         c.origenDespensaId = est.id;
         c.nombre = est.nombre;
         c.unidad = est.unidad;
-        c.cantidad = est.cantidad;
-        c.costo = Math.round(est.costoPromedio * est.cantidad);
+        c.cantidad = null;
+        c.costo = null;
         renderizarTablaCompras();
         renderizarInsumosReceta();
         calcular();
@@ -2557,7 +2551,7 @@
         id: Date.now(),
         tipo: 'origen',
         refId: opciones[0].refId,
-        cantidadUsada: 1
+        cantidadUsada: null // Limpio sin 1 precargado
       });
       renderizarInsumosReceta();
       calcular();
@@ -2568,7 +2562,7 @@
         id: Date.now(),
         tipo: 'libre',
         nombreLibre: '',
-        costoLibre: 0
+        costoLibre: null // Limpio sin 0 precargado
       });
       renderizarInsumosReceta();
       calcular();
@@ -2587,7 +2581,7 @@
       const r = insumosReceta.find(i => i.id === id);
       if (!r) return;
       if (campo === 'cantidadUsada' || campo === 'costoLibre') {
-        r[campo] = parseFloat(val) || 0;
+        r[campo] = val === '' ? null : parseFloat(val);
       } else {
         r[campo] = val;
       }
@@ -2753,7 +2747,7 @@
       const cHs = document.getElementById('cosechaInsumoHoras');
       if (cHs) cHs.value = '';
       const cVHora = document.getElementById('cosechaInsumoValorHora');
-      if (cVHora) cVHora.value = valorHoraHabitual;
+      if (cVHora) cVHora.value = '';
 
       abrirModal('modal-nuevo-insumo');
     }
@@ -2919,7 +2913,7 @@
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
       const a = document.createElement('a');
       a.href = dataStr;
-      a.download = `respaldo_${sesionActiva ? sesionActiva.id : 'sgpp'}_${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `respaldo_${sesionActiva ? sesionActiva.slug : 'sgpp'}_${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -2935,7 +2929,7 @@
           const imp = JSON.parse(evt.target.result);
           if (imp.productos) productosGuardados = imp.productos;
           if (imp.despensa) insumosDespensa = imp.despensa;
-          localStorage.setItem(`sgpp_prods_${usuarioActual ? usuarioActual.uid : sesionActiva.id}`, JSON.stringify(productosGuardados));
+          localStorage.setItem(`sgpp_prods_${sesionActiva.slug}`, JSON.stringify(productosGuardados));
           await guardarDespensaNube();
           cerrarModal('modalBackup');
           renderizarListaProductos();
@@ -2952,7 +2946,7 @@
     window.procesarLogin = procesarLogin;
     window.procesarRegistro = procesarRegistro;
     window.cambiarVista = cambiarVista;
-    window.irAInicioSiAutenticado = () => usuarioActual ? cambiarVista('inicio') : mostrarPantallaAuth();
+    window.irAInicioSiAutenticado = () => sesionActiva ? cambiarVista('inicio') : mostrarPantallaAuth();
     window.solicitarCerrarSesion = () => abrirModal('modalCerrarSesion');
     window.confirmarCerrarSesion = confirmarCerrarSesion;
     window.iniciarNuevoCalculo = iniciarNuevoCalculo;
