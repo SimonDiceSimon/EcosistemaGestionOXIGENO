@@ -702,15 +702,49 @@
             <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold flex items-center justify-center">6</span>
             <h3 class="font-bold text-stone-800 text-xs uppercase tracking-wider">Costo Eléctrico</h3>
           </div>
+          <p class="text-[11px] text-stone-500">Elegí el tipo de medidor para calcular el costo por hora exacto.</p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button type="button" id="btnMedidorHogar" onclick="window.setearTipoMedidor('hogar')" 
+                    class="py-2.5 px-3 rounded-xl border-2 text-xs font-bold transition flex items-center justify-start gap-2 bg-emerald-50 border-emerald-600 text-emerald-950 shadow-sm cursor-pointer">
+              <i class="ph-bold ph-house-line text-base text-emerald-700"></i>
+              <div class="text-left">
+                <span class="block leading-tight font-extrabold">1. Medidor Hogareño</span>
+                <span class="text-[10px] font-medium opacity-80">Cuenta: Factura ÷ 720 hs (30 días x 24 hs)</span>
+              </div>
+            </button>
+
+            <button type="button" id="btnMedidorExclusivo" onclick="window.setearTipoMedidor('exclusivo')" 
+                    class="py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-start gap-2 bg-white border-stone-300 text-stone-600 hover:bg-stone-50 cursor-pointer">
+              <i class="ph-bold ph-lightning text-base text-stone-500"></i>
+              <div class="text-left">
+                <span class="block leading-tight font-extrabold">2. Medidor Dedicado / Taller</span>
+                <span class="text-[10px] font-medium opacity-80">Cuenta: Factura ÷ (30 días x horas diarias)</span>
+              </div>
+            </button>
+          </div>
+
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <label class="block text-[11px] font-semibold text-stone-600 mb-1">Factura mensual ($)</label>
               <input type="number" id="facturaLuzMensual" value="" placeholder="Ej: 45000" min="0" onfocus="this.select()" oninput="window.calcular()" 
                      class="w-full bg-stone-50 border border-stone-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-stone-800">
+              <span class="text-[10px] text-stone-400 block mt-1" id="descripcionDivisionLuz">Cuenta Hogar: Factura ÷ 720 hs (30 días x 24 hs continuas).</span>
             </div>
-            <div>
-              <label class="block text-[11px] font-semibold text-stone-600 mb-1">Costo calculado</label>
-              <div class="p-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-700" id="indicadorCostoHoraLuz">
+
+            <div id="bloqueHorasExclusivas" class="hidden">
+              <label class="block text-[11px] font-semibold text-stone-600 mb-1">Horas de trabajo por día en taller</label>
+              <div class="flex items-center gap-2">
+                <input type="number" id="horasDiariasUsoLuz" value="" placeholder="Ej: 6" min="1" max="24" step="0.5" onfocus="this.select()" oninput="window.calcular()" 
+                       class="w-full bg-stone-50 border border-stone-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-stone-800">
+                <span class="text-xs text-stone-600 font-medium shrink-0">hs / día</span>
+              </div>
+              <span class="text-[10px] text-stone-400 block mt-1">Cuenta Taller: Factura ÷ (30 días x horas diarias de taller).</span>
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="block text-[11px] font-semibold text-stone-600 mb-1">Costo calculado según medidor</label>
+              <div class="p-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-700" id="indicadorCostoHoraLuz">
                 $ 0,00 / hora
               </div>
             </div>
@@ -1148,6 +1182,28 @@
 
     let margenMinoristaSeleccionado = 50;
     let margenMayoristaSeleccionado = 45;
+    let tipoMedidorLuz = 'hogar';
+
+    function setearTipoMedidor(tipo) {
+      tipoMedidorLuz = tipo;
+      const btnHogar = document.getElementById('btnMedidorHogar');
+      const btnExclusivo = document.getElementById('btnMedidorExclusivo');
+      const bloqueExclusivo = document.getElementById('bloqueHorasExclusivas');
+      const descLuz = document.getElementById('descripcionDivisionLuz');
+
+      if (tipo === 'hogar') {
+        if (btnHogar) btnHogar.className = "py-2.5 px-3 rounded-xl border-2 text-xs font-bold transition flex items-center justify-start gap-2 bg-emerald-50 border-emerald-600 text-emerald-950 shadow-sm cursor-pointer";
+        if (btnExclusivo) btnExclusivo.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-start gap-2 bg-white border-stone-300 text-stone-600 hover:bg-stone-50 cursor-pointer";
+        if (bloqueExclusivo) bloqueExclusivo.classList.add('hidden');
+        if (descLuz) descLuz.innerText = "Cuenta Hogar: Factura ÷ 720 hs (30 días x 24 hs continuas).";
+      } else {
+        if (btnExclusivo) btnExclusivo.className = "py-2.5 px-3 rounded-xl border-2 text-xs font-bold transition flex items-center justify-start gap-2 bg-emerald-50 border-emerald-600 text-emerald-950 shadow-sm cursor-pointer";
+        if (btnHogar) btnHogar.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-start gap-2 bg-white border-stone-300 text-stone-600 hover:bg-stone-50 cursor-pointer";
+        if (bloqueExclusivo) bloqueExclusivo.classList.remove('hidden');
+        if (descLuz) descLuz.innerText = "Cuenta Taller: Factura ÷ (30 días x horas de taller por día).";
+      }
+      calcular();
+    }
 
     function slugificarNombre(texto) {
       return (texto || "")
@@ -2327,11 +2383,28 @@
       const totalTrabajo = horasTotales * valorHora;
 
       const facturaLuz = parseFloat(document.getElementById('facturaLuzMensual')?.value) || 0;
-      const costoHoraLuz = facturaLuz / 720;
+      let costoHoraLuz = 0;
+      if (tipoMedidorLuz === 'hogar') {
+        costoHoraLuz = facturaLuz / 720;
+      } else {
+        const horasDiarias = Math.max(1, parseFloat(document.getElementById('horasDiariasUsoLuz')?.value) || 6);
+        costoHoraLuz = facturaLuz / (30 * horasDiarias);
+      }
       const totalLuz = costoHoraLuz * (horasCoccion + horasEnvasado);
 
       const indHoraLuz = document.getElementById('indicadorCostoHoraLuz');
-      if (indHoraLuz) indHoraLuz.innerText = `$ ${costoHoraLuz.toFixed(2)} / hora`;
+      if (indHoraLuz) {
+        if (costoHoraLuz > 0) {
+          indHoraLuz.innerHTML = `
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <span>Costo hora: <strong class="text-emerald-800">$ ${costoHoraLuz.toFixed(2)}/h</strong></span>
+              <span class="text-stone-500 font-semibold">Total luz tanda (${(horasCoccion + horasEnvasado).toFixed(1)} hs): <strong class="text-stone-900">$ ${formatearNumero(totalLuz)}</strong></span>
+            </div>
+          `;
+        } else {
+          indHoraLuz.innerText = `$ 0,00 / hora`;
+        }
+      }
 
       const subtotal = totalCostoInsumos + totalTrabajo + totalLuz;
       const desgaste20 = subtotal * 0.20;
@@ -2394,9 +2467,12 @@
       if (vHora) vHora.value = '';
       const facLuz = document.getElementById('facturaLuzMensual');
       if (facLuz) facLuz.value = '';
+      const hDiaLuz = document.getElementById('horasDiariasUsoLuz');
+      if (hDiaLuz) hDiaLuz.value = '';
       const unids = document.getElementById('unidadesProducidas');
       if (unids) unids.value = '';
 
+      setearTipoMedidor('hogar');
       setearCosecha(false);
       renderizarTablaCompras();
       renderizarInsumosReceta();
@@ -2510,6 +2586,23 @@
           margenMayorista: 45,
           precioMinorista: Math.round(calc.costoUnitario * 1.5),
           precioMayorista: Math.round(calc.costoUnitario * 1.45)
+        },
+        datosFormulario: {
+          compras: JSON.parse(JSON.stringify(compras)),
+          insumosReceta: JSON.parse(JSON.stringify(insumosReceta)),
+          cosechoPropio: cosechoPropio,
+          cosechaNombre: document.getElementById('cosechaNombre')?.value || '',
+          cosechaCantidad: document.getElementById('cosechaCantidad')?.value || '',
+          cosechaUnidad: document.getElementById('cosechaUnidad')?.value || 'kg',
+          cosechaHoras: document.getElementById('cosechaHoras')?.value || '',
+          horasCoccion: document.getElementById('horasCoccion')?.value || '',
+          horasEnvasado: document.getElementById('horasEnvasado')?.value || '',
+          valorHoraTrabajo: document.getElementById('valorHoraTrabajo')?.value || '',
+          tipoMedidorLuz: tipoMedidorLuz,
+          facturaLuzMensual: document.getElementById('facturaLuzMensual')?.value || '',
+          horasDiariasUsoLuz: document.getElementById('horasDiariasUsoLuz')?.value || '',
+          unidadesProducidas: document.getElementById('unidadesProducidas')?.value || '',
+          tipoUnidad: document.getElementById('tipoUnidad')?.value || 'frascos'
         }
       };
 
@@ -2632,22 +2725,88 @@
       continuarEditandoBorrador();
     }
 
-    function continuarEditandoBorrador() {
-      const prod = productosGuardados.find(p => p.id === idProductoSeleccionado);
-      if (!prod) return;
+    function cargarDatosEnFormulario(prod, esCopiaNueva = false) {
+      const f = prod.datosFormulario || {};
 
-      borradorEnEdicionId = prod.id;
-      document.getElementById('tituloModoCalculadora').innerText = "Continuar Tanda";
-      document.getElementById('badgeBorradorEditando').classList.remove('hidden');
+      const inputNombre = document.getElementById('nombreProducto');
+      if (inputNombre) {
+        inputNombre.value = esCopiaNueva ? `${prod.nombre} (Nueva tanda)` : (prod.nombre || '');
+      }
 
-      document.getElementById('nombreProducto').value = prod.nombre || '';
-      document.getElementById('unidadesProducidas').value = prod.unidadesProducidas || '';
-      document.getElementById('tipoUnidad').value = prod.tipoUnidad || 'unidades';
+      // Paso 2: Compras registradas para la tanda
+      if (f.compras && Array.isArray(f.compras)) {
+        compras = JSON.parse(JSON.stringify(f.compras));
+      } else {
+        compras = [];
+      }
+
+      // Paso 3: Cosecha / Producción propia
+      const cosecho = Boolean(f.cosechoPropio);
+      setearCosecha(cosecho);
+      const cNom = document.getElementById('cosechaNombre');
+      if (cNom) cNom.value = f.cosechaNombre || '';
+      const cCant = document.getElementById('cosechaCantidad');
+      if (cCant) cCant.value = f.cosechaCantidad || '';
+      const cUn = document.getElementById('cosechaUnidad');
+      if (cUn && f.cosechaUnidad) cUn.value = f.cosechaUnidad;
+      const cHs = document.getElementById('cosechaHoras');
+      if (cHs) cHs.value = f.cosechaHoras || '';
+
+      // Paso 4: Insumos de la receta
+      if (f.insumosReceta && Array.isArray(f.insumosReceta)) {
+        insumosReceta = JSON.parse(JSON.stringify(f.insumosReceta));
+      } else if (prod.insumos && Array.isArray(prod.insumos)) {
+        // Respaldo por si es un producto previamente calculado
+        insumosReceta = prod.insumos.map(ins => ({
+          id: Date.now() + Math.floor(Math.random() * 1000),
+          tipo: 'libre',
+          nombreLibre: ins.nombre,
+          costoLibre: ins.costo
+        }));
+      } else {
+        insumosReceta = [];
+      }
+
+      const hCoc = document.getElementById('horasCoccion');
+      if (hCoc) hCoc.value = f.horasCoccion !== undefined ? f.horasCoccion : '';
+
+      // Paso 5: Envasado y Valor de hora
+      const hEnv = document.getElementById('horasEnvasado');
+      if (hEnv) hEnv.value = f.horasEnvasado !== undefined ? f.horasEnvasado : '';
+      const vHora = document.getElementById('valorHoraTrabajo');
+      if (vHora) vHora.value = f.valorHoraTrabajo !== undefined ? f.valorHoraTrabajo : '';
+
+      // Paso 6: Luz eléctrica con su opción seleccionada
+      const tipoLuz = f.tipoMedidorLuz || 'hogar';
+      setearTipoMedidor(tipoLuz);
+      const facLuz = document.getElementById('facturaLuzMensual');
+      if (facLuz) facLuz.value = f.facturaLuzMensual !== undefined ? f.facturaLuzMensual : '';
+      const hDiaLuz = document.getElementById('horasDiariasUsoLuz');
+      if (hDiaLuz) hDiaLuz.value = f.horasDiariasUsoLuz !== undefined ? f.horasDiariasUsoLuz : '';
+
+      // Paso 7: Unidades y rendimiento
+      const unids = document.getElementById('unidadesProducidas');
+      if (unids) unids.value = f.unidadesProducidas !== undefined ? f.unidadesProducidas : (prod.unidadesProducidas || '');
+      const tUn = document.getElementById('tipoUnidad');
+      if (tUn) tUn.value = f.tipoUnidad || prod.tipoUnidad || 'frascos';
 
       renderizarTablaCompras();
       renderizarInsumosReceta();
       actualizarNombreResumen();
       calcular();
+    }
+
+    function continuarEditandoBorrador() {
+      const prod = productosGuardados.find(p => p.id === idProductoSeleccionado);
+      if (!prod) return;
+
+      borradorEnEdicionId = prod.id;
+      const tit = document.getElementById('tituloModoCalculadora');
+      if (tit) tit.innerText = "Continuar Tanda";
+      const bEd = document.getElementById('badgeBorradorEditando');
+      if (bEd) bEd.classList.remove('hidden');
+
+      cargarDatosEnFormulario(prod, false);
       cambiarVista('calculadora');
     }
 
@@ -2655,12 +2814,15 @@
       const prod = productosGuardados.find(p => p.id === idProductoSeleccionado);
       if (!prod) return;
 
-      iniciarNuevoCalculo();
-      document.getElementById('nombreProducto').value = `${prod.nombre} (Nueva tanda)`;
-      document.getElementById('unidadesProducidas').value = prod.unidadesProducidas || '';
-      document.getElementById('tipoUnidad').value = prod.tipoUnidad || 'unidades';
-      actualizarNombreResumen();
-      mostrarToast("Receta cargada en calculadora.");
+      borradorEnEdicionId = null;
+      const tit = document.getElementById('tituloModoCalculadora');
+      if (tit) tit.innerText = "Calculadora de Tanda";
+      const bEd = document.getElementById('badgeBorradorEditando');
+      if (bEd) bEd.classList.add('hidden');
+
+      cargarDatosEnFormulario(prod, true);
+      cambiarVista('calculadora');
+      mostrarToast("Receta y datos cargados en la calculadora.");
     }
 
     function solicitarEliminarProductoActual() {
@@ -3044,6 +3206,7 @@
     window.guardarProducto = guardarProducto;
     window.verDetalleProducto = verDetalleProducto;
     window.continuarBorradorDesdeId = continuarBorradorDesdeId;
+    window.cargarDatosEnFormulario = cargarDatosEnFormulario;
     window.reutilizarProductoActual = reutilizarProductoActual;
     window.solicitarEliminarProductoActual = solicitarEliminarProductoActual;
     window.confirmarEliminarProducto = confirmarEliminarProducto;
@@ -3058,6 +3221,7 @@
     window.actualizarInsumoRecetaSilencioso = actualizarInsumoRecetaSilencioso;
     window.eliminarInsumoReceta = eliminarInsumoReceta;
     window.setearCosecha = setearCosecha;
+    window.setearTipoMedidor = setearTipoMedidor;
     window.actualizarNombreResumen = actualizarNombreResumen;
     window.calcular = calcular;
     window.abrirVerEstante = abrirVerEstante;
