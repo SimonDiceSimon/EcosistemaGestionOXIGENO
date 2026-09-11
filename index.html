@@ -43,10 +43,11 @@
         </div>
         <div>
           <h1 class="text-sm font-black tracking-tight leading-tight">Sistema de Gestión</h1>
-          <div class="flex items-center gap-1.5">
+          <div class="flex items-center gap-1.5 flex-wrap">
             <span class="text-[10px] text-emerald-300 font-medium">Pequeño Productor</span>
-            <span id="badgeEstadoNube" class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-900 text-emerald-300 flex items-center gap-1 border border-emerald-800">
-              <i class="ph-bold ph-cloud-check text-[10px]"></i> <span id="textoEstadoNube">Conectando...</span>
+            <span id="badgeEstadoNube" class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-900 text-emerald-300 flex items-center gap-1 border border-emerald-800 transition-all duration-300">
+              <i id="iconoEstadoNube" class="ph-bold ph-cloud-check text-[11px]"></i> 
+              <span id="textoEstadoNube">Conectando...</span>
             </span>
           </div>
         </div>
@@ -74,6 +75,19 @@
 
   <main class="max-w-5xl mx-auto px-4 py-5 flex-1 w-full pb-20">
 
+    <!-- Banner informativo de modo fuera de línea -->
+    <div id="bannerModoOffline" class="hidden mb-4 p-3 rounded-2xl bg-amber-500/10 border-2 border-amber-500/40 text-amber-950 text-xs flex items-center justify-between gap-2 shadow-sm fade-in">
+      <div class="flex items-center gap-2.5">
+        <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0"></span>
+        <p class="font-bold text-xs leading-snug">
+          <strong>Modo Campo Activo:</strong> Estás trabajando sin señal. Todo lo que cargues se guarda seguro en tu teléfono y se sincronizará automáticamente al volver a tener internet.
+        </p>
+      </div>
+      <button onclick="window.verificarConexionManual()" class="shrink-0 bg-amber-200 hover:bg-amber-300 text-amber-950 px-2.5 py-1 rounded-xl font-bold text-[11px] transition">
+        Reintentar conexión
+      </button>
+    </div>
+
     <!-- Mensaje de aviso de estado -->
     <div id="alertaPermisosFirebase" class="hidden mb-4 p-3.5 rounded-2xl bg-amber-50 border-2 border-amber-400 text-amber-950 text-xs flex items-start gap-3 shadow-sm">
       <i class="ph-bold ph-warning-circle text-xl text-amber-700 shrink-0 mt-0.5"></i>
@@ -93,7 +107,7 @@
         <div class="text-center">
           <h2 class="text-xl sm:text-2xl font-black text-stone-900">Acceso a tu Emprendimiento</h2>
           <p class="text-xs text-stone-500 mt-1 leading-relaxed">
-            Ingresá con tu nombre y PIN de 4 números. Tus datos se sincronizan en vivo entre tus dispositivos.
+            Ingresá con tu nombre y PIN de 4 números. Funciona con o sin conexión a internet en el campo.
           </p>
         </div>
 
@@ -1176,7 +1190,7 @@
       </div>
       <div class="text-center">
         <h3 class="text-base font-bold text-stone-800">¿Eliminar este producto?</h3>
-        <p class="text-xs text-stone-500 mt-1">Se borrará de la nube para todos los dispositivos de tu emprendimiento.</p>
+        <p class="text-xs text-stone-500 mt-1">Se borrará de la nube y de la memoria local de tu dispositivo.</p>
       </div>
       <div class="grid grid-cols-2 gap-2 pt-2">
         <button onclick="window.cerrarModal('modalEliminar')" class="py-2.5 px-3 rounded-xl border border-stone-300 text-xs font-bold text-stone-700 hover:bg-stone-50 cursor-pointer">
@@ -1202,7 +1216,7 @@
         </button>
       </div>
       <p class="text-xs text-stone-500 leading-relaxed">
-        Descargá una copia completa con todos tus productos, recetas y estantes de despensa para tener un respaldo en tu teléfono o PC.
+        Descargá una copia completa con todos tus productos, recetas y estantes de despensa para tener un respaldo en tu teléfono o PC sin costo alguno.
       </p>
       <div class="space-y-3 pt-1">
         <button onclick="window.exportarCopiaJSON()" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer">
@@ -1217,5 +1231,2493 @@
   </div>
 
   <!-- TOAST AVISO FLOTANTE -->
-  <div id="toastMensaje" class="fixed bottom-6 right-6 bg-stone-900 text-white text-xs px-4 py-3 rounded-2xl shadow-2xl z-50 hidden flex items-center gap-2 border border-stone-800">
-    <i class="ph-bold ph-check-circle text-emerald-40
+  <div id="toastMensaje" class="fixed bottom-6 right-6 bg-stone-900 text-white text-xs px-4 py-3 rounded-2xl shadow-2xl z-50 hidden flex items-center gap-2 border border-stone-800 transition-all">
+    <i class="ph-bold ph-check-circle text-emerald-400 text-base" id="toastIcono"></i>
+    <span id="toastTexto">Listo</span>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+      getAuth, 
+      signInAnonymously,
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { 
+      initializeFirestore,
+      persistentLocalCache,
+      persistentMultipleTabManager,
+      getFirestore,
+      collection,
+      doc, 
+      getDoc,
+      setDoc, 
+      deleteDoc, 
+      onSnapshot 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const firebaseConfig = typeof __firebase_config !== 'undefined'
+      ? JSON.parse(__firebase_config)
+      : {
+          apiKey: "AIzaSyBviogAyKkUmH8clQ2wl7F40thSVv4fE7I",
+          authDomain: "calculocostosdeproductos.firebaseapp.com",
+          projectId: "calculocostosdeproductos",
+          storageBucket: "calculocostosdeproductos.firebasestorage.app",
+          messagingSenderId: "392272316254",
+          appId: "1:392272316254:web:f7397a30ba85132587f1cf"
+        };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Inicialización con persistencia local en IndexedDB nativa a costo cero
+    let db;
+    try {
+      db = initializeFirestore(app, {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager()
+        })
+      });
+    } catch (e) {
+      db = getFirestore(app);
+    }
+
+    let sesionActiva = null; // { slug: 'simondice', nombre: 'SimonDice' }
+    let productosGuardados = [];
+    let insumosDespensa = [];
+    let insumosArchivados = []; // Insumos en pausa / archivados
+    let idProductoSeleccionado = null;
+    let productoAEliminarId = null;
+    let borradorEnEdicionId = null;
+
+    // Desuscriptores en tiempo real
+    let unsubscribeDespensa = null;
+    let unsubscribeProductos = null;
+
+    // Estado calculadora
+    let compras = [];
+    let insumosReceta = [];
+    let cosechoPropio = false;
+    let cosechadoNombre = "";
+    let origenNuevoInsumo = 'compra';
+    let insumoSeleccionadoEstante = null;
+    let modoMovimientoEstante = 'restar';
+
+    let margenMinoristaSeleccionado = 50;
+    let margenMayoristaSeleccionado = 45;
+    let tipoMedidorLuz = 'hogar';
+
+    // Radar y detector de conectividad offline
+    let estaOnline = navigator.onLine;
+
+    function setearTipoMedidor(tipo) {
+      tipoMedidorLuz = tipo;
+      const btnHogar = document.getElementById('btnMedidorHogar');
+      const btnExclusivo = document.getElementById('btnMedidorExclusivo');
+      const bloqueExclusivo = document.getElementById('bloqueHorasExclusivas');
+      const descLuz = document.getElementById('descripcionDivisionLuz');
+
+      if (tipo === 'hogar') {
+        if (btnHogar) btnHogar.className = "py-2.5 px-3 rounded-xl border-2 text-xs font-bold transition flex items-center justify-start gap-2 bg-emerald-50 border-emerald-600 text-emerald-950 shadow-sm cursor-pointer";
+        if (btnExclusivo) btnExclusivo.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-start gap-2 bg-white border-stone-300 text-stone-600 hover:bg-stone-50 cursor-pointer";
+        if (bloqueExclusivo) bloqueExclusivo.classList.add('hidden');
+        if (descLuz) descLuz.innerText = "Cuenta Hogar: Factura ÷ 720 hs (30 días x 24 hs continuas).";
+      } else {
+        if (btnExclusivo) btnExclusivo.className = "py-2.5 px-3 rounded-xl border-2 text-xs font-bold transition flex items-center justify-start gap-2 bg-emerald-50 border-emerald-600 text-emerald-950 shadow-sm cursor-pointer";
+        if (btnHogar) btnHogar.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-start gap-2 bg-white border-stone-300 text-stone-600 hover:bg-stone-50 cursor-pointer";
+        if (bloqueExclusivo) bloqueExclusivo.classList.remove('hidden');
+        if (descLuz) descLuz.innerText = "Cuenta Taller: Factura ÷ (30 días x horas de taller por día).";
+      }
+      calcular();
+    }
+
+    function slugificarNombre(texto) {
+      return (texto || "")
+        .toString()
+        .toLowerCase()
+        .trim()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
+
+    function actualizarIndicadorNube(online, textoPersonalizado) {
+      const badgeNube = document.getElementById('badgeEstadoNube');
+      const textoNube = document.getElementById('textoEstadoNube');
+      const iconoNube = document.getElementById('iconoEstadoNube');
+      const bannerOffline = document.getElementById('bannerModoOffline');
+      if (!badgeNube || !textoNube) return;
+
+      if (!navigator.onLine || online === 'offline') {
+        badgeNube.className = "text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-900/90 text-amber-200 flex items-center gap-1 border border-amber-700";
+        if (iconoNube) iconoNube.className = "ph-bold ph-cloud-slash text-[11px]";
+        textoNube.innerText = textoPersonalizado || "Modo Campo / Sin Señal";
+        if (bannerOffline && sesionActiva) bannerOffline.classList.remove('hidden');
+      } else if (online === 'sincronizando') {
+        badgeNube.className = "text-[9px] font-bold px-2 py-0.5 rounded-full bg-sky-900/90 text-sky-200 flex items-center gap-1 border border-sky-700";
+        if (iconoNube) iconoNube.className = "ph-bold ph-arrows-clockwise animate-spin text-[11px]";
+        textoNube.innerText = textoPersonalizado || "Sincronizando con Nube...";
+        if (bannerOffline) bannerOffline.classList.add('hidden');
+      } else if (online === true || online === 'conectado') {
+        badgeNube.className = "text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-900 text-emerald-200 flex items-center gap-1 border border-emerald-800";
+        if (iconoNube) iconoNube.className = "ph-bold ph-cloud-check text-[11px]";
+        textoNube.innerText = textoPersonalizado || "Bóveda Sincronizada";
+        if (bannerOffline) bannerOffline.classList.add('hidden');
+      } else {
+        badgeNube.className = "text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-900 text-amber-200 flex items-center gap-1 border border-amber-800";
+        if (iconoNube) iconoNube.className = "ph-bold ph-warning text-[11px]";
+        textoNube.innerText = textoPersonalizado || "Aviso de Conexión";
+      }
+    }
+
+    function mostrarAlerta(titulo, mensaje) {
+      const alerta = document.getElementById('alertaPermisosFirebase');
+      const t = document.getElementById('tituloAlertaPermisos');
+      const m = document.getElementById('textoAlertaPermisos');
+      if (alerta && t && m) {
+        t.innerText = titulo || "Aviso del Sistema";
+        m.innerText = mensaje || "";
+        alerta.classList.remove('hidden');
+      }
+    }
+
+    function ocultarAlerta() {
+      const alerta = document.getElementById('alertaPermisosFirebase');
+      if (alerta) alerta.classList.add('hidden');
+    }
+
+    async function inicializarAuth() {
+      // Pre-almacenar en Cache Storage del navegador para carga instantánea offline
+      precargarRecursosEnCache();
+
+      onAuthStateChanged(auth, async (user) => {
+        if (!user && navigator.onLine) {
+          try {
+            await signInAnonymously(auth);
+          } catch (e) {
+            console.warn("Fallo autenticación base:", e);
+          }
+        }
+      });
+
+      const sesionGuardada = localStorage.getItem('sgpp_sesion_activa_v2');
+      if (sesionGuardada) {
+        try {
+          sesionActiva = JSON.parse(sesionGuardada);
+          if (sesionActiva && sesionActiva.slug) {
+            iniciarSincronizacionEmprendimiento(sesionActiva.slug, sesionActiva.nombre);
+            return;
+          }
+        } catch (e) {
+          localStorage.removeItem('sgpp_sesion_activa_v2');
+        }
+      }
+
+      mostrarPantallaAuth();
+    }
+
+    function alternarTabAuth(tab) {
+      const btnLogin = document.getElementById('tabBtnLogin');
+      const btnRegistro = document.getElementById('tabBtnRegistro');
+      const formLogin = document.getElementById('formAuthLogin');
+      const formRegistro = document.getElementById('formAuthRegistro');
+      const errLogin = document.getElementById('mensajeErrorLogin');
+      const errReg = document.getElementById('mensajeErrorRegistro');
+
+      if (errLogin) errLogin.classList.add('hidden');
+      if (errReg) errReg.classList.add('hidden');
+
+      if (tab === 'login') {
+        if (btnLogin) btnLogin.className = "py-2 text-xs font-bold rounded-lg transition shadow-sm bg-white text-emerald-950 border border-stone-200 cursor-pointer";
+        if (btnRegistro) btnRegistro.className = "py-2 text-xs font-bold rounded-lg transition text-stone-500 hover:text-stone-800 cursor-pointer";
+        if (formLogin) { formLogin.style.display = 'block'; formLogin.classList.remove('hidden'); }
+        if (formRegistro) { formRegistro.style.display = 'none'; formRegistro.classList.add('hidden'); }
+      } else {
+        if (btnRegistro) btnRegistro.className = "py-2 text-xs font-bold rounded-lg transition shadow-sm bg-white text-emerald-950 border border-stone-200 cursor-pointer";
+        if (btnLogin) btnLogin.className = "py-2 text-xs font-bold rounded-lg transition text-stone-500 hover:text-stone-800 cursor-pointer";
+        if (formRegistro) { formRegistro.style.display = 'block'; formRegistro.classList.remove('hidden'); }
+        if (formLogin) { formLogin.style.display = 'none'; formLogin.classList.add('hidden'); }
+      }
+    }
+
+    async function procesarLogin() {
+      const nomInput = (document.getElementById('loginNombre')?.value || '').trim();
+      const pinInput = (document.getElementById('loginPin')?.value || '').trim();
+      const errDiv = document.getElementById('mensajeErrorLogin');
+      const errTxt = document.getElementById('textoErrorLogin');
+
+      if (errDiv) errDiv.classList.add('hidden');
+
+      if (!nomInput) {
+        if (errTxt) errTxt.innerText = "Escribí el nombre de tu emprendimiento.";
+        if (errDiv) errDiv.classList.remove('hidden');
+        return;
+      }
+      if (!/^[0-9]{4}$/.test(pinInput)) {
+        if (errTxt) errTxt.innerText = "El PIN debe tener exactamente 4 números.";
+        if (errDiv) errDiv.classList.remove('hidden');
+        return;
+      }
+
+      const slug = slugificarNombre(nomInput);
+      actualizarIndicadorNube(navigator.onLine ? false : 'offline', navigator.onLine ? "Verificando en la nube..." : "Verificando en memoria local...");
+
+      // 1. Verificación en memoria local (Modo campo sin señal)
+      const credencialLocal = localStorage.getItem(`sgpp_credencial_${slug}`);
+      if (credencialLocal) {
+        try {
+          const cred = JSON.parse(credencialLocal);
+          if (cred && cred.pin === pinInput) {
+            sesionActiva = { slug: slug, nombre: cred.nombre || nomInput };
+            localStorage.setItem('sgpp_sesion_activa_v2', JSON.stringify(sesionActiva));
+            iniciarSincronizacionEmprendimiento(slug, sesionActiva.nombre);
+            mostrarToast(`¡Bienvenido a ${sesionActiva.nombre}! (Modo local activo)`);
+            return;
+          }
+        } catch (e) {}
+      }
+
+      // 2. Si no estaba en local o hay internet, consulta en Firestore (con cache offline automático)
+      try {
+        if (navigator.onLine && !auth.currentUser) {
+          await signInAnonymously(auth);
+        }
+
+        const docAccesoRef = doc(db, 'emprendimientos', slug, 'seguridad', 'acceso');
+        const snap = await getDoc(docAccesoRef);
+
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.pin === pinInput) {
+            sesionActiva = { slug: slug, nombre: data.nombre || nomInput };
+            localStorage.setItem('sgpp_sesion_activa_v2', JSON.stringify(sesionActiva));
+            // Guardar copia local de credencial para futuros accesos en el medio del campo
+            localStorage.setItem(`sgpp_credencial_${slug}`, JSON.stringify({ slug, nombre: data.nombre || nomInput, pin: pinInput }));
+            
+            iniciarSincronizacionEmprendimiento(slug, sesionActiva.nombre);
+            mostrarToast(`¡Bienvenido de nuevo a ${sesionActiva.nombre}!`);
+            return;
+          } else {
+            if (errTxt) errTxt.innerText = "El PIN de 4 números es incorrecto.";
+            if (errDiv) errDiv.classList.remove('hidden');
+            actualizarIndicadorNube(false, "PIN incorrecto");
+            return;
+          }
+        } else {
+          if (errTxt) errTxt.innerText = `El emprendimiento "${nomInput}" no está registrado aún. Hacé clic en "Registrarse" arriba para crearlo.`;
+          if (errDiv) errDiv.classList.remove('hidden');
+          actualizarIndicadorNube(false, "No registrado");
+          return;
+        }
+      } catch (err) {
+        console.warn("Error en login:", err);
+        // Si no hay red y no tenía guardado el PIN localmente
+        if (!navigator.onLine) {
+          if (errTxt) errTxt.innerText = `Estás sin conexión y este emprendimiento no fue abierto antes en este teléfono. Conéctate una vez a internet para validar el PIN inicial.`;
+        } else {
+          if (errTxt) errTxt.innerText = "Error de conexión con la nube. Verificá tu internet o las reglas de Firebase.";
+        }
+        if (errDiv) errDiv.classList.remove('hidden');
+        actualizarIndicadorNube('offline', "Sin Conexión");
+      }
+    }
+
+    async function procesarRegistro() {
+      const nomInput = (document.getElementById('regNombre')?.value || '').trim();
+      const pinInput = (document.getElementById('regPin')?.value || '').trim();
+      const pinConfirma = (document.getElementById('regPinConfirma')?.value || '').trim();
+      const errDiv = document.getElementById('mensajeErrorRegistro');
+      const errTxt = document.getElementById('textoErrorRegistro');
+
+      if (errDiv) errDiv.classList.add('hidden');
+
+      if (!nomInput) {
+        if (errTxt) errTxt.innerText = "Escribí el nombre del nuevo emprendimiento.";
+        if (errDiv) errDiv.classList.remove('hidden');
+        return;
+      }
+      if (!/^[0-9]{4}$/.test(pinInput)) {
+        if (errTxt) errTxt.innerText = "El PIN debe tener exactamente 4 números.";
+        if (errDiv) errDiv.classList.remove('hidden');
+        return;
+      }
+      if (pinInput !== pinConfirma) {
+        if (errTxt) errTxt.innerText = "Los PINs no coinciden.";
+        if (errDiv) errDiv.classList.remove('hidden');
+        return;
+      }
+
+      const slug = slugificarNombre(nomInput);
+      actualizarIndicadorNube(false, "Registrando...");
+
+      try {
+        if (navigator.onLine && !auth.currentUser) {
+          await signInAnonymously(auth);
+        }
+
+        const docAccesoRef = doc(db, 'emprendimientos', slug, 'seguridad', 'acceso');
+        const snap = await getDoc(docAccesoRef);
+
+        if (snap.exists()) {
+          if (errTxt) errTxt.innerText = `El emprendimiento "${nomInput}" ya está registrado. Ingresá con tu PIN en la pestaña "Ingresar".`;
+          if (errDiv) errDiv.classList.remove('hidden');
+          actualizarIndicadorNube(false, "Ya registrado");
+          return;
+        }
+
+        const datosRegistro = {
+          nombre: nomInput,
+          slug: slug,
+          pin: pinInput,
+          fechaRegistro: new Date().toISOString()
+        };
+
+        await setDoc(docAccesoRef, datosRegistro);
+
+        // Guardar credencial en dispositivo para permitir acceso offline inmediato en el campo
+        localStorage.setItem(`sgpp_credencial_${slug}`, JSON.stringify(datosRegistro));
+
+        const despensaInicial = [
+          { id: 1, nombre: "Azúcar Común", cantidad: 10, unidad: "kg", costoPromedio: 1150, costoHistorico: 1150, aumentosAbsorbidos: 0, origenes: { comprado: { cantidad: 10, costoUnitario: 1150 }, propio: { cantidad: 0, costoUnitario: 0 } } },
+          { id: 2, nombre: "Frascos de Vidrio 360cc", cantidad: 30, unidad: "unid", costoPromedio: 450, costoHistorico: 450, aumentosAbsorbidos: 0, origenes: { comprado: { cantidad: 30, costoUnitario: 450 }, propio: { cantidad: 0, costoUnitario: 0 } } }
+        ];
+
+        await setDoc(doc(db, 'emprendimientos', slug, 'datos', 'despensa'), {
+          insumos: despensaInicial,
+          archivados: [],
+          actualizadoEl: new Date().toISOString()
+        });
+
+        sesionActiva = { slug: slug, nombre: nomInput };
+        localStorage.setItem('sgpp_sesion_activa_v2', JSON.stringify(sesionActiva));
+
+        iniciarSincronizacionEmprendimiento(slug, nomInput);
+        mostrarToast(`¡Emprendimiento "${nomInput}" registrado con éxito!`);
+      } catch (err) {
+        console.warn("Error en registro:", err);
+        if (!navigator.onLine) {
+          if (errTxt) errTxt.innerText = "Para registrar por primera vez un nuevo emprendimiento necesitas conexión a internet.";
+        } else {
+          if (errTxt) errTxt.innerText = `No se pudo registrar: ${err.message}`;
+        }
+        if (errDiv) errDiv.classList.remove('hidden');
+        actualizarIndicadorNube(false, "Error al registrar");
+      }
+    }
+
+    function iniciarSincronizacionEmprendimiento(slug, nombreEmprendimiento) {
+      if (!slug) return;
+
+      const headerName = document.getElementById('nombreEmprendimientoHeader');
+      if (headerName) headerName.innerText = nombreEmprendimiento;
+
+      const badgeActivo = document.getElementById('badgeEmprendimientoActivo');
+      if (badgeActivo) badgeActivo.innerText = nombreEmprendimiento;
+
+      const barra = document.getElementById('barraUsuarioSesion');
+      if (barra) barra.classList.remove('hidden');
+
+      const vAuth = document.getElementById('vistaAuth');
+      if (vAuth) vAuth.classList.add('hidden');
+
+      ocultarAlerta();
+
+      // Cargar respaldo local prioritario (respuesta en milisegundos sin depender de red)
+      const despensaLocal = localStorage.getItem(`sgpp_despensa_${slug}`);
+      if (despensaLocal) {
+        try { insumosDespensa = JSON.parse(despensaLocal); } catch (e) {}
+      }
+      const archivadosLocal = localStorage.getItem(`sgpp_archivados_${slug}`);
+      if (archivadosLocal) {
+        try { insumosArchivados = JSON.parse(archivadosLocal); } catch (e) {}
+      }
+      const prodsLocales = localStorage.getItem(`sgpp_prods_${slug}`);
+      if (prodsLocales) {
+        try { productosGuardados = JSON.parse(prodsLocales); } catch (e) {}
+      }
+
+      renderEstantes();
+      renderizarListaProductos();
+      calcularDisponibilidad();
+      verificarAlertaGuardian();
+
+      // Actualizar estado según conectividad
+      actualizarIndicadorNube(navigator.onLine ? true : 'offline');
+
+      // RADAR DESPENSA (Firestore con persistencia IndexedDB nativa)
+      if (unsubscribeDespensa) unsubscribeDespensa();
+      try {
+        const docDespensaRef = doc(db, 'emprendimientos', slug, 'datos', 'despensa');
+        unsubscribeDespensa = onSnapshot(docDespensaRef, { includeMetadataChanges: true }, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data && Array.isArray(data.insumos)) {
+              insumosDespensa = data.insumos;
+              insumosArchivados = Array.isArray(data.archivados) ? data.archivados : [];
+              localStorage.setItem(`sgpp_despensa_${slug}`, JSON.stringify(insumosDespensa));
+              localStorage.setItem(`sgpp_archivados_${slug}`, JSON.stringify(insumosArchivados));
+              renderEstantes();
+              calcularDisponibilidad();
+              verificarAlertaGuardian();
+            }
+          }
+          if (docSnap.metadata.fromCache && !navigator.onLine) {
+            actualizarIndicadorNube('offline', "Modo Campo / Datos Locales");
+          } else {
+            actualizarIndicadorNube(true, "Bóveda Sincronizada");
+          }
+        }, (err) => {
+          console.warn("Error radar despensa:", err);
+          if (!navigator.onLine) {
+            actualizarIndicadorNube('offline', "Modo Campo / Sin Señal");
+          }
+        });
+      } catch (e) {
+        console.warn("Fallo suscripción despensa:", e);
+      }
+
+      if (unsubscribeProductos) unsubscribeProductos();
+      try {
+        const colProductosRef = collection(db, 'emprendimientos', slug, 'productos');
+        unsubscribeProductos = onSnapshot(colProductosRef, { includeMetadataChanges: true }, (snapshot) => {
+          const prodsActualizados = [];
+          snapshot.forEach(docSnap => {
+            prodsActualizados.push({ ...docSnap.data(), id: docSnap.id });
+          });
+
+          prodsActualizados.sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+          productosGuardados = prodsActualizados;
+          localStorage.setItem(`sgpp_prods_${slug}`, JSON.stringify(productosGuardados));
+          renderizarListaProductos();
+          calcularDisponibilidad();
+          if (snapshot.metadata.fromCache && !navigator.onLine) {
+            actualizarIndicadorNube('offline', "Modo Campo / Datos Locales");
+          } else {
+            actualizarIndicadorNube(true, "Bóveda Sincronizada");
+          }
+        }, (err) => {
+          console.warn("Error radar productos:", err);
+          if (!navigator.onLine) {
+            actualizarIndicadorNube('offline', "Modo Campo / Sin Señal");
+          }
+        });
+      } catch (e) {
+        console.warn("Fallo suscripción productos:", e);
+      }
+
+      cambiarVista('inicio');
+    }
+
+    async function guardarDespensaNube() {
+      if (!sesionActiva || !sesionActiva.slug) return;
+      
+      // Siempre guardar inmediatamente en local
+      localStorage.setItem(`sgpp_despensa_${sesionActiva.slug}`, JSON.stringify(insumosDespensa));
+      localStorage.setItem(`sgpp_archivados_${sesionActiva.slug}`, JSON.stringify(insumosArchivados));
+
+      // Indicar estado de guardado
+      actualizarIndicadorNube(navigator.onLine ? 'sincronizando' : 'offline', navigator.onLine ? "Guardando en nube..." : "Guardado seguro en equipo");
+
+      try {
+        await setDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'datos', 'despensa'), { 
+          insumos: insumosDespensa,
+          archivados: insumosArchivados,
+          actualizadoEl: new Date().toISOString()
+        });
+        if (navigator.onLine) {
+          actualizarIndicadorNube(true, "Bóveda Sincronizada");
+        } else {
+          actualizarIndicadorNube('offline', "Modo Campo / Guardado Local");
+        }
+      } catch (e) {
+        console.warn("Guardado nube despensa (esperando conexión):", e);
+        actualizarIndicadorNube('offline', "Pendiente de subida (Sin señal)");
+      }
+    }
+
+    function mostrarPantallaAuth() {
+      if (unsubscribeDespensa) { unsubscribeDespensa(); unsubscribeDespensa = null; }
+      if (unsubscribeProductos) { unsubscribeProductos(); unsubscribeProductos = null; }
+      sesionActiva = null;
+      localStorage.removeItem('sgpp_sesion_activa_v2');
+
+      const barra = document.getElementById('barraUsuarioSesion');
+      if (barra) barra.classList.add('hidden');
+
+      ['vistaInicio', 'vistaProductos', 'vistaDespensa', 'vistaDetalle', 'vistaCalculadora'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+
+      const vAuth = document.getElementById('vistaAuth');
+      if (vAuth) vAuth.classList.remove('hidden');
+
+      alternarTabAuth('login');
+      actualizarIndicadorNube(navigator.onLine ? false : 'offline', navigator.onLine ? "Sin Sesión" : "Modo Offline");
+    }
+
+    function confirmarCerrarSesion() {
+      cerrarModal('modalCerrarSesion');
+      mostrarPantallaAuth();
+      mostrarToast("Sesión cerrada correctamente.");
+    }
+
+    function cambiarVista(vista) {
+      if (!sesionActiva && vista !== 'auth') {
+        mostrarPantallaAuth();
+        return;
+      }
+
+      ['vistaAuth', 'vistaInicio', 'vistaProductos', 'vistaDespensa', 'vistaDetalle', 'vistaCalculadora'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+
+      const target = document.getElementById(
+        vista === 'inicio' ? 'vistaInicio' :
+        vista === 'productos' ? 'vistaProductos' :
+        vista === 'despensa' ? 'vistaDespensa' :
+        vista === 'detalle' ? 'vistaDetalle' :
+        vista === 'calculadora' ? 'vistaCalculadora' : 'vistaInicio'
+      );
+
+      if (target) target.classList.remove('hidden');
+
+      if (vista === 'inicio') {
+        renderizarListaProductos();
+        renderEstantes();
+      } else if (vista === 'despensa') {
+        renderEstantes();
+        calcularDisponibilidad();
+      } else if (vista === 'productos') {
+        renderizarListaProductos();
+      } else if (vista === 'calculadora') {
+        actualizarNombreResumen();
+        calcular();
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderEstantes(lista = insumosDespensa) {
+      const contenedor = document.getElementById('contenedor-estante');
+      if (!contenedor) return;
+      contenedor.innerHTML = '';
+
+      const badgeStock = document.getElementById('badgeStockDespensa');
+      if (badgeStock) badgeStock.innerText = `${insumosDespensa.length} ${insumosDespensa.length === 1 ? 'insumo' : 'insumos'}`;
+
+      const btnArchivados = document.getElementById('textoBtnArchivados');
+      if (btnArchivados) btnArchivados.innerText = `En pausa / Archivados (${insumosArchivados.length})`;
+
+      if (lista.length === 0) {
+        contenedor.innerHTML = `
+          <div class="col-span-full text-center py-8 bg-white rounded-3xl border border-dashed border-stone-300 text-stone-400 p-4">
+            <p class="font-bold text-xs text-stone-600">Tu despensa está vacía</p>
+            <p class="text-[11px] mt-1">Cargá insumos con "+ Agregar Insumo" o sumá una compra.</p>
+          </div>
+        `;
+        return;
+      }
+
+      lista.forEach(item => {
+        const div = document.createElement('div');
+        div.className = "bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3";
+
+        const cantPropia = item.origenes?.propio?.cantidad || 0;
+        const cantComprada = item.origenes?.comprado?.cantidad || 0;
+        let badgesOrigen = '';
+
+        if (cantPropia > 0 && cantComprada > 0) {
+          badgesOrigen = `
+            <div class="flex items-center gap-1 mt-1.5 flex-wrap">
+              <span class="text-[9px] font-black bg-emerald-100 text-emerald-950 px-2 py-0.5 rounded-md border border-emerald-300">
+                🌱 ${cantPropia} ${item.unidad} propia
+              </span>
+              <span class="text-[9px] font-black bg-stone-100 text-stone-800 px-2 py-0.5 rounded-md border border-stone-300">
+                🛒 ${cantComprada} ${item.unidad} comprada
+              </span>
+            </div>
+          `;
+        } else if (cantPropia > 0) {
+          badgesOrigen = `
+            <div class="mt-1">
+              <span class="text-[9px] font-black bg-emerald-100 text-emerald-950 px-2 py-0.5 rounded-md border border-emerald-300">
+                🌱 Producción propia
+              </span>
+            </div>
+          `;
+        }
+
+        div.innerHTML = `
+          <div>
+            <div class="flex items-center gap-2">
+              <h4 class="font-black text-stone-900 text-sm">${item.nombre}</h4>
+              ${cantPropia > 0 && cantComprada > 0 ? '<span class="text-[9px] font-black uppercase text-amber-900 bg-amber-100 px-1.5 py-0.2 rounded border border-amber-300">Doble origen</span>' : ''}
+            </div>
+            <p class="text-xs text-stone-500 mt-0.5">
+              Stock total: <span class="font-black text-stone-900 text-sm">${item.cantidad} ${item.unidad}</span>
+            </p>
+            <p class="text-[11px] text-emerald-800 font-bold">
+              Promedio: $${formatearNumero(item.costoPromedio)} / ${item.unidad}
+            </p>
+            ${badgesOrigen}
+          </div>
+          <button onclick="window.abrirVerEstante(${item.id})" class="self-end sm:self-center bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1 active:scale-95 transition cursor-pointer">
+            <i class="ph-bold ph-sliders"></i> Ajustar
+          </button>
+        `;
+        contenedor.appendChild(div);
+      });
+
+      const selectCompra = document.getElementById('compra-insumo-select');
+      if (selectCompra) {
+        selectCompra.innerHTML = insumosDespensa.map(i => `<option value="${i.id}">${i.nombre} (${i.unidad})</option>`).join('');
+      }
+
+      const selectSimulador = document.getElementById('simulador-receta');
+      if (selectSimulador) {
+        const terminados = productosGuardados.filter(p => p.estado !== 'borrador');
+        if (terminados.length > 0) {
+          selectSimulador.innerHTML = terminados.map(p => `<option value="${p.id}">${p.nombre} (${p.unidadesProducidas} ${p.tipoUnidad})</option>`).join('');
+        } else {
+          selectSimulador.innerHTML = `<option value="">Registrá productos calculados primero</option>`;
+        }
+      }
+    }
+
+    function incorporarOActualizarInsumoEnDespensa({ nombre, cantidad, unidad, costoUnitario, tipoOrigen = 'comprado' }) {
+      const nomNormalizado = nombre.trim().toLowerCase();
+      let existente = insumosDespensa.find(i => i.nombre.trim().toLowerCase() === nomNormalizado);
+
+      if (existente) {
+        if (!existente.origenes) {
+          existente.origenes = {
+            comprado: { cantidad: existente.cantidad, costoUnitario: existente.costoPromedio },
+            propio: { cantidad: 0, costoUnitario: 0 }
+          };
+        }
+
+        const orig = existente.origenes[tipoOrigen] || { cantidad: 0, costoUnitario: 0 };
+        const valViejoOrig = orig.cantidad * orig.costoUnitario;
+        const nuevoStockOrig = Math.round((orig.cantidad + cantidad) * 100) / 100;
+        orig.costoUnitario = nuevoStockOrig > 0 ? Math.round((valViejoOrig + (cantidad * costoUnitario)) / nuevoStockOrig) : costoUnitario;
+        orig.cantidad = nuevoStockOrig;
+        existente.origenes[tipoOrigen] = orig;
+
+        const valTotalViejo = existente.cantidad * existente.costoPromedio;
+        const nuevoStockTotal = Math.round((existente.cantidad + cantidad) * 100) / 100;
+        const nuevoPromedio = nuevoStockTotal > 0 ? Math.round((valTotalViejo + (cantidad * costoUnitario)) / nuevoStockTotal) : costoUnitario;
+
+        existente.cantidad = nuevoStockTotal;
+        existente.costoPromedio = nuevoPromedio;
+      } else {
+        const origenesInit = {
+          comprado: { cantidad: tipoOrigen === 'comprado' ? cantidad : 0, costoUnitario: tipoOrigen === 'comprado' ? costoUnitario : 0 },
+          propio: { cantidad: tipoOrigen === 'propio' ? cantidad : 0, costoUnitario: tipoOrigen === 'propio' ? costoUnitario : 0 }
+        };
+
+        insumosDespensa.push({
+          id: Date.now() + Math.floor(Math.random() * 1000),
+          nombre: nombre.trim(),
+          cantidad: cantidad,
+          unidad: unidad,
+          costoPromedio: costoUnitario,
+          costoHistorico: costoUnitario,
+          aumentosAbsorbidos: 0,
+          origenes: origenesInit
+        });
+      }
+    }
+
+    function guardarNuevoInsumoEstante() {
+      if (origenNuevoInsumo === 'compra') {
+        const nom = (document.getElementById('nuevoInsumoNombre')?.value || '').trim();
+        const cant = parseFloat(document.getElementById('nuevoInsumoCantidad')?.value) || 0;
+        const un = document.getElementById('nuevoInsumoUnidad')?.value || 'kg';
+        const total = parseFloat(document.getElementById('nuevoInsumoTotalPagado')?.value) || 0;
+
+        if (!nom) return mostrarToast("Escribí el nombre del insumo.");
+        const uCost = cant > 0 ? (total / cant) : 0;
+
+        incorporarOActualizarInsumoEnDespensa({
+          nombre: nom,
+          cantidad: cant,
+          unidad: un,
+          costoUnitario: Math.round(uCost),
+          tipoOrigen: 'comprado'
+        });
+      } else {
+        const nom = (document.getElementById('cosechaInsumoNombre')?.value || '').trim();
+        const cant = parseFloat(document.getElementById('cosechaInsumoCantidad')?.value) || 0;
+        const un = document.getElementById('cosechaInsumoUnidad')?.value || 'kg';
+        const hs = parseFloat(document.getElementById('cosechaInsumoHoras')?.value) || 0;
+        const vHora = parseFloat(document.getElementById('cosechaInsumoValorHora')?.value) || 0;
+        const directo = parseFloat(document.getElementById('cosechaInsumoGastoDirecto')?.value) || 0;
+
+        if (!nom) return mostrarToast("Escribí el nombre de la producción propia.");
+
+        const subtotal = (hs * vHora) + directo;
+        const totalConDesgaste = subtotal * 1.20;
+        const uCost = cant > 0 ? (totalConDesgaste / cant) : 0;
+
+        incorporarOActualizarInsumoEnDespensa({
+          nombre: nom,
+          cantidad: cant,
+          unidad: un,
+          costoUnitario: Math.round(uCost),
+          tipoOrigen: 'propio'
+        });
+      }
+
+      guardarDespensaNube();
+      cerrarModales();
+      renderEstantes();
+      calcularDisponibilidad();
+      verificarAlertaGuardian();
+      mostrarToast("Insumo guardado en Mi Despensa.");
+    }
+
+    function solicitarArchivarInsumoActual() {
+      if (!insumoSeleccionadoEstante) return;
+      const idx = insumosDespensa.findIndex(i => i.id === insumoSeleccionadoEstante.id);
+      if (idx === -1) return;
+
+      const [insumoArchivado] = insumosDespensa.splice(idx, 1);
+      insumosArchivados.push({
+        ...insumoArchivado,
+        fechaPausado: new Date().toISOString()
+      });
+
+      guardarDespensaNube();
+      cerrarModales();
+      renderEstantes();
+      calcularDisponibilidad();
+      mostrarToast(`"${insumoArchivado.nombre}" se guardó en insumos en pausa.`);
+    }
+
+    function abrirModalArchivados() {
+      const cont = document.getElementById('contenedorListaArchivados');
+      if (!cont) return;
+      cont.innerHTML = '';
+
+      if (insumosArchivados.length === 0) {
+        cont.innerHTML = `
+          <div class="text-center py-8 bg-stone-50 rounded-2xl border border-dashed border-stone-200 text-stone-400 p-4">
+            <i class="ph-bold ph-archive-box text-3xl mb-1 text-stone-300"></i>
+            <p class="text-xs font-bold text-stone-600">No tenés insumos archivados en pausa.</p>
+            <p class="text-[11px] mt-0.5">Podés poner insumos en pausa desde "Ajustar" cuando termine la temporada.</p>
+          </div>
+        `;
+      } else {
+        insumosArchivados.forEach((item, index) => {
+          const card = document.createElement('div');
+          card.className = "bg-stone-50 border border-stone-200 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3";
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center gap-1.5">
+                <h4 class="font-black text-stone-900 text-sm">${item.nombre}</h4>
+                <span class="text-[9px] font-bold uppercase bg-stone-200 text-stone-600 px-1.5 py-0.2 rounded">${item.unidad}</span>
+              </div>
+              <p class="text-[11px] text-stone-500 mt-0.5">
+                Último costo registrado: <strong class="text-emerald-800">$${formatearNumero(item.costoPromedio)}</strong> / ${item.unidad}
+              </p>
+            </div>
+            <div class="flex items-center gap-1.5 self-end sm:self-center">
+              <button onclick="window.reactivarInsumoArchivado(${index})" class="bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white font-bold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1 cursor-pointer transition">
+                <i class="ph-bold ph-arrow-clockwise"></i> Reactivar al estante
+              </button>
+              <button onclick="window.eliminarArchivadoDefinitivo(${index})" class="text-rose-600 hover:bg-rose-50 p-1.5 rounded-lg border border-stone-200 cursor-pointer transition" title="Borrar definitivo">
+                <i class="ph-bold ph-trash text-sm"></i>
+              </button>
+            </div>
+          `;
+          cont.appendChild(card);
+        });
+      }
+
+      abrirModal('modal-archivados');
+    }
+
+    function reactivarInsumoArchivado(index) {
+      if (index < 0 || index >= insumosArchivados.length) return;
+      const [reactivado] = insumosArchivados.splice(index, 1);
+      
+      incorporarOActualizarInsumoEnDespensa({
+        nombre: reactivado.nombre,
+        cantidad: reactivado.cantidad || 0,
+        unidad: reactivado.unidad,
+        costoUnitario: reactivado.costoPromedio || 0,
+        tipoOrigen: reactivado.origenes?.propio?.cantidad > 0 ? 'propio' : 'comprado'
+      });
+
+      guardarDespensaNube();
+      renderEstantes();
+      abrirModalArchivados();
+      mostrarToast(`¡"${reactivado.nombre}" reactivado en el estante de Mi Despensa!`);
+    }
+
+    function eliminarArchivadoDefinitivo(index) {
+      if (index < 0 || index >= insumosArchivados.length) return;
+      const [borrado] = insumosArchivados.splice(index, 1);
+      guardarDespensaNube();
+      abrirModalArchivados();
+      renderEstantes();
+      mostrarToast(`"${borrado.nombre}" eliminado definitivamente.`);
+    }
+
+    function abrirModalFusionarDesdeActual() {
+      if (!insumoSeleccionadoEstante) return;
+      const otrosInsumos = insumosDespensa.filter(i => i.id !== insumoSeleccionadoEstante.id);
+      if (otrosInsumos.length === 0) {
+        return mostrarToast("Necesitás tener al menos 2 insumos en la despensa para poder fusionar.");
+      }
+
+      const txtActual = document.getElementById('fusionInsumoActualNombre');
+      if (txtActual) txtActual.innerText = `${insumoSeleccionadoEstante.nombre} (${insumoSeleccionadoEstante.cantidad} ${insumoSeleccionadoEstante.unidad} - $${insumoSeleccionadoEstante.costoPromedio}/${insumoSeleccionadoEstante.unidad})`;
+
+      const sel = document.getElementById('selectInsumoParaFusionar');
+      if (sel) {
+        sel.innerHTML = otrosInsumos.map(i => `<option value="${i.id}">${i.nombre} (${i.cantidad} ${i.unidad} - $${i.costoPromedio}/${i.unidad})</option>`).join('');
+      }
+
+      actualizarOpcionesNombreFusion();
+      cerrarModal('modal-estante');
+      abrirModal('modal-fusionar');
+    }
+
+    function extraerNombreBaseYAlias(texto) {
+      const match = texto.match(/^([^(]+)(?:\((.*)\))?$/);
+      if (!match) return { base: texto.trim(), aliasList: [] };
+      const base = match[1].trim();
+      const aliasRaw = match[2] ? match[2].trim() : '';
+      const aliasList = aliasRaw ? aliasRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+      return { base, aliasList };
+    }
+
+    function construirNombreFusionado(nombreElegidoPrincipal, nombreSecundario) {
+      const infoPrincipal = extraerNombreBaseYAlias(nombreElegidoPrincipal);
+      const infoSecundario = extraerNombreBaseYAlias(nombreSecundario);
+
+      const conjuntoAlias = new Set(infoPrincipal.aliasList);
+      conjuntoAlias.add(infoSecundario.base);
+      infoSecundario.aliasList.forEach(a => conjuntoAlias.add(a));
+      conjuntoAlias.delete(infoPrincipal.base);
+
+      const listaFinalAlias = Array.from(conjuntoAlias);
+      if (listaFinalAlias.length === 0) return infoPrincipal.base;
+      return `${infoPrincipal.base} (${listaFinalAlias.join(', ')})`;
+    }
+
+    function actualizarOpcionesNombreFusion() {
+      const sel = document.getElementById('selectInsumoParaFusionar');
+      const cont = document.getElementById('opcionesNombreFusion');
+      if (!sel || !cont || !insumoSeleccionadoEstante) return;
+
+      const idSecundario = parseInt(sel.value);
+      const otroInsumo = insumosDespensa.find(i => i.id === idSecundario);
+      if (!otroInsumo) return;
+
+      const opcion1Preview = construirNombreFusionado(insumoSeleccionadoEstante.nombre, otroInsumo.nombre);
+      const opcion2Preview = construirNombreFusionado(otroInsumo.nombre, insumoSeleccionadoEstante.nombre);
+
+      cont.innerHTML = `
+        <label class="flex items-start gap-2.5 p-3 rounded-xl border border-stone-300 bg-stone-50 cursor-pointer hover:bg-white transition">
+          <input type="radio" name="nombreFusionPrincipalRadio" value="actual" checked class="mt-0.5 text-emerald-600">
+          <div>
+            <span class="text-xs font-black text-stone-900 block leading-snug">${opcion1Preview}</span>
+            <span class="text-[10px] text-stone-500">Mantiene "${insumoSeleccionadoEstante.nombre}" como base</span>
+          </div>
+        </label>
+        <label class="flex items-start gap-2.5 p-3 rounded-xl border border-stone-300 bg-stone-50 cursor-pointer hover:bg-white transition">
+          <input type="radio" name="nombreFusionPrincipalRadio" value="secundario" class="mt-0.5 text-emerald-600">
+          <div>
+            <span class="text-xs font-black text-stone-900 block leading-snug">${opcion2Preview}</span>
+            <span class="text-[10px] text-stone-500">Mantiene "${otroInsumo.nombre}" como base</span>
+          </div>
+        </label>
+      `;
+    }
+
+    function confirmarFusionInsumos() {
+      if (!insumoSeleccionadoEstante) return;
+      const sel = document.getElementById('selectInsumoParaFusionar');
+      if (!sel) return;
+
+      const idSecundario = parseInt(sel.value);
+      const otroInsumo = insumosDespensa.find(i => i.id === idSecundario);
+      if (!otroInsumo) return;
+
+      const eleccion = document.querySelector('input[name="nombreFusionPrincipalRadio"]:checked')?.value || 'actual';
+      const nombreFinal = eleccion === 'actual' 
+        ? construirNombreFusionado(insumoSeleccionadoEstante.nombre, otroInsumo.nombre)
+        : construirNombreFusionado(otroInsumo.nombre, insumoSeleccionadoEstante.nombre);
+
+      const cant1 = insumoSeleccionadoEstante.cantidad || 0;
+      const costo1 = insumoSeleccionadoEstante.costoPromedio || 0;
+      const cant2 = otroInsumo.cantidad || 0;
+      const costo2 = otroInsumo.costoPromedio || 0;
+
+      const stockConsolidado = Math.round((cant1 + cant2) * 100) / 100;
+      const valorTotal = (cant1 * costo1) + (cant2 * costo2);
+      const nuevoCostoPromedio = stockConsolidado > 0 ? Math.round(valorTotal / stockConsolidado) : costo1;
+
+      const origPropioCant = (insumoSeleccionadoEstante.origenes?.propio?.cantidad || 0) + (otroInsumo.origenes?.propio?.cantidad || 0);
+      const origPropioVal = ((insumoSeleccionadoEstante.origenes?.propio?.cantidad || 0) * (insumoSeleccionadoEstante.origenes?.propio?.costoUnitario || 0)) +
+                            ((otroInsumo.origenes?.propio?.cantidad || 0) * (otroInsumo.origenes?.propio?.costoUnitario || 0));
+      const origPropioUnit = origPropioCant > 0 ? Math.round(origPropioVal / origPropioCant) : 0;
+
+      const origCompCant = (insumoSeleccionadoEstante.origenes?.comprado?.cantidad || 0) + (otroInsumo.origenes?.comprado?.cantidad || 0);
+      const origCompVal = ((insumoSeleccionadoEstante.origenes?.comprado?.cantidad || 0) * (insumoSeleccionadoEstante.origenes?.comprado?.costoUnitario || 0)) +
+                          ((otroInsumo.origenes?.comprado?.cantidad || 0) * (otroInsumo.origenes?.comprado?.costoUnitario || 0));
+      const origCompUnit = origCompCant > 0 ? Math.round(origCompVal / origCompCant) : 0;
+
+      insumoSeleccionadoEstante.nombre = nombreFinal;
+      insumoSeleccionadoEstante.cantidad = stockConsolidado;
+      insumoSeleccionadoEstante.costoPromedio = nuevoCostoPromedio;
+      insumoSeleccionadoEstante.origenes = {
+        propio: { cantidad: origPropioCant, costoUnitario: origPropioUnit },
+        comprado: { cantidad: origCompCant, costoUnitario: origCompUnit }
+      };
+
+      insumosDespensa = insumosDespensa.filter(i => i.id !== idSecundario);
+
+      guardarDespensaNube();
+      cerrarModales();
+      renderEstantes();
+      calcularDisponibilidad();
+      mostrarToast(`Insumos fusionados con éxito bajo "${nombreFinal}".`);
+    }
+
+    function renderizarListaProductos() {
+      const contenedorTerminados = document.getElementById('contenedorTerminados');
+      const contadorTerminados = document.getElementById('btnTextoVerCalculados');
+      const contadorHeader = document.getElementById('contadorTerminadosHeader');
+      const seccionBorradores = document.getElementById('seccionBorradores');
+      const contenedorBorradores = document.getElementById('contenedorBorradores');
+      const contadorBorradores = document.getElementById('contadorBorradores');
+      const estadoVacio = document.getElementById('estadoVacioProductos');
+
+      const borradores = productosGuardados.filter(p => p.estado === 'borrador');
+      const terminados = productosGuardados.filter(p => p.estado !== 'borrador');
+
+      if (contadorTerminados) contadorTerminados.innerText = `Ver mis productos calculados (${terminados.length})`;
+      if (contadorHeader) contadorHeader.innerText = `${terminados.length} ${terminados.length === 1 ? 'producto calculado' : 'productos calculados'}`;
+
+      if (seccionBorradores && contenedorBorradores) {
+        if (borradores.length > 0) {
+          seccionBorradores.classList.remove('hidden');
+          if (contadorBorradores) contadorBorradores.innerText = `${borradores.length} en proceso`;
+          contenedorBorradores.innerHTML = '';
+
+          borradores.forEach(b => {
+            const card = document.createElement('div');
+            card.className = "bg-amber-50/80 rounded-2xl p-4 border border-amber-300 shadow-sm flex flex-col justify-between";
+            card.innerHTML = `
+              <div>
+                <div class="flex justify-between items-center text-[10px] text-amber-900 font-bold mb-1">
+                  <span>En proceso</span>
+                  <span>${b.fecha || '--'}</span>
+                </div>
+                <h4 class="font-black text-stone-900 text-sm">${b.nombre}</h4>
+                <p class="text-xs text-stone-600 mt-1">Acumulado: <strong class="text-stone-900">$${formatearNumero(b.costoTotal)}</strong></p>
+              </div>
+              <div class="pt-3 flex gap-2">
+                <button onclick="window.continuarBorradorDesdeId('${b.id}')" class="flex-1 bg-amber-500 hover:bg-amber-600 text-stone-950 font-black text-xs py-2 px-3 rounded-xl transition cursor-pointer">
+                  Continuar tanda
+                </button>
+              </div>
+            `;
+            contenedorBorradores.appendChild(card);
+          });
+        } else {
+          seccionBorradores.classList.add('hidden');
+        }
+      }
+
+      if (contenedorTerminados) {
+        contenedorTerminados.innerHTML = '';
+        if (terminados.length === 0) {
+          if (estadoVacio) estadoVacio.classList.remove('hidden');
+        } else {
+          if (estadoVacio) estadoVacio.classList.add('hidden');
+          terminados.forEach(prod => {
+            const card = document.createElement('div');
+            card.className = "bg-white rounded-2xl p-4 shadow-sm border border-stone-200 flex flex-col justify-between hover:border-emerald-600 transition cursor-pointer";
+            card.onclick = () => verDetalleProducto(prod.id);
+
+            const pFeria = prod.preciosVenta?.precioMinorista || Math.round(prod.costoUnitario * 1.5);
+
+            card.innerHTML = `
+              <div>
+                <div class="flex justify-between items-center text-[10px] text-stone-400 font-bold mb-1">
+                  <span>${prod.fecha || '--'}</span>
+                  <span class="bg-emerald-100 text-emerald-950 px-2 py-0.5 rounded-full border border-emerald-300">
+                    Feria: $${formatearNumero(pFeria)}
+                  </span>
+                </div>
+                <h4 class="font-black text-stone-900 text-sm leading-tight">${prod.nombre}</h4>
+                <p class="text-xs text-stone-500 mt-1">${prod.unidadesProducidas} ${prod.tipoUnidad}</p>
+                
+                <div class="grid grid-cols-2 gap-2 bg-stone-50 p-2.5 rounded-xl border border-stone-200 mt-2.5 text-xs">
+                  <div>
+                    <span class="text-[10px] text-stone-400 font-bold block">Costo / Unidad</span>
+                    <span class="font-black text-emerald-800 text-base">$${formatearNumero(prod.costoUnitario)}</span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-stone-400 font-bold block">Costo Tanda</span>
+                    <span class="font-bold text-stone-800 text-sm">$${formatearNumero(prod.costoTotal)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-3 pt-2.5 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500 font-bold">
+                <span>${(prod.horasTotales || 0).toFixed(1)} hs trabajadas</span>
+                <span class="text-emerald-700 flex items-center gap-0.5">Ficha y Precios →</span>
+              </div>
+            `;
+            contenedorTerminados.appendChild(card);
+          });
+        }
+      }
+    }
+
+    function obtenerOpcionesOrigenReceta() {
+      const opciones = [];
+
+      insumosDespensa.forEach(d => {
+        const cantPropia = d.origenes?.propio?.cantidad || 0;
+        const cantComprada = d.origenes?.comprado?.cantidad || 0;
+
+        if (cantPropia > 0 && cantComprada > 0) {
+          opciones.push({
+            refId: `despensa_${d.id}_propia`,
+            nombre: `[🌱 Propia] ${d.nombre} ($${d.origenes.propio.costoUnitario} - disp: ${cantPropia} ${d.unidad})`,
+            costoUnitario: d.origenes.propio.costoUnitario,
+            unidad: d.unidad,
+            tipoOrigen: 'despensa',
+            subOrigen: 'propio',
+            obj: d
+          });
+          opciones.push({
+            refId: `despensa_${d.id}_comprada`,
+            nombre: `[🛒 Comprada] ${d.nombre} ($${d.origenes.comprado.costoUnitario} - disp: ${cantComprada} ${d.unidad})`,
+            costoUnitario: d.origenes.comprado.costoUnitario,
+            unidad: d.unidad,
+            tipoOrigen: 'despensa',
+            subOrigen: 'comprado',
+            obj: d
+          });
+        } else if (cantPropia > 0) {
+          opciones.push({
+            refId: `despensa_${d.id}_propia`,
+            nombre: `[🌱 Propia] ${d.nombre} ($${d.costoPromedio} - disp: ${d.cantidad} ${d.unidad})`,
+            costoUnitario: d.costoPromedio,
+            unidad: d.unidad,
+            tipoOrigen: 'despensa',
+            subOrigen: 'propio',
+            obj: d
+          });
+        } else {
+          opciones.push({
+            refId: `despensa_${d.id}`,
+            nombre: `[Despensa] ${d.nombre} ($${d.costoPromedio} - disp: ${d.cantidad} ${d.unidad})`,
+            costoUnitario: d.costoPromedio,
+            unidad: d.unidad,
+            tipoOrigen: 'despensa',
+            subOrigen: 'comprado',
+            obj: d
+          });
+        }
+      });
+
+      if (cosechoPropio) {
+        const nom = (document.getElementById('cosechaNombre')?.value || cosechadoNombre || 'Producción propia').trim();
+        const cant = parseFloat(document.getElementById('cosechaCantidad')?.value) || 0;
+        const un = document.getElementById('cosechaUnidad')?.value || 'kg';
+        const hs = parseFloat(document.getElementById('cosechaHoras')?.value) || 0;
+        const vHora = parseFloat(document.getElementById('valorHoraTrabajo')?.value) || 0;
+
+        const costoTotal = (hs * vHora) * 1.20;
+        const uCost = cant > 0 ? (costoTotal / cant) : 0;
+
+        opciones.push({
+          refId: 'cosecha_paso3',
+          nombre: `[🌱 Producción Tanda] ${nom} (${cant} ${un})`,
+          costoUnitario: uCost,
+          unidad: un,
+          tipoOrigen: 'cosecha',
+          subOrigen: 'propio',
+          nombreLimpio: nom,
+          cantidadCosechada: cant
+        });
+      }
+
+      compras.forEach(c => {
+        const uCost = (c.cantidad && c.costo) ? (c.costo / c.cantidad) : 0;
+        opciones.push({
+          refId: `compra_${c.id}`,
+          nombre: `[🛒 Compra Tanda] ${c.nombre || 'Insumo'} (${c.cantidad || 0} ${c.unidad})`,
+          costoUnitario: uCost,
+          unidad: c.unidad,
+          tipoOrigen: 'compra',
+          subOrigen: 'comprado',
+          obj: c
+        });
+      });
+
+      return opciones;
+    }
+
+    function obtenerOpcionesDespensaDetalladas() {
+      const opciones = [];
+      insumosDespensa.forEach(d => {
+        const cantPropia = d.origenes?.propio?.cantidad || 0;
+        const cantComprada = d.origenes?.comprado?.cantidad || 0;
+
+        if (cantPropia > 0 && cantComprada > 0) {
+          opciones.push({
+            idKey: `${d.id}_propio`,
+            insumoId: d.id,
+            subOrigen: 'propio',
+            nombreMostrar: `[🌱 Propia] ${d.nombre}`,
+            costoUnitario: d.origenes.propio.costoUnitario || d.costoPromedio,
+            unidad: d.unidad,
+            disponible: cantPropia
+          });
+          opciones.push({
+            idKey: `${d.id}_comprado`,
+            insumoId: d.id,
+            subOrigen: 'comprado',
+            nombreMostrar: `[🛒 Comprada] ${d.nombre}`,
+            costoUnitario: d.origenes.comprado.costoUnitario || d.costoPromedio,
+            unidad: d.unidad,
+            disponible: cantComprada
+          });
+        } else if (cantPropia > 0) {
+          opciones.push({
+            idKey: `${d.id}_propio`,
+            insumoId: d.id,
+            subOrigen: 'propio',
+            nombreMostrar: `[🌱 Propia] ${d.nombre}`,
+            costoUnitario: d.costoPromedio,
+            unidad: d.unidad,
+            disponible: d.cantidad
+          });
+        } else {
+          opciones.push({
+            idKey: `${d.id}_comprado`,
+            insumoId: d.id,
+            subOrigen: 'comprado',
+            nombreMostrar: `${d.nombre}`,
+            costoUnitario: d.costoPromedio,
+            unidad: d.unidad,
+            disponible: d.cantidad
+          });
+        }
+      });
+      return opciones;
+    }
+
+    function renderizarTablaCompras() {
+      const contenedor = document.getElementById('contenedorCompras');
+      if (!contenedor) return;
+      contenedor.innerHTML = '';
+
+      if (compras.length === 0) {
+        contenedor.innerHTML = `
+          <div class="text-center py-3 bg-stone-50 rounded-2xl border border-dashed border-stone-200 text-xs text-stone-400">
+            No cargaste compras en este paso. Podés traer materias primas de tu despensa con el botón verde.
+          </div>
+        `;
+        return;
+      }
+
+      const opcionesDespensa = obtenerOpcionesDespensaDetalladas();
+
+      compras.forEach((c) => {
+        const div = document.createElement('div');
+        div.className = "bg-stone-50 p-3 rounded-2xl border border-stone-200 text-xs space-y-2";
+        
+        let bloqueNombre = '';
+        let esDeDespensa = Boolean(c.origenDespensaKey);
+
+        if (esDeDespensa) {
+          const opcionesHtml = opcionesDespensa.map(opt => 
+            `<option value="${opt.idKey}" ${opt.idKey === c.origenDespensaKey ? 'selected' : ''}>
+              ${opt.nombreMostrar} ($${formatearNumero(opt.costoUnitario)} / ${opt.unidad} - disp: ${opt.disponible} ${opt.unidad})
+            </option>`
+          ).join('');
+
+          bloqueNombre = `
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+              <div class="flex items-center gap-1.5 flex-1">
+                <span class="text-[9px] font-black uppercase bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded-md shrink-0">Estante</span>
+                <select onchange="window.cambiarInsumoDespensaCompra(${c.id}, this.value)" class="w-full bg-white border border-stone-300 rounded-xl px-2.5 py-1.5 font-bold text-stone-800 text-xs">
+                  ${opcionesHtml}
+                </select>
+              </div>
+              <span class="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 shrink-0 self-start sm:self-auto">
+                Costo: $${formatearNumero(c.costoUnitarioFijo || 0)} / ${c.unidad}
+              </span>
+            </div>
+          `;
+        } else {
+          bloqueNombre = `
+            <div class="flex items-center gap-1.5">
+              <span class="text-[9px] font-black uppercase bg-stone-200 text-stone-700 px-2 py-0.5 rounded-md shrink-0">Compra</span>
+              <input type="text" value="${c.nombre || ''}" placeholder="Nombre del insumo (ej: Azúcar, Madera)"
+                     oninput="window.actualizarCompraSilencioso(${c.id}, 'nombre', this.value)"
+                     class="flex-1 bg-white border border-stone-300 rounded-xl px-2.5 py-1.5 font-bold text-stone-800">
+            </div>
+          `;
+        }
+
+        div.innerHTML = `
+          ${bloqueNombre}
+          <div class="grid grid-cols-12 gap-2 items-end pt-1">
+            <div class="col-span-4">
+              <label class="block text-[10px] font-bold text-stone-600 mb-0.5">Cantidad</label>
+              <input type="number" value="${c.cantidad !== null && c.cantidad !== undefined ? c.cantidad : ''}" placeholder="0" min="0" step="any"
+                     onfocus="this.select()"
+                     oninput="window.actualizarCompraSilencioso(${c.id}, 'cantidad', this.value)"
+                     class="w-full bg-white border border-stone-300 rounded-lg px-2 py-1.5 text-center font-black text-stone-800">
+            </div>
+
+            <div class="col-span-3">
+              <label class="block text-[10px] font-bold text-stone-600 mb-0.5">Unidad</label>
+              ${esDeDespensa ? `
+                <div class="bg-stone-100 border border-stone-200 rounded-lg px-2 py-1.5 font-black text-stone-700 text-center text-xs">
+                  ${c.unidad}
+                </div>
+              ` : `
+                <select onchange="window.actualizarCompraSilencioso(${c.id}, 'unidad', this.value)"
+                        class="w-full bg-white border border-stone-300 rounded-lg px-1.5 py-1.5 font-bold text-stone-700 text-xs">
+                  <option value="kg" ${c.unidad === 'kg' ? 'selected' : ''}>kg</option>
+                  <option value="litros" ${c.unidad === 'litros' ? 'selected' : ''}>litros</option>
+                  <option value="unidades" ${c.unidad === 'unidades' || c.unidad === 'unid' ? 'selected' : ''}>unid.</option>
+                  <option value="cajones" ${c.unidad === 'cajones' ? 'selected' : ''}>cajones</option>
+                  <option value="paquetes" ${c.unidad === 'paquetes' ? 'selected' : ''}>paquetes</option>
+                  <option value="atados" ${c.unidad === 'atados' ? 'selected' : ''}>atados</option>
+                  <option value="g" ${c.unidad === 'g' ? 'selected' : ''}>g</option>
+                  <option value="ml" ${c.unidad === 'ml' ? 'selected' : ''}>ml</option>
+                </select>
+              `}
+            </div>
+
+            <div class="col-span-4">
+              <label class="block text-[10px] font-bold text-stone-600 mb-0.5">
+                ${esDeDespensa ? 'Total (Autocalculado)' : 'Total Pagado ($)'}
+              </label>
+              <input type="number" id="costoCompraInput-${c.id}" value="${c.costo !== null && c.costo !== undefined ? c.costo : ''}" placeholder="0" min="0" step="any"
+                     ${esDeDespensa ? 'readonly' : 'onfocus="this.select()"'}
+                     oninput="window.actualizarCompraSilencioso(${c.id}, 'costo', this.value)"
+                     class="w-full ${esDeDespensa ? 'bg-emerald-50/70 border-emerald-300 text-emerald-950 cursor-not-allowed' : 'bg-white border-stone-300 text-stone-800'} border rounded-lg px-2 py-1.5 font-black text-right">
+            </div>
+
+            <div class="col-span-1 flex justify-end">
+              <button onclick="window.eliminarCompra(${c.id})" class="text-stone-400 hover:text-rose-600 p-2 rounded-xl bg-white border border-stone-200 cursor-pointer" title="Eliminar">
+                <i class="ph-bold ph-trash text-sm"></i>
+              </button>
+            </div>
+          </div>
+        `;
+        contenedor.appendChild(div);
+      });
+    }
+
+    function agregarCompraDesdeDespensa() {
+      const opciones = obtenerOpcionesDespensaDetalladas();
+      if (opciones.length === 0) {
+        mostrarToast("Tu despensa está vacía. Creá un insumo primero.");
+        cambiarVista('despensa');
+        return;
+      }
+      const primera = opciones[0];
+      compras.push({
+        id: Date.now(),
+        nombre: primera.nombreMostrar,
+        cantidad: null,
+        unidad: primera.unidad,
+        costo: null,
+        origenDespensaKey: primera.idKey,
+        origenDespensaId: primera.insumoId,
+        subOrigen: primera.subOrigen,
+        costoUnitarioFijo: primera.costoUnitario
+      });
+      renderizarTablaCompras();
+      renderizarInsumosReceta();
+      calcular();
+    }
+
+    function agregarCompra() {
+      compras.push({
+        id: Date.now(),
+        nombre: "",
+        cantidad: null,
+        unidad: "kg",
+        costo: null
+      });
+      renderizarTablaCompras();
+      renderizarInsumosReceta();
+      calcular();
+    }
+
+    function actualizarCompraSilencioso(id, campo, val) {
+      const c = compras.find(item => item.id === id);
+      if (!c) return;
+      if (campo === 'cantidad' || campo === 'costo') {
+        c[campo] = val === '' ? null : parseFloat(val);
+      } else {
+        c[campo] = val;
+      }
+
+      if (c.origenDespensaKey && c.costoUnitarioFijo !== undefined) {
+        if (c.cantidad !== null && !isNaN(c.cantidad) && c.cantidad > 0) {
+          c.costo = Math.round(c.cantidad * c.costoUnitarioFijo);
+        } else {
+          c.costo = null;
+        }
+
+        const inputCosto = document.getElementById(`costoCompraInput-${c.id}`);
+        if (inputCosto) {
+          inputCosto.value = c.costo !== null ? c.costo : '';
+        }
+      }
+
+      calcular();
+    }
+
+    function cambiarInsumoDespensaCompra(compraId, nuevoKey) {
+      const c = compras.find(item => item.id === compraId);
+      const opciones = obtenerOpcionesDespensaDetalladas();
+      const opt = opciones.find(o => o.idKey === nuevoKey);
+
+      if (c && opt) {
+        c.origenDespensaKey = opt.idKey;
+        c.origenDespensaId = opt.insumoId;
+        c.subOrigen = opt.subOrigen;
+        c.nombre = opt.nombreMostrar;
+        c.unidad = opt.unidad;
+        c.costoUnitarioFijo = opt.costoUnitario;
+
+        if (c.cantidad !== null && !isNaN(c.cantidad) && c.cantidad > 0) {
+          c.costo = Math.round(c.cantidad * c.costoUnitarioFijo);
+        } else {
+          c.costo = null;
+        }
+
+        renderizarTablaCompras();
+        renderizarInsumosReceta();
+        calcular();
+      }
+    }
+
+    function eliminarCompra(id) {
+      compras = compras.filter(c => c.id !== id);
+      renderizarTablaCompras();
+      renderizarInsumosReceta();
+      calcular();
+    }
+
+    function renderizarInsumosReceta() {
+      const contenedor = document.getElementById('contenedorInsumosReceta');
+      if (!contenedor) return;
+      contenedor.innerHTML = '';
+
+      if (insumosReceta.length === 0) {
+        contenedor.innerHTML = `
+          <div class="text-center py-3 bg-stone-50 rounded-2xl border border-dashed border-stone-200 text-xs text-stone-400">
+            No agregaste insumos a la receta todavía. Podés usar insumos de la despensa, de tu cosecha o compras.
+          </div>
+        `;
+        return;
+      }
+
+      const opciones = obtenerOpcionesOrigenReceta();
+
+      insumosReceta.forEach((item) => {
+        const div = document.createElement('div');
+        div.className = "bg-stone-50 p-3 rounded-2xl border border-stone-200 text-xs space-y-2";
+
+        if (item.tipo === 'origen') {
+          const optSeleccionada = opciones.find(o => o.refId === item.refId) || opciones[0];
+          const un = optSeleccionada ? optSeleccionada.unidad : 'unid';
+
+          const selectHtml = opciones.map(opt => 
+            `<option value="${opt.refId}" ${opt.refId === item.refId ? 'selected' : ''}>
+              ${opt.nombre}
+            </option>`
+          ).join('');
+
+          div.innerHTML = `
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+              <div class="flex items-center gap-1.5 flex-1">
+                <span class="text-[9px] font-black uppercase bg-emerald-100 text-emerald-950 px-2 py-0.5 rounded-md shrink-0">Receta</span>
+                <select onchange="window.actualizarInsumoRecetaRef(${item.id}, this.value)" class="w-full bg-white border border-stone-300 rounded-xl px-2.5 py-1.5 font-bold text-stone-800 text-xs">
+                  ${selectHtml}
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-12 gap-2 items-end pt-1">
+              <div class="col-span-6">
+                <label class="block text-[10px] font-bold text-stone-600 mb-0.5">Cantidad a usar</label>
+                <div class="flex items-center gap-1.5">
+                  <input type="number" value="${item.cantidadUsada !== null && item.cantidadUsada !== undefined ? item.cantidadUsada : ''}" placeholder="0" min="0" step="any"
+                         onfocus="this.select()"
+                         oninput="window.actualizarInsumoRecetaSilencioso(${item.id}, 'cantidadUsada', this.value)"
+                         class="w-full bg-white border border-stone-300 rounded-lg px-2 py-1.5 text-center font-black text-stone-800">
+                  <span class="font-bold text-stone-600 text-xs shrink-0">${un}</span>
+                </div>
+              </div>
+
+              <div class="col-span-5">
+                <label class="block text-[10px] font-bold text-stone-600 mb-0.5">Costo calculado</label>
+                <div id="costoCalculadoReceta-${item.id}" class="bg-emerald-50 border border-emerald-200 text-emerald-950 font-black text-xs px-2 py-1.5 rounded-lg text-right">
+                  $ 0
+                </div>
+              </div>
+
+              <div class="col-span-1 flex justify-end">
+                <button onclick="window.eliminarInsumoReceta(${item.id})" class="text-stone-400 hover:text-rose-600 p-2 rounded-xl bg-white border border-stone-200 cursor-pointer" title="Eliminar de la receta">
+                  <i class="ph-bold ph-trash text-sm"></i>
+                </button>
+              </div>
+            </div>
+          `;
+        } else {
+          div.innerHTML = `
+            <div class="flex items-center gap-1.5">
+              <span class="text-[9px] font-black uppercase bg-stone-200 text-stone-700 px-2 py-0.5 rounded-md shrink-0">Directo</span>
+              <input type="text" value="${item.nombreLibre || ''}" placeholder="Nombre del insumo directo"
+                     oninput="window.actualizarInsumoRecetaSilencioso(${item.id}, 'nombreLibre', this.value)"
+                     class="flex-1 bg-white border border-stone-300 rounded-xl px-2.5 py-1.5 font-bold text-stone-800">
+            </div>
+
+            <div class="grid grid-cols-12 gap-2 items-end pt-1">
+              <div class="col-span-11">
+                <label class="block text-[10px] font-bold text-stone-600 mb-0.5">Costo total ($)</label>
+                <input type="number" value="${item.costoLibre !== null && item.costoLibre !== undefined ? item.costoLibre : ''}" placeholder="0" min="0" step="any"
+                       onfocus="this.select()"
+                       oninput="window.actualizarInsumoRecetaSilencioso(${item.id}, 'costoLibre', this.value)"
+                       class="w-full bg-white border border-stone-300 rounded-lg px-2 py-1.5 font-black text-right text-stone-800">
+              </div>
+
+              <div class="col-span-1 flex justify-end">
+                <button onclick="window.eliminarInsumoReceta(${item.id})" class="text-stone-400 hover:text-rose-600 p-2 rounded-xl bg-white border border-stone-200 cursor-pointer" title="Eliminar">
+                  <i class="ph-bold ph-trash text-sm"></i>
+                </button>
+              </div>
+            </div>
+          `;
+        }
+
+        contenedor.appendChild(div);
+      });
+    }
+
+    function agregarInsumoReceta() {
+      const opciones = obtenerOpcionesOrigenReceta();
+      if (opciones.length === 0) {
+        mostrarToast("Cargá compras en Paso 2 o insumos en Mi Despensa primero.");
+        return;
+      }
+      insumosReceta.push({
+        id: Date.now(),
+        tipo: 'origen',
+        refId: opciones[0].refId,
+        cantidadUsada: null
+      });
+      renderizarInsumosReceta();
+      calcular();
+    }
+
+    function agregarInsumoLibreReceta() {
+      insumosReceta.push({
+        id: Date.now(),
+        tipo: 'libre',
+        nombreLibre: '',
+        costoLibre: null
+      });
+      renderizarInsumosReceta();
+      calcular();
+    }
+
+    function actualizarInsumoRecetaRef(id, refId) {
+      const r = insumosReceta.find(i => i.id === id);
+      if (r) {
+        r.refId = refId;
+        renderizarInsumosReceta();
+        calcular();
+      }
+    }
+
+    function actualizarInsumoRecetaSilencioso(id, campo, val) {
+      const r = insumosReceta.find(i => i.id === id);
+      if (!r) return;
+      if (campo === 'cantidadUsada' || campo === 'costoLibre') {
+        r[campo] = val === '' ? null : parseFloat(val);
+      } else {
+        r[campo] = val;
+      }
+      calcular();
+    }
+
+    function eliminarInsumoReceta(id) {
+      insumosReceta = insumosReceta.filter(i => i.id !== id);
+      renderizarInsumosReceta();
+      calcular();
+    }
+
+    function calcular() {
+      const opciones = obtenerOpcionesOrigenReceta();
+      let totalCostoInsumos = 0;
+
+      insumosReceta.forEach(item => {
+        if (item.tipo === 'origen') {
+          const opt = opciones.find(o => o.refId === item.refId);
+          const uCost = opt ? (opt.costoUnitario || 0) : 0;
+          const cant = item.cantidadUsada || 0;
+          const costoItem = Math.round(uCost * cant);
+          totalCostoInsumos += costoItem;
+
+          const badge = document.getElementById(`costoCalculadoReceta-${item.id}`);
+          if (badge) badge.innerText = `$ ${formatearNumero(costoItem)}`;
+        } else {
+          const cost = item.costoLibre || 0;
+          totalCostoInsumos += cost;
+        }
+      });
+
+      const horasCosecha = cosechoPropio ? (parseFloat(document.getElementById('cosechaHoras')?.value) || 0) : 0;
+      const horasCoccion = parseFloat(document.getElementById('horasCoccion')?.value) || 0;
+      const horasEnvasado = parseFloat(document.getElementById('horasEnvasado')?.value) || 0;
+      const horasTotales = horasCosecha + horasCoccion + horasEnvasado;
+
+      const valorHora = parseFloat(document.getElementById('valorHoraTrabajo')?.value) || 0;
+      const totalTrabajo = horasTotales * valorHora;
+
+      const facturaLuz = parseFloat(document.getElementById('facturaLuzMensual')?.value) || 0;
+      let costoHoraLuz = 0;
+      if (tipoMedidorLuz === 'hogar') {
+        costoHoraLuz = facturaLuz / 720;
+      } else {
+        const horasDiarias = Math.max(1, parseFloat(document.getElementById('horasDiariasUsoLuz')?.value) || 6);
+        costoHoraLuz = facturaLuz / (30 * horasDiarias);
+      }
+      const totalLuz = costoHoraLuz * (horasCoccion + horasEnvasado);
+
+      const indHoraLuz = document.getElementById('indicadorCostoHoraLuz');
+      if (indHoraLuz) {
+        if (costoHoraLuz > 0) {
+          indHoraLuz.innerHTML = `
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <span>Costo hora: <strong class="text-emerald-800">$ ${costoHoraLuz.toFixed(2)}/h</strong></span>
+              <span class="text-stone-500 font-semibold">Total luz tanda (${(horasCoccion + horasEnvasado).toFixed(1)} hs): <strong class="text-stone-900">$ ${formatearNumero(totalLuz)}</strong></span>
+            </div>
+          `;
+        } else {
+          indHoraLuz.innerText = `$ 0,00 / hora`;
+        }
+      }
+
+      const subtotal = totalCostoInsumos + totalTrabajo + totalLuz;
+      const desgaste20 = subtotal * 0.20;
+      const costoTotalTanda = Math.round(subtotal + desgaste20);
+
+      const unidades = Math.max(1, parseFloat(document.getElementById('unidadesProducidas')?.value) || 1);
+      const costoUnitario = Math.round(costoTotalTanda / unidades);
+      const minutosPorUnidad = Math.round((horasTotales * 60) / unidades);
+
+      const rCostoUnit = document.getElementById('resumenCostoUnitario');
+      if (rCostoUnit) rCostoUnit.innerText = `$ ${formatearNumero(costoUnitario)}`;
+
+      const rCostoTot = document.getElementById('resumenCostoTotal');
+      if (rCostoTot) rCostoTot.innerText = `$ ${formatearNumero(costoTotalTanda)}`;
+
+      const tipoUnidadEl = document.getElementById('tipoUnidad');
+      const unidadTexto = tipoUnidadEl ? tipoUnidadEl.value.replace(/s$/, '') : 'unidad';
+      const rEtiqueta = document.getElementById('resumenEtiquetaUnidad');
+      if (rEtiqueta) rEtiqueta.innerText = unidadTexto;
+
+      return {
+        costoUnitario,
+        costoTotalTanda,
+        horasTotales,
+        minutosPorUnidad,
+        totalCostoInsumos,
+        totalTrabajo,
+        totalLuz,
+        desgaste20,
+        unidades
+      };
+    }
+
+    function iniciarNuevoCalculo() {
+      borradorEnEdicionId = null;
+      const tit = document.getElementById('tituloModoCalculadora');
+      if (tit) tit.innerText = "Calculadora de Tanda";
+      const bEd = document.getElementById('badgeBorradorEditando');
+      if (bEd) bEd.classList.add('hidden');
+
+      const nom = document.getElementById('nombreProducto');
+      if (nom) nom.value = '';
+
+      compras = [];
+      insumosReceta = [];
+      cosechoPropio = false;
+
+      const cNom = document.getElementById('cosechaNombre');
+      if (cNom) cNom.value = '';
+      const cCant = document.getElementById('cosechaCantidad');
+      if (cCant) cCant.value = '';
+      const cHs = document.getElementById('cosechaHoras');
+      if (cHs) cHs.value = '';
+
+      const hCoc = document.getElementById('horasCoccion');
+      if (hCoc) hCoc.value = '';
+      const hEnv = document.getElementById('horasEnvasado');
+      if (hEnv) hEnv.value = '';
+      const vHora = document.getElementById('valorHoraTrabajo');
+      if (vHora) vHora.value = '';
+      const facLuz = document.getElementById('facturaLuzMensual');
+      if (facLuz) facLuz.value = '';
+      const hDiaLuz = document.getElementById('horasDiariasUsoLuz');
+      if (hDiaLuz) hDiaLuz.value = '';
+      const unids = document.getElementById('unidadesProducidas');
+      if (unids) unids.value = '';
+
+      setearTipoMedidor('hogar');
+      setearCosecha(false);
+      renderizarTablaCompras();
+      renderizarInsumosReceta();
+      actualizarNombreResumen();
+      calcular();
+      cambiarVista('calculadora');
+    }
+
+    async function guardarProducto(esTerminado = true) {
+      if (!sesionActiva) return mostrarToast("Iniciá sesión para guardar.");
+
+      const nom = (document.getElementById('nombreProducto')?.value || '').trim();
+      if (!nom) {
+        mostrarToast("Escribí el nombre del producto en el Paso 1.");
+        document.getElementById('nombreProducto')?.focus();
+        return;
+      }
+
+      const calc = calcular();
+      const targetId = borradorEnEdicionId ? borradorEnEdicionId : ("prod-" + Date.now());
+      const fechaHoy = new Date().toISOString().split('T')[0];
+
+      const listaInsumosDetalle = [];
+      const opciones = obtenerOpcionesOrigenReceta();
+
+      insumosReceta.forEach(item => {
+        if (item.tipo === 'origen') {
+          const opt = opciones.find(o => o.refId === item.refId);
+          if (opt) {
+            const cost = Math.round((opt.costoUnitario || 0) * (item.cantidadUsada || 0));
+            listaInsumosDetalle.push({
+              nombre: opt.nombre,
+              detalle: `${item.cantidadUsada || 0} ${opt.unidad}`,
+              costo: cost
+            });
+
+            if (esTerminado && opt.tipoOrigen === 'despensa' && opt.obj) {
+              const estante = insumosDespensa.find(i => i.id === opt.obj.id);
+              if (estante) {
+                estante.cantidad = Math.max(0, Math.round((estante.cantidad - (item.cantidadUsada || 0)) * 100) / 100);
+                if (opt.subOrigen && estante.origenes && estante.origenes[opt.subOrigen]) {
+                  estante.origenes[opt.subOrigen].cantidad = Math.max(0, Math.round((estante.origenes[opt.subOrigen].cantidad - (item.cantidadUsada || 0)) * 100) / 100);
+                }
+              }
+            }
+          }
+        } else {
+          listaInsumosDetalle.push({
+            nombre: item.nombreLibre || 'Insumo directo',
+            detalle: 'Insumo directo',
+            costo: item.costoLibre || 0
+          });
+        }
+      });
+
+      if (esTerminado) {
+        compras.forEach(c => {
+          if (!c.origenDespensaKey && c.nombre && c.cantidad && c.costo) {
+            const uCost = c.costo / c.cantidad;
+            incorporarOActualizarInsumoEnDespensa({
+              nombre: c.nombre,
+              cantidad: c.cantidad,
+              unidad: c.unidad,
+              costoUnitario: Math.round(uCost),
+              tipoOrigen: 'comprado'
+            });
+          }
+        });
+
+        if (cosechoPropio) {
+          const nomCosecha = (document.getElementById('cosechaNombre')?.value || 'Producción propia').trim();
+          const cantCosecha = parseFloat(document.getElementById('cosechaCantidad')?.value) || 0;
+          const unCosecha = document.getElementById('cosechaUnidad')?.value || 'kg';
+          const hsCosecha = parseFloat(document.getElementById('cosechaHoras')?.value) || 0;
+          const vHora = parseFloat(document.getElementById('valorHoraTrabajo')?.value) || 0;
+
+          if (cantCosecha > 0) {
+            const costoCosechaTotal = (hsCosecha * vHora) * 1.20;
+            const uCostCosecha = costoCosechaTotal / cantCosecha;
+            incorporarOActualizarInsumoEnDespensa({
+              nombre: nomCosecha,
+              cantidad: cantCosecha,
+              unidad: unCosecha,
+              costoUnitario: Math.round(uCostCosecha),
+              tipoOrigen: 'propio'
+            });
+          }
+        }
+
+        await guardarDespensaNube();
+      }
+
+      const prodData = {
+        id: targetId,
+        nombre: nom,
+        fecha: fechaHoy,
+        estado: esTerminado ? 'terminado' : 'borrador',
+        unidadesProducidas: calc.unidades,
+        tipoUnidad: document.getElementById('tipoUnidad')?.value || 'unidades',
+        costoUnitario: calc.costoUnitario,
+        costoTotal: calc.costoTotalTanda,
+        horasTotales: calc.horasTotales,
+        minutosPorUnidad: calc.minutosPorUnidad,
+        insumos: listaInsumosDetalle,
+        subtotalInsumos: calc.totalCostoInsumos,
+        subtotalTrabajo: calc.totalTrabajo,
+        subtotalLuz: calc.totalLuz,
+        subtotalExtra: calc.desgaste20,
+        preciosVenta: {
+          margenMinorista: 50,
+          margenMayorista: 45,
+          precioMinorista: Math.round(calc.costoUnitario * 1.5),
+          precioMayorista: Math.round(calc.costoUnitario * 1.45)
+        },
+        datosFormulario: {
+          compras: JSON.parse(JSON.stringify(compras)),
+          insumosReceta: JSON.parse(JSON.stringify(insumosReceta)),
+          cosechoPropio: cosechoPropio,
+          cosechaNombre: document.getElementById('cosechaNombre')?.value || '',
+          cosechaCantidad: document.getElementById('cosechaCantidad')?.value || '',
+          cosechaUnidad: document.getElementById('cosechaUnidad')?.value || 'kg',
+          cosechaHoras: document.getElementById('cosechaHoras')?.value || '',
+          horasCoccion: document.getElementById('horasCoccion')?.value || '',
+          horasEnvasado: document.getElementById('horasEnvasado')?.value || '',
+          valorHoraTrabajo: document.getElementById('valorHoraTrabajo')?.value || '',
+          tipoMedidorLuz: tipoMedidorLuz,
+          facturaLuzMensual: document.getElementById('facturaLuzMensual')?.value || '',
+          horasDiariasUsoLuz: document.getElementById('horasDiariasUsoLuz')?.value || '',
+          unidadesProducidas: document.getElementById('unidadesProducidas')?.value || '',
+          tipoUnidad: document.getElementById('tipoUnidad')?.value || 'frascos'
+        }
+      };
+
+      const idx = productosGuardados.findIndex(p => p.id === targetId);
+      if (idx >= 0) productosGuardados[idx] = prodData;
+      else productosGuardados.unshift(prodData);
+
+      // Persistencia local instantánea
+      localStorage.setItem(`sgpp_prods_${sesionActiva.slug}`, JSON.stringify(productosGuardados));
+
+      // Escritura en Firestore (aprovecha cache persistente si no hay internet)
+      try {
+        await setDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'productos', targetId), prodData);
+      } catch (err) {
+        console.warn("Guardado producto diferido en memoria local:", err);
+      }
+
+      borradorEnEdicionId = null;
+      renderizarListaProductos();
+      calcularDisponibilidad();
+
+      if (esTerminado) {
+        mostrarToast(navigator.onLine ? `¡"${nom}" terminado y sincronizado!` : `¡"${nom}" guardado en memoria local!`);
+        verDetalleProducto(targetId);
+      } else {
+        mostrarToast(navigator.onLine ? `Borrador de "${nom}" guardado.` : `Borrador guardado en memoria del equipo.`);
+        cambiarVista('inicio');
+      }
+    }
+
+    function verDetalleProducto(id) {
+      const prod = productosGuardados.find(p => p.id === id);
+      if (!prod) return;
+
+      idProductoSeleccionado = id;
+      document.getElementById('detalleNombre').innerText = prod.nombre;
+      document.getElementById('detalleFecha').innerText = `Tanda registrada el ${prod.fecha || '--'}`;
+      document.getElementById('detalleRinde').innerText = `${prod.unidadesProducidas} ${prod.tipoUnidad}`;
+
+      document.getElementById('detalleCostoUnitario').innerText = `$ ${formatearNumero(prod.costoUnitario)}`;
+      document.getElementById('detalleCostoTotal').innerText = `$ ${formatearNumero(prod.costoTotal)}`;
+      document.getElementById('detalleHorasTotales').innerText = `${(prod.horasTotales || 0).toFixed(1)} hs`;
+      document.getElementById('detalleTiempoPorUnidad').innerText = `${prod.minutosPorUnidad || 0} min`;
+
+      margenMinoristaSeleccionado = prod.preciosVenta?.margenMinorista || 50;
+      margenMayoristaSeleccionado = prod.preciosVenta?.margenMayorista || 45;
+      seleccionarNivelEstrategia(margenMinoristaSeleccionado, margenMayoristaSeleccionado);
+
+      cambiarVista('detalle');
+    }
+
+    function seleccionarNivelEstrategia(mMin, mMay) {
+      margenMinoristaSeleccionado = mMin;
+      margenMayoristaSeleccionado = mMay;
+
+      [25, 50, 75, 100].forEach(m => {
+        const btn = document.getElementById(`btnMargen-${m}`);
+        if (!btn) return;
+        if (m === mMin) {
+          btn.className = "btn-estrategia py-2.5 px-3 rounded-xl border text-xs font-bold text-left transition flex flex-col justify-between border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm cursor-pointer";
+        } else {
+          btn.className = "btn-estrategia py-2.5 px-3 rounded-xl border text-xs font-bold text-left transition flex flex-col justify-between border-stone-200 bg-stone-50 hover:bg-stone-100 cursor-pointer";
+        }
+      });
+
+      const prod = productosGuardados.find(p => p.id === idProductoSeleccionado);
+      if (!prod) return;
+
+      const costo = prod.costoUnitario || 0;
+      const rinde = prod.unidadesProducidas || 1;
+
+      const pMinorista = Math.round(costo * (1 + mMin / 100));
+      const pMayorista = Math.round(costo * (1 + mMay / 100));
+
+      const ganUnidMin = pMinorista - costo;
+      const ganUnidMay = pMayorista - costo;
+
+      const tagMin = document.getElementById('tagMargenMinorista');
+      if (tagMin) tagMin.innerText = `+${mMin}% ganancia`;
+      const tagMay = document.getElementById('tagMargenMayorista');
+      if (tagMay) tagMay.innerText = `+${mMay}% ganancia`;
+
+      const simPMin = document.getElementById('simPrecioMinorista');
+      if (simPMin) simPMin.innerText = `$ ${formatearNumero(pMinorista)}`;
+      const simPMay = document.getElementById('simPrecioMayorista');
+      if (simPMay) simPMay.innerText = `$ ${formatearNumero(pMayorista)}`;
+
+      const simGUMin = document.getElementById('simGananciaUnidadMinorista');
+      if (simGUMin) simGUMin.innerText = `+$ ${formatearNumero(ganUnidMin)} / unidad`;
+      const simGUMay = document.getElementById('simGananciaUnidadMayorista');
+      if (simGUMay) simGUMay.innerText = `+$ ${formatearNumero(ganUnidMay)} / unidad`;
+
+      const simGTMin = document.getElementById('simGananciaTandaMinorista');
+      if (simGTMin) simGTMin.innerText = `$ ${formatearNumero(ganUnidMin * rinde)}`;
+      const simGTMay = document.getElementById('simGananciaTandaMayorista');
+      if (simGTMay) simGTMay.innerText = `$ ${formatearNumero(ganUnidMay * rinde)}`;
+    }
+
+    async function guardarPreciosFijados() {
+      const prod = productosGuardados.find(p => p.id === idProductoSeleccionado);
+      if (!prod || !sesionActiva) return;
+
+      const costo = prod.costoUnitario || 0;
+      prod.preciosVenta = {
+        margenMinorista: margenMinoristaSeleccionado,
+        margenMayorista: margenMayoristaSeleccionado,
+        precioMinorista: Math.round(costo * (1 + margenMinoristaSeleccionado / 100)),
+        precioMayorista: Math.round(costo * (1 + margenMayoristaSeleccionado / 100))
+      };
+
+      localStorage.setItem(`sgpp_prods_${sesionActiva.slug}`, JSON.stringify(productosGuardados));
+      try {
+        await setDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'productos', prod.id), prod);
+      } catch (e) {}
+
+      renderizarListaProductos();
+      mostrarToast(navigator.onLine ? "Precios guardados con éxito." : "Precios guardados en memoria del equipo.");
+    }
+
+    function continuarBorradorDesdeId(id) {
+      idProductoSeleccionado = id;
+      continuarEditandoBorrador();
+    }
+
+    function cargarDatosEnFormulario(prod, esCopiaNueva = false) {
+      const f = prod.datosFormulario || {};
+
+      const inputNombre = document.getElementById('nombreProducto');
+      if (inputNombre) {
+        inputNombre.value = esCopiaNueva ? `${prod.nombre} (Nueva tanda)` : (prod.nombre || '');
+      }
+
+      if (f.compras && Array.isArray(f.compras)) {
+        compras = JSON.parse(JSON.stringify(f.compras));
+      } else {
+        compras = [];
+      }
+
+      const cosecho = Boolean(f.cosechoPropio);
+      setearCosecha(cosecho);
+      const cNom = document.getElementById('cosechaNombre');
+      if (cNom) cNom.value = f.cosechaNombre || '';
+      const cCant = document.getElementById('cosechaCantidad');
+      if (cCant) cCant.value = f.cosechaCantidad || '';
+      const cUn = document.getElementById('cosechaUnidad');
+      if (cUn && f.cosechaUnidad) cUn.value = f.cosechaUnidad;
+      const cHs = document.getElementById('cosechaHoras');
+      if (cHs) cHs.value = f.cosechaHoras || '';
+
+      if (f.insumosReceta && Array.isArray(f.insumosReceta)) {
+        insumosReceta = JSON.parse(JSON.stringify(f.insumosReceta));
+      } else if (prod.insumos && Array.isArray(prod.insumos)) {
+        insumosReceta = prod.insumos.map(ins => ({
+          id: Date.now() + Math.floor(Math.random() * 1000),
+          tipo: 'libre',
+          nombreLibre: ins.nombre,
+          costoLibre: ins.costo
+        }));
+      } else {
+        insumosReceta = [];
+      }
+
+      const hCoc = document.getElementById('horasCoccion');
+      if (hCoc) hCoc.value = f.horasCoccion !== undefined ? f.horasCoccion : '';
+
+      const hEnv = document.getElementById('horasEnvasado');
+      if (hEnv) hEnv.value = f.horasEnvasado !== undefined ? f.horasEnvasado : '';
+      const vHora = document.getElementById('valorHoraTrabajo');
+      if (vHora) vHora.value = f.valorHoraTrabajo !== undefined ? f.valorHoraTrabajo : '';
+
+      const tipoLuz = f.tipoMedidorLuz || 'hogar';
+      setearTipoMedidor(tipoLuz);
+      const facLuz = document.getElementById('facturaLuzMensual');
+      if (facLuz) facLuz.value = f.facturaLuzMensual !== undefined ? f.facturaLuzMensual : '';
+      const hDiaLuz = document.getElementById('horasDiariasUsoLuz');
+      if (hDiaLuz) hDiaLuz.value = f.horasDiariasUsoLuz !== undefined ? f.horasDiariasUsoLuz : '';
+
+      const unids = document.getElementById('unidadesProducidas');
+      if (unids) unids.value = f.unidadesProducidas !== undefined ? f.unidadesProducidas : (prod.unidadesProducidas || '');
+      const tUn = document.getElementById('tipoUnidad');
+      if (tUn) tUn.value = f.tipoUnidad || prod.tipoUnidad || 'frascos';
+
+      renderizarTablaCompras();
+      renderizarInsumosReceta();
+      actualizarNombreResumen();
+      calcular();
+    }
+
+    function continuarEditandoBorrador() {
+      const prod = productosGuardados.find(p => p.id === idProductoSeleccionado);
+      if (!prod) return;
+
+      borradorEnEdicionId = prod.id;
+      const tit = document.getElementById('tituloModoCalculadora');
+      if (tit) tit.innerText = "Continuar Tanda";
+      const bEd = document.getElementById('badgeBorradorEditando');
+      if (bEd) bEd.classList.remove('hidden');
+
+      cargarDatosEnFormulario(prod, false);
+      cambiarVista('calculadora');
+    }
+
+    function reutilizarProductoActual() {
+      const prod = productosGuardados.find(p => p.id === idProductoSeleccionado);
+      if (!prod) return;
+
+      borradorEnEdicionId = null;
+      const tit = document.getElementById('tituloModoCalculadora');
+      if (tit) tit.innerText = "Calculadora de Tanda";
+      const bEd = document.getElementById('badgeBorradorEditando');
+      if (bEd) bEd.classList.add('hidden');
+
+      cargarDatosEnFormulario(prod, true);
+      cambiarVista('calculadora');
+      mostrarToast("Receta y datos cargados en la calculadora.");
+    }
+
+    function solicitarEliminarProductoActual() {
+      productoAEliminarId = idProductoSeleccionado;
+      abrirModal('modalEliminar');
+    }
+
+    async function confirmarEliminarProducto() {
+      if (!productoAEliminarId || !sesionActiva) return;
+
+      productosGuardados = productosGuardados.filter(p => p.id !== productoAEliminarId);
+      localStorage.setItem(`sgpp_prods_${sesionActiva.slug}`, JSON.stringify(productosGuardados));
+
+      try {
+        await deleteDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'productos', productoAEliminarId));
+      } catch (e) {}
+
+      cerrarModal('modalEliminar');
+      productoAEliminarId = null;
+      renderizarListaProductos();
+      mostrarToast("Producto eliminado.");
+      cambiarVista('productos');
+    }
+
+    function setearCosecha(val) {
+      cosechoPropio = val;
+      const bSi = document.getElementById('btnCosechaSi');
+      const bNo = document.getElementById('btnCosechaNo');
+      const campos = document.getElementById('bloqueCosechaCampos');
+
+      if (val) {
+        if (bSi) bSi.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 bg-emerald-50 border-emerald-600 text-emerald-900 shadow-sm cursor-pointer";
+        if (bNo) bNo.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 bg-white border-stone-300 text-stone-600 cursor-pointer";
+        if (campos) campos.classList.remove('hidden');
+      } else {
+        if (bNo) bNo.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 bg-emerald-50 border-emerald-600 text-emerald-900 shadow-sm cursor-pointer";
+        if (bSi) bSi.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 bg-white border-stone-300 text-stone-600 cursor-pointer";
+        if (campos) campos.classList.add('hidden');
+      }
+      renderizarInsumosReceta();
+      calcular();
+    }
+
+    function actualizarNombreResumen() {
+      const nom = document.getElementById('nombreProducto')?.value || '';
+      const res = document.getElementById('resumenNombreProducto');
+      if (res) res.innerText = nom.trim() || "Producto sin nombre";
+    }
+
+    function abrirVerEstante(id) {
+      insumoSeleccionadoEstante = insumosDespensa.find(i => i.id === id);
+      if (!insumoSeleccionadoEstante) return;
+
+      const nom = document.getElementById('estante-nombre');
+      if (nom) nom.innerText = insumoSeleccionadoEstante.nombre;
+
+      const cant = document.getElementById('estante-cantidad-actual');
+      if (cant) cant.innerText = `${insumoSeleccionadoEstante.cantidad} ${insumoSeleccionadoEstante.unidad}`;
+
+      const unBadge = document.getElementById('unidad-movimiento-badge');
+      if (unBadge) unBadge.innerText = insumoSeleccionadoEstante.unidad;
+
+      const inpCant = document.getElementById('input-cant-movimiento');
+      if (inpCant) inpCant.value = '';
+
+      const inpCosto = document.getElementById('input-costo-sumar');
+      if (inpCosto) inpCosto.value = '';
+
+      setModoMovimiento('restar');
+      abrirModal('modal-estante');
+    }
+
+    function setModoMovimiento(modo) {
+      modoMovimientoEstante = modo;
+      const tRestar = document.getElementById('tab-restar');
+      const tSumar = document.getElementById('tab-sumar');
+      const bMotivos = document.getElementById('bloque-motivos');
+      const bCosto = document.getElementById('bloque-costo-sumar');
+      const lbl = document.getElementById('lbl-cantidad-movimiento');
+
+      if (modo === 'restar') {
+        if (tRestar) tRestar.className = "py-2 rounded-xl font-bold text-xs bg-white text-stone-900 shadow-sm cursor-pointer";
+        if (tSumar) tSumar.className = "py-2 rounded-xl font-bold text-xs text-stone-500 hover:text-stone-900 cursor-pointer";
+        if (bMotivos) bMotivos.classList.remove('hidden');
+        if (bCosto) bCosto.classList.add('hidden');
+        if (lbl) lbl.innerText = "¿Cuánto vas a retirar?";
+      } else {
+        if (tSumar) tSumar.className = "py-2 rounded-xl font-bold text-xs bg-white text-stone-900 shadow-sm cursor-pointer";
+        if (tRestar) tRestar.className = "py-2 rounded-xl font-bold text-xs text-stone-500 hover:text-stone-900 cursor-pointer";
+        if (bMotivos) bMotivos.classList.add('hidden');
+        if (bCosto) bCosto.classList.remove('hidden');
+        if (lbl) lbl.innerText = "¿Cuánto vas a sumar al estante?";
+      }
+    }
+
+    async function confirmarMovimientoEstante() {
+      if (!insumoSeleccionadoEstante) return;
+      const cant = parseFloat(document.getElementById('input-cant-movimiento')?.value) || 0;
+      if (cant <= 0) return mostrarToast("Ingresá una cantidad mayor a 0.");
+
+      if (modoMovimientoEstante === 'restar') {
+        if (cant > insumoSeleccionadoEstante.cantidad) {
+          return mostrarToast("No podés retirar más de lo disponible.");
+        }
+        insumoSeleccionadoEstante.cantidad = Math.max(0, Math.round((insumoSeleccionadoEstante.cantidad - cant) * 100) / 100);
+        mostrarToast(`Se retiraron ${cant} ${insumoSeleccionadoEstante.unidad}.`);
+      } else {
+        const costoAbonado = parseFloat(document.getElementById('input-costo-sumar')?.value) || 0;
+        const stockViejo = insumoSeleccionadoEstante.cantidad;
+
+        if (costoAbonado > 0) {
+          const valViejo = stockViejo * insumoSeleccionadoEstante.costoPromedio;
+          const nuevoStock = stockViejo + cant;
+          insumoSeleccionadoEstante.costoPromedio = Math.round((valViejo + costoAbonado) / nuevoStock);
+        }
+        insumoSeleccionadoEstante.cantidad = Math.round((stockViejo + cant) * 100) / 100;
+        mostrarToast(`Se sumaron ${cant} ${insumoSeleccionadoEstante.unidad} al estante.`);
+      }
+
+      await guardarDespensaNube();
+      cerrarModales();
+      renderEstantes();
+      calcularDisponibilidad();
+      verificarAlertaGuardian();
+    }
+
+    function abrirModalCompra() {
+      const sel = document.getElementById('compra-insumo-select');
+      if (sel) {
+        sel.innerHTML = insumosDespensa.map(i => `<option value="${i.id}">${i.nombre} (${i.unidad})</option>`).join('');
+      }
+      const cCant = document.getElementById('compra-cant');
+      if (cCant) cCant.value = '';
+      const cTot = document.getElementById('compra-total');
+      if (cTot) cTot.value = '';
+      abrirModal('modal-compra');
+    }
+
+    async function guardarNuevaCompra() {
+      const id = parseInt(document.getElementById('compra-insumo-select')?.value);
+      const cant = parseFloat(document.getElementById('compra-cant')?.value) || 0;
+      const total = parseFloat(document.getElementById('compra-total')?.value) || 0;
+
+      if (!cant || !total) return mostrarToast("Completá cantidad y total pagado.");
+
+      const item = insumosDespensa.find(i => i.id === id);
+      if (!item) return;
+
+      const stockViejo = item.cantidad;
+      const costoViejoTotal = stockViejo * item.costoPromedio;
+      item.cantidad = Math.round((stockViejo + cant) * 100) / 100;
+      item.costoPromedio = Math.round((costoViejoTotal + total) / item.cantidad);
+
+      await guardarDespensaNube();
+      cerrarModales();
+      renderEstantes();
+      calcularDisponibilidad();
+      verificarAlertaGuardian();
+      mostrarToast(`Compra de ${item.nombre} guardada y sincronizada.`);
+    }
+
+    function abrirModalNuevoInsumo() {
+      setOrigenNuevoInsumo('compra');
+      const nNom = document.getElementById('nuevoInsumoNombre');
+      if (nNom) nNom.value = '';
+      const nCant = document.getElementById('nuevoInsumoCantidad');
+      if (nCant) nCant.value = '';
+      const nTot = document.getElementById('nuevoInsumoTotalPagado');
+      if (nTot) nTot.value = '';
+
+      const cNom = document.getElementById('cosechaInsumoNombre');
+      if (cNom) cNom.value = '';
+      const cCant = document.getElementById('cosechaInsumoCantidad');
+      if (cCant) cCant.value = '';
+      const cHs = document.getElementById('cosechaInsumoHoras');
+      if (cHs) cHs.value = '';
+      const cVHora = document.getElementById('cosechaInsumoValorHora');
+      if (cVHora) cVHora.value = '';
+
+      abrirModal('modal-nuevo-insumo');
+    }
+
+    function setOrigenNuevoInsumo(origen) {
+      origenNuevoInsumo = origen;
+      const tComp = document.getElementById('tabNuevoCompra');
+      const tProp = document.getElementById('tabNuevoPropio');
+      const fComp = document.getElementById('formNuevoInsumoCompra');
+      const fProp = document.getElementById('formNuevoInsumoPropio');
+
+      if (origen === 'compra') {
+        if (tComp) tComp.className = "py-2 text-xs font-bold rounded-xl bg-white text-emerald-950 shadow-sm cursor-pointer";
+        if (tProp) tProp.className = "py-2 text-xs font-bold rounded-xl text-stone-500 hover:text-stone-900 cursor-pointer";
+        if (fComp) fComp.classList.remove('hidden');
+        if (fProp) fProp.classList.add('hidden');
+      } else {
+        if (tProp) tProp.className = "py-2 text-xs font-bold rounded-xl bg-white text-emerald-950 shadow-sm cursor-pointer";
+        if (tComp) tComp.className = "py-2 text-xs font-bold rounded-xl text-stone-500 hover:text-stone-900 cursor-pointer";
+        if (fProp) fProp.classList.remove('hidden');
+        if (fComp) fComp.classList.add('hidden');
+      }
+    }
+
+    function verificarAlertaGuardian() {
+      const alerta = document.getElementById('alerta-impacto');
+      if (!alerta) return;
+      const hayAumento = insumosDespensa.some(i => i.costoPromedio > (i.costoHistorico || i.costoPromedio));
+      if (hayAumento) alerta.classList.remove('hidden');
+      else alerta.classList.add('hidden');
+    }
+
+    function abrirModalImpacto() {
+      const cont = document.getElementById('contenedor-comparacion-impacto');
+      if (!cont) return;
+      cont.innerHTML = '';
+
+      const insumosConAumento = insumosDespensa.filter(i => i.costoPromedio > (i.costoHistorico || i.costoPromedio));
+      if (insumosConAumento.length === 0) {
+        cont.innerHTML = `<p class="text-xs text-stone-500 italic p-3 text-center">No tenés aumentos pendientes.</p>`;
+      } else {
+        insumosConAumento.forEach(i => {
+          const dif = i.costoPromedio - (i.costoHistorico || i.costoPromedio);
+          const porc = Math.round((dif / (i.costoHistorico || 1)) * 100);
+
+          const card = document.createElement('div');
+          card.className = "bg-amber-50 border border-amber-300 rounded-2xl p-3 space-y-2 text-xs";
+          card.innerHTML = `
+            <div class="flex justify-between items-start">
+              <div>
+                <h4 class="font-black text-stone-900 text-sm">${i.nombre}</h4>
+                <span class="text-stone-500 text-[11px]">${i.cantidad} ${i.unidad} en estante</span>
+              </div>
+              <span class="bg-rose-100 text-rose-800 border border-rose-200 px-2 py-0.5 rounded font-black">+${porc}% suba</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 bg-white p-2 rounded-xl border border-amber-200 text-stone-700">
+              <div>
+                <span class="text-[10px] text-stone-400 font-bold block">En recetas:</span>
+                <span class="font-bold">$${formatearNumero(i.costoHistorico)}</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-amber-900 font-bold block">En estante:</span>
+                <span class="font-black text-rose-700">$${formatearNumero(i.costoPromedio)}</span>
+              </div>
+            </div>
+          `;
+          cont.appendChild(card);
+        });
+      }
+      abrirModal('modal-impacto');
+    }
+
+    async function seguirAbsorbiendoAumentos() {
+      insumosDespensa.forEach(i => {
+        if (i.costoPromedio > (i.costoHistorico || i.costoPromedio)) {
+          const dif = i.costoPromedio - (i.costoHistorico || i.costoPromedio);
+          i.aumentosAbsorbidos = (i.aumentosAbsorbidos || 0) + dif;
+        }
+      });
+      await guardarDespensaNube();
+      cerrarModales();
+      mostrarToast("Precios mantenidos. Aumentos absorbidos registrados.");
+    }
+
+    async function actualizarCostosReceta() {
+      insumosDespensa.forEach(i => {
+        i.costoHistorico = i.costoPromedio;
+      });
+      await guardarDespensaNube();
+      verificarAlertaGuardian();
+      cerrarModales();
+      mostrarToast("Recetas sincronizadas al costo real del estante.");
+    }
+
+    function calcularDisponibilidad() {
+      const res = document.getElementById('resultado-simulador');
+      const select = document.getElementById('simulador-receta');
+      if (!res || !select) return;
+
+      const prodId = select.value;
+      const prod = productosGuardados.find(p => p.id === prodId);
+
+      if (!prod) {
+        res.innerHTML = `<p class="text-stone-400 text-xs">Calculá un producto terminado primero.</p>`;
+        return;
+      }
+
+      res.innerHTML = `
+        <div class="flex items-center justify-between text-white font-bold">
+          <span>Podés elaborar:</span>
+          <span class="text-amber-400 text-sm font-black">${prod.unidadesProducidas} ${prod.tipoUnidad}</span>
+        </div>
+        <p class="text-stone-400 text-[11px] mt-1">
+          Stock físico suficiente para una tanda completa de <strong>${prod.nombre}</strong>.
+        </p>
+      `;
+    }
+
+    function filtrarInsumos() {
+      const q = (document.getElementById('input-buscador')?.value || '').toLowerCase();
+      const filtrados = insumosDespensa.filter(i => i.nombre.toLowerCase().includes(q));
+      renderEstantes(filtrados);
+    }
+
+    function formatearNumero(num) {
+      if (isNaN(num) || num === null || num === undefined) return "0";
+      return new Intl.NumberFormat('es-AR', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      }).format(num);
+    }
+
+    function mostrarToast(mensaje) {
+      const toast = document.getElementById('toastMensaje');
+      const txt = document.getElementById('toastTexto');
+      if (!toast || !txt) return;
+      txt.innerText = mensaje;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3400);
+    }
+
+    function abrirModal(id) {
+      const m = document.getElementById(id);
+      if (m) m.classList.remove('hidden');
+    }
+
+    function cerrarModal(id) {
+      const m = document.getElementById(id);
+      if (m) m.classList.add('hidden');
+    }
+
+    function cerrarModales() {
+      document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
+    }
+
+    function exportarCopiaJSON() {
+      const data = {
+        emprendimiento: sesionActiva,
+        productos: productosGuardados,
+        despensa: insumosDespensa,
+        archivados: insumosArchivados,
+        fecha: new Date().toISOString()
+      };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+      const a = document.createElement('a');
+      a.href = dataStr;
+      a.download = `respaldo_${sesionActiva ? sesionActiva.slug : 'sgpp'}_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      mostrarToast("Copia de seguridad descargada.");
+    }
+
+    function importarCopiaJSON(e) {
+      const file = e.target.files[0];
+      if (!file || !sesionActiva) return;
+      const reader = new FileReader();
+      reader.onload = async function(evt) {
+        try {
+          const imp = JSON.parse(evt.target.result);
+          if (imp.productos) productosGuardados = imp.productos;
+          if (imp.despensa) insumosDespensa = imp.despensa;
+          if (imp.archivados) insumosArchivados = imp.archivados;
+          localStorage.setItem(`sgpp_prods_${sesionActiva.slug}`, JSON.stringify(productosGuardados));
+          await guardarDespensaNube();
+          cerrarModal('modalBackup');
+          renderizarListaProductos();
+          renderEstantes();
+          mostrarToast("Datos restaurados y sincronizados.");
+        } catch (err) {
+          mostrarToast("Error al importar el archivo JSON.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Escucha automática de reconexión y sincronización al volver a la civilización
+    window.addEventListener('online', async () => {
+      estaOnline = true;
+      actualizarIndicadorNube('sincronizando', "Reconectando con la nube...");
+      mostrarToast("¡Conexión restablecida! Sincronizando datos con la nube...");
+
+      if (sesionActiva && sesionActiva.slug) {
+        // Enviar despensa y cambios locales pendientes
+        await guardarDespensaNube();
+        // Re-sincronizar productos
+        iniciarSincronizacionEmprendimiento(sesionActiva.slug, sesionActiva.nombre);
+      } else {
+        actualizarIndicadorNube(true, "Conectado");
+      }
+    });
+
+    window.addEventListener('offline', () => {
+      estaOnline = false;
+      actualizarIndicadorNube('offline', "Modo Campo / Sin Señal");
+      mostrarToast("Trabajando sin conexión. Datos seguros en tu dispositivo.");
+    });
+
+    function verificarConexionManual() {
+      if (navigator.onLine) {
+        window.dispatchEvent(new Event('online'));
+      } else {
+        mostrarToast("Aún no se detecta señal de internet.");
+      }
+    }
+
+    // Pre-cache de estilos y fuentes para acceso instantáneo sin internet
+    async function precargarRecursosEnCache() {
+      if ('caches' in window) {
+        try {
+          const cache = await caches.open('sgpp-estaticos-v1');
+          const recursos = [
+            'https://cdn.tailwindcss.com',
+            'https://unpkg.com/@phosphor-icons/web'
+          ];
+          await cache.addAll(recursos).catch(() => {});
+        } catch (e) {
+          // El navegador continuará con su cache HTTP estándar
+        }
+      }
+    }
+
+    window.alternarTabAuth = alternarTabAuth;
+    window.procesarLogin = procesarLogin;
+    window.procesarRegistro = procesarRegistro;
+    window.cambiarVista = cambiarVista;
+    window.irAInicioSiAutenticado = () => sesionActiva ? cambiarVista('inicio') : mostrarPantallaAuth();
+    window.solicitarCerrarSesion = () => abrirModal('modalCerrarSesion');
+    window.confirmarCerrarSesion = confirmarCerrarSesion;
+    window.iniciarNuevoCalculo = iniciarNuevoCalculo;
+    window.guardarProducto = guardarProducto;
+    window.verDetalleProducto = verDetalleProducto;
+    window.continuarBorradorDesdeId = continuarBorradorDesdeId;
+    window.cargarDatosEnFormulario = cargarDatosEnFormulario;
+    window.reutilizarProductoActual = reutilizarProductoActual;
+    window.solicitarEliminarProductoActual = solicitarEliminarProductoActual;
+    window.confirmarEliminarProducto = confirmarEliminarProducto;
+    window.agregarCompraDesdeDespensa = agregarCompraDesdeDespensa;
+    window.agregarCompra = agregarCompra;
+    window.actualizarCompraSilencioso = actualizarCompraSilencioso;
+    window.cambiarInsumoDespensaCompra = cambiarInsumoDespensaCompra;
+    window.eliminarCompra = eliminarCompra;
+    window.agregarInsumoReceta = agregarInsumoReceta;
+    window.agregarInsumoLibreReceta = agregarInsumoLibreReceta;
+    window.actualizarInsumoRecetaRef = actualizarInsumoRecetaRef;
+    window.actualizarInsumoRecetaSilencioso = actualizarInsumoRecetaSilencioso;
+    window.eliminarInsumoReceta = eliminarInsumoReceta;
+    window.setearCosecha = setearCosecha;
+    window.setearTipoMedidor = setearTipoMedidor;
+    window.actualizarNombreResumen = actualizarNombreResumen;
+    window.calcular = calcular;
+    window.abrirVerEstante = abrirVerEstante;
+    window.setModoMovimiento = setModoMovimiento;
+    window.confirmarMovimientoEstante = confirmarMovimientoEstante;
+    window.abrirModalCompra = abrirModalCompra;
+    window.guardarNuevaCompra = guardarNuevaCompra;
+    window.abrirModalNuevoInsumo = abrirModalNuevoInsumo;
+    window.setOrigenNuevoInsumo = setOrigenNuevoInsumo;
+    window.guardarNuevoInsumoEstante = guardarNuevoInsumoEstante;
+    window.abrirModalImpacto = abrirModalImpacto;
+    window.seguirAbsorbiendoAumentos = seguirAbsorbiendoAumentos;
+    window.actualizarCostosReceta = actualizarCostosReceta;
+    window.calcularDisponibilidad = calcularDisponibilidad;
+    window.filtrarInsumos = filtrarInsumos;
+    window.seleccionarNivelEstrategia = seleccionarNivelEstrategia;
+    window.guardarPreciosFijados = guardarPreciosFijados;
+    window.abrirModal = abrirModal;
+    window.cerrarModal = cerrarModal;
+    window.cerrarModales = cerrarModales;
+    window.exportarCopiaJSON = exportarCopiaJSON;
+    window.importarCopiaJSON = importarCopiaJSON;
+    window.solicitarArchivarInsumoActual = solicitarArchivarInsumoActual;
+    window.abrirModalArchivados = abrirModalArchivados;
+    window.reactivarInsumoArchivado = reactivarInsumoArchivado;
+    window.eliminarArchivadoDefinitivo = eliminarArchivadoDefinitivo;
+    window.abrirModalFusionarDesdeActual = abrirModalFusionarDesdeActual;
+    window.actualizarOpcionesNombreFusion = actualizarOpcionesNombreFusion;
+    window.confirmarFusionInsumos = confirmarFusionInsumos;
+    window.verificarConexionManual = verificarConexionManual;
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', inicializarAuth);
+    } else {
+      inicializarAuth();
+    }
+  </script>
+</body>
+</html>
