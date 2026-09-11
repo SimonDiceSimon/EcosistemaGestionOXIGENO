@@ -4,11 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sistema de Gestión - Mi Despensa y Costos</title>
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
-  <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -75,7 +72,6 @@
     </div>
   </header>
 
-  <!-- CONTENEDOR PRINCIPAL -->
   <main class="max-w-5xl mx-auto px-4 py-5 flex-1 w-full pb-20">
 
     <!-- Mensaje de aviso de estado -->
@@ -331,16 +327,22 @@
         </div>
       </div>
 
-      <!-- BUSCADOR -->
-      <div class="relative">
-        <i class="ph-bold ph-magnifying-glass absolute left-3.5 top-3.5 text-stone-400 text-lg"></i>
-        <input 
-          type="text" 
-          id="input-buscador"
-          oninput="window.filtrarInsumos()" 
-          placeholder="Buscar en estantes (azúcar, madera, frascos, durazno...)" 
-          class="w-full pl-10 pr-4 py-3 bg-white rounded-2xl border border-stone-200 text-stone-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-sm"
-        >
+      <!-- BUSCADOR Y BOTÓN ARCHIVADOS -->
+      <div class="flex flex-col sm:flex-row gap-2">
+        <div class="relative flex-1">
+          <i class="ph-bold ph-magnifying-glass absolute left-3.5 top-3.5 text-stone-400 text-lg"></i>
+          <input 
+            type="text" 
+            id="input-buscador"
+            oninput="window.filtrarInsumos()" 
+            placeholder="Buscar en estantes (azúcar, madera, frascos, durazno...)" 
+            class="w-full pl-10 pr-4 py-3 bg-white rounded-2xl border border-stone-200 text-stone-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-sm"
+          >
+        </div>
+        <button id="btnVerArchivados" onclick="window.abrirModalArchivados()" class="bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-xs px-4 py-3 rounded-2xl flex items-center justify-center gap-1.5 transition cursor-pointer shrink-0">
+          <i class="ph-bold ph-archive-box text-base text-stone-600"></i>
+          <span id="textoBtnArchivados">En pausa / Archivados (0)</span>
+        </button>
       </div>
 
       <div id="contenedor-estante" class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -571,7 +573,7 @@
                  class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-xs font-bold text-stone-800 focus:ring-2 focus:ring-emerald-600">
         </section>
 
-        <!-- PASO 2: Insumos de la Despensa y Compras (Campos Limpios sin precarga) -->
+        <!-- PASO 2: Insumos de la Despensa y Compras -->
         <section class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 space-y-2.5">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -676,7 +678,7 @@
           </div>
         </section>
 
-        <!-- PASO 5: Envasado y Mano de obra (Sin números 3000 precargados) -->
+        <!-- PASO 5: Envasado y Mano de obra -->
         <section class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 space-y-2.5">
           <div class="flex items-center gap-2">
             <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold flex items-center justify-center">5</span>
@@ -696,7 +698,7 @@
           </div>
         </section>
 
-        <!-- PASO 6: Luz Eléctrica -->
+        <!-- PASO 6: Luz Eléctrica (Hogar vs Taller Exclusivo) -->
         <section class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 space-y-2.5">
           <div class="flex items-center gap-2">
             <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold flex items-center justify-center">6</span>
@@ -819,7 +821,7 @@
 
   </main>
 
-  <!-- MODAL: VER ESTANTE / AJUSTAR -->
+  <!-- MODAL: VER ESTANTE / AJUSTAR (Con Fusionar y Archivar) -->
   <div id="modal-estante" class="fixed inset-0 bg-stone-900/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
     <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-start">
@@ -880,12 +882,105 @@
         </div>
       </div>
 
-      <div class="space-y-2 pt-1">
+      <div class="space-y-2 pt-1 border-t border-stone-200">
         <button onclick="window.confirmarMovimientoEstante()" class="w-full py-3 bg-stone-900 hover:bg-black text-white font-bold rounded-2xl shadow text-xs cursor-pointer">
           Confirmar movimiento
         </button>
+
+        <!-- HERRAMIENTAS AVANZADAS: FUSIONAR Y ARCHIVAR -->
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button type="button" onclick="window.abrirModalFusionarDesdeActual()" class="py-2.5 px-3 bg-amber-50 hover:bg-amber-100 text-amber-950 font-bold rounded-xl border border-amber-300 text-xs flex items-center justify-center gap-1.5 transition cursor-pointer">
+            <i class="ph-bold ph-git-merge text-sm"></i>
+            <span>Fusionar insumo</span>
+          </button>
+          <button type="button" onclick="window.solicitarArchivarInsumoActual()" class="py-2.5 px-3 bg-stone-100 hover:bg-rose-50 hover:text-rose-700 text-stone-700 font-bold rounded-xl border border-stone-300 text-xs flex items-center justify-center gap-1.5 transition cursor-pointer">
+            <i class="ph-bold ph-archive-box text-sm"></i>
+            <span>Poner en pausa</span>
+          </button>
+        </div>
+
         <button type="button" onclick="window.cerrarModales()" class="w-full py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl text-xs cursor-pointer">
           Cancelar y volver
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: FUSIONAR 2 INSUMOS -->
+  <div id="modal-fusionar" class="fixed inset-0 bg-stone-900/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+      <div class="flex justify-between items-start border-b border-stone-200 pb-2">
+        <div>
+          <span class="text-[10px] font-black text-amber-900 uppercase tracking-wider bg-amber-100 px-2 py-0.5 rounded-md">Corrección y Unión</span>
+          <h2 class="text-lg font-black text-stone-900 mt-1">Fusionar 2 Insumos</h2>
+        </div>
+        <button type="button" onclick="window.cerrarModales()" class="bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs px-3 py-1.5 rounded-xl cursor-pointer">
+          Cerrar ✕
+        </button>
+      </div>
+
+      <p class="text-xs text-stone-600 leading-relaxed">
+        Uní este insumo con otro existente. Se sumarán sus cantidades, se recalculará el costo promedio ponderado y se conservará el nombre secundario entre paréntesis.
+      </p>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Insumo actual:</label>
+          <div class="p-2.5 bg-stone-100 rounded-xl border border-stone-200 text-xs font-black text-stone-800" id="fusionInsumoActualNombre">
+            Insumo A
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">¿Con cuál otro insumo querés unirlo?</label>
+          <select id="selectInsumoParaFusionar" onchange="window.actualizarOpcionesNombreFusion()" class="w-full p-2.5 bg-stone-50 border border-stone-300 rounded-xl font-bold text-stone-800 text-xs">
+            <!-- Dinámico JS -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Elegí el nombre principal definitivo:</label>
+          <div class="space-y-2" id="opcionesNombreFusion">
+            <!-- Radios dinámicos JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-2 pt-2 border-t border-stone-200">
+        <button onclick="window.confirmarFusionInsumos()" class="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-2xl shadow text-xs cursor-pointer">
+          Confirmar y Fusionar Insumos
+        </button>
+        <button type="button" onclick="window.cerrarModales()" class="w-full py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl text-xs cursor-pointer">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: INSUMOS EN PAUSA / ARCHIVADOS (Plantilla de reactivación) -->
+  <div id="modal-archivados" class="fixed inset-0 bg-stone-900/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+      <div class="flex justify-between items-start border-b border-stone-200 pb-2">
+        <div>
+          <span class="text-[10px] font-black text-stone-500 uppercase tracking-wider">Fuera de Temporada / Pausados</span>
+          <h2 class="text-lg font-black text-stone-900 mt-1">Insumos en Pausa</h2>
+        </div>
+        <button type="button" onclick="window.cerrarModales()" class="bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs px-3 py-1.5 rounded-xl cursor-pointer">
+          Cerrar ✕
+        </button>
+      </div>
+
+      <p class="text-xs text-stone-500 leading-relaxed">
+        Estos insumos no aparecen en tus estantes activos. Cuando comience la temporada, reactivalos con un clic sin volver a escribir todo desde cero:
+      </p>
+
+      <div id="contenedorListaArchivados" class="space-y-2.5">
+        <!-- Render dinámico JS -->
+      </div>
+
+      <div class="pt-2 border-t border-stone-200">
+        <button type="button" onclick="window.cerrarModales()" class="w-full py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl text-xs cursor-pointer">
+          Volver a Mi Despensa
         </button>
       </div>
     </div>
@@ -1163,6 +1258,7 @@
     let sesionActiva = null; // { slug: 'simondice', nombre: 'SimonDice' }
     let productosGuardados = [];
     let insumosDespensa = [];
+    let insumosArchivados = []; // Insumos en pausa / archivados
     let idProductoSeleccionado = null;
     let productoAEliminarId = null;
     let borradorEnEdicionId = null;
@@ -1247,7 +1343,6 @@
     }
 
     async function inicializarAuth() {
-      // Asegurar que el cliente tenga sesión en Firebase Auth para cumplir con 'request.auth != null'
       onAuthStateChanged(auth, async (user) => {
         if (!user) {
           try {
@@ -1258,7 +1353,6 @@
         }
       });
 
-      // Chequear si hay un emprendimiento activo en este dispositivo
       const sesionGuardada = localStorage.getItem('sgpp_sesion_activa_v2');
       if (sesionGuardada) {
         try {
@@ -1322,12 +1416,10 @@
       actualizarIndicadorNube(false, "Verificando en la nube...");
 
       try {
-        // Asegurar que auth exista
         if (!auth.currentUser) {
           await signInAnonymously(auth);
         }
 
-        // Consultar el registro central del emprendimiento
         const docAccesoRef = doc(db, 'emprendimientos', slug, 'seguridad', 'acceso');
         const snap = await getDoc(docAccesoRef);
 
@@ -1346,7 +1438,6 @@
             return;
           }
         } else {
-          // Si no está registrado en la nube, verificar si existe en la pestaña de registro
           if (errTxt) errTxt.innerText = `El emprendimiento "${nomInput}" no está registrado aún. Hacé clic en "Registrarse" arriba para crearlo.`;
           if (errDiv) errDiv.classList.remove('hidden');
           actualizarIndicadorNube(false, "No registrado");
@@ -1403,7 +1494,6 @@
           return;
         }
 
-        // Crear registro central del emprendimiento en la nube
         await setDoc(docAccesoRef, {
           nombre: nomInput,
           slug: slug,
@@ -1411,7 +1501,6 @@
           fechaRegistro: new Date().toISOString()
         });
 
-        // Crear despensa inicial limpia para el nuevo emprendimiento
         const despensaInicial = [
           { id: 1, nombre: "Azúcar Común", cantidad: 10, unidad: "kg", costoPromedio: 1150, costoHistorico: 1150, aumentosAbsorbidos: 0, origenes: { comprado: { cantidad: 10, costoUnitario: 1150 }, propio: { cantidad: 0, costoUnitario: 0 } } },
           { id: 2, nombre: "Frascos de Vidrio 360cc", cantidad: 30, unidad: "unid", costoPromedio: 450, costoHistorico: 450, aumentosAbsorbidos: 0, origenes: { comprado: { cantidad: 30, costoUnitario: 450 }, propio: { cantidad: 0, costoUnitario: 0 } } }
@@ -1419,6 +1508,7 @@
 
         await setDoc(doc(db, 'emprendimientos', slug, 'datos', 'despensa'), {
           insumos: despensaInicial,
+          archivados: [],
           actualizadoEl: new Date().toISOString()
         });
 
@@ -1452,10 +1542,14 @@
 
       ocultarAlerta();
 
-      // Cargar respaldo local previo mientras conecta la nube
+      // Cargar respaldo local
       const despensaLocal = localStorage.getItem(`sgpp_despensa_${slug}`);
       if (despensaLocal) {
         try { insumosDespensa = JSON.parse(despensaLocal); } catch (e) {}
+      }
+      const archivadosLocal = localStorage.getItem(`sgpp_archivados_${slug}`);
+      if (archivadosLocal) {
+        try { insumosArchivados = JSON.parse(archivadosLocal); } catch (e) {}
       }
       const prodsLocales = localStorage.getItem(`sgpp_prods_${slug}`);
       if (prodsLocales) {
@@ -1467,7 +1561,7 @@
       calcularDisponibilidad();
       verificarAlertaGuardian();
 
-      // 1. RADAR EN VIVO: MI DESPENSA (/emprendimientos/{slug}/datos/despensa)
+      // RADAR DESPENSA
       if (unsubscribeDespensa) unsubscribeDespensa();
       try {
         const docDespensaRef = doc(db, 'emprendimientos', slug, 'datos', 'despensa');
@@ -1476,7 +1570,9 @@
             const data = docSnap.data();
             if (data && Array.isArray(data.insumos)) {
               insumosDespensa = data.insumos;
+              insumosArchivados = Array.isArray(data.archivados) ? data.archivados : [];
               localStorage.setItem(`sgpp_despensa_${slug}`, JSON.stringify(insumosDespensa));
+              localStorage.setItem(`sgpp_archivados_${slug}`, JSON.stringify(insumosArchivados));
               renderEstantes();
               calcularDisponibilidad();
               verificarAlertaGuardian();
@@ -1492,7 +1588,7 @@
         console.warn("Fallo suscripción despensa:", e);
       }
 
-      // 2. RADAR EN VIVO: MIS PRODUCTOS (/emprendimientos/{slug}/productos)
+      // RADAR PRODUCTOS
       if (unsubscribeProductos) unsubscribeProductos();
       try {
         const colProductosRef = collection(db, 'emprendimientos', slug, 'productos');
@@ -1521,9 +1617,11 @@
     async function guardarDespensaNube() {
       if (!sesionActiva || !sesionActiva.slug) return;
       localStorage.setItem(`sgpp_despensa_${sesionActiva.slug}`, JSON.stringify(insumosDespensa));
+      localStorage.setItem(`sgpp_archivados_${sesionActiva.slug}`, JSON.stringify(insumosArchivados));
       try {
         await setDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'datos', 'despensa'), { 
           insumos: insumosDespensa,
+          archivados: insumosArchivados,
           actualizadoEl: new Date().toISOString()
         });
         actualizarIndicadorNube(true, "Bóveda Sincronizada");
@@ -1603,6 +1701,9 @@
 
       const badgeStock = document.getElementById('badgeStockDespensa');
       if (badgeStock) badgeStock.innerText = `${insumosDespensa.length} ${insumosDespensa.length === 1 ? 'insumo' : 'insumos'}`;
+
+      const btnArchivados = document.getElementById('textoBtnArchivados');
+      if (btnArchivados) btnArchivados.innerText = `En pausa / Archivados (${insumosArchivados.length})`;
 
       if (lista.length === 0) {
         contenedor.innerHTML = `
@@ -1770,6 +1871,217 @@
       calcularDisponibilidad();
       verificarAlertaGuardian();
       mostrarToast("Insumo guardado en Mi Despensa.");
+    }
+
+    function solicitarArchivarInsumoActual() {
+      if (!insumoSeleccionadoEstante) return;
+      const idx = insumosDespensa.findIndex(i => i.id === insumoSeleccionadoEstante.id);
+      if (idx === -1) return;
+
+      const [insumoArchivado] = insumosDespensa.splice(idx, 1);
+      insumosArchivados.push({
+        ...insumoArchivado,
+        fechaPausado: new Date().toISOString()
+      });
+
+      guardarDespensaNube();
+      cerrarModales();
+      renderEstantes();
+      calcularDisponibilidad();
+      mostrarToast(`"${insumoArchivado.nombre}" se guardó en insumos en pausa.`);
+    }
+
+    function abrirModalArchivados() {
+      const cont = document.getElementById('contenedorListaArchivados');
+      if (!cont) return;
+      cont.innerHTML = '';
+
+      if (insumosArchivados.length === 0) {
+        cont.innerHTML = `
+          <div class="text-center py-8 bg-stone-50 rounded-2xl border border-dashed border-stone-200 text-stone-400 p-4">
+            <i class="ph-bold ph-archive-box text-3xl mb-1 text-stone-300"></i>
+            <p class="text-xs font-bold text-stone-600">No tenés insumos archivados en pausa.</p>
+            <p class="text-[11px] mt-0.5">Podés poner insumos en pausa desde "Ajustar" cuando termine la temporada.</p>
+          </div>
+        `;
+      } else {
+        insumosArchivados.forEach((item, index) => {
+          const card = document.createElement('div');
+          card.className = "bg-stone-50 border border-stone-200 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3";
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center gap-1.5">
+                <h4 class="font-black text-stone-900 text-sm">${item.nombre}</h4>
+                <span class="text-[9px] font-bold uppercase bg-stone-200 text-stone-600 px-1.5 py-0.2 rounded">${item.unidad}</span>
+              </div>
+              <p class="text-[11px] text-stone-500 mt-0.5">
+                Último costo registrado: <strong class="text-emerald-800">$${formatearNumero(item.costoPromedio)}</strong> / ${item.unidad}
+              </p>
+            </div>
+            <div class="flex items-center gap-1.5 self-end sm:self-center">
+              <button onclick="window.reactivarInsumoArchivado(${index})" class="bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white font-bold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1 cursor-pointer transition">
+                <i class="ph-bold ph-arrow-clockwise"></i> Reactivar al estante
+              </button>
+              <button onclick="window.eliminarArchivadoDefinitivo(${index})" class="text-rose-600 hover:bg-rose-50 p-1.5 rounded-lg border border-stone-200 cursor-pointer transition" title="Borrar definitivo">
+                <i class="ph-bold ph-trash text-sm"></i>
+              </button>
+            </div>
+          `;
+          cont.appendChild(card);
+        });
+      }
+
+      abrirModal('modal-archivados');
+    }
+
+    function reactivarInsumoArchivado(index) {
+      if (index < 0 || index >= insumosArchivados.length) return;
+      const [reactivado] = insumosArchivados.splice(index, 1);
+      
+      incorporarOActualizarInsumoEnDespensa({
+        nombre: reactivado.nombre,
+        cantidad: reactivado.cantidad || 0,
+        unidad: reactivado.unidad,
+        costoUnitario: reactivado.costoPromedio || 0,
+        tipoOrigen: reactivado.origenes?.propio?.cantidad > 0 ? 'propio' : 'comprado'
+      });
+
+      guardarDespensaNube();
+      renderEstantes();
+      abrirModalArchivados();
+      mostrarToast(`¡"${reactivado.nombre}" reactivado en el estante de Mi Despensa!`);
+    }
+
+    function eliminarArchivadoDefinitivo(index) {
+      if (index < 0 || index >= insumosArchivados.length) return;
+      const [borrado] = insumosArchivados.splice(index, 1);
+      guardarDespensaNube();
+      abrirModalArchivados();
+      renderEstantes();
+      mostrarToast(`"${borrado.nombre}" eliminado definitivamente.`);
+    }
+
+    function abrirModalFusionarDesdeActual() {
+      if (!insumoSeleccionadoEstante) return;
+      const otrosInsumos = insumosDespensa.filter(i => i.id !== insumoSeleccionadoEstante.id);
+      if (otrosInsumos.length === 0) {
+        return mostrarToast("Necesitás tener al menos 2 insumos en la despensa para poder fusionar.");
+      }
+
+      const txtActual = document.getElementById('fusionInsumoActualNombre');
+      if (txtActual) txtActual.innerText = `${insumoSeleccionadoEstante.nombre} (${insumoSeleccionadoEstante.cantidad} ${insumoSeleccionadoEstante.unidad} - $${insumoSeleccionadoEstante.costoPromedio}/${insumoSeleccionadoEstante.unidad})`;
+
+      const sel = document.getElementById('selectInsumoParaFusionar');
+      if (sel) {
+        sel.innerHTML = otrosInsumos.map(i => `<option value="${i.id}">${i.nombre} (${i.cantidad} ${i.unidad} - $${i.costoPromedio}/${i.unidad})</option>`).join('');
+      }
+
+      actualizarOpcionesNombreFusion();
+      cerrarModal('modal-estante');
+      abrirModal('modal-fusionar');
+    }
+
+    function extraerNombreBaseYAlias(texto) {
+      const match = texto.match(/^([^(]+)(?:\((.*)\))?$/);
+      if (!match) return { base: texto.trim(), aliasList: [] };
+      const base = match[1].trim();
+      const aliasRaw = match[2] ? match[2].trim() : '';
+      const aliasList = aliasRaw ? aliasRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+      return { base, aliasList };
+    }
+
+    function construirNombreFusionado(nombreElegidoPrincipal, nombreSecundario) {
+      const infoPrincipal = extraerNombreBaseYAlias(nombreElegidoPrincipal);
+      const infoSecundario = extraerNombreBaseYAlias(nombreSecundario);
+
+      const conjuntoAlias = new Set(infoPrincipal.aliasList);
+      conjuntoAlias.add(infoSecundario.base);
+      infoSecundario.aliasList.forEach(a => conjuntoAlias.add(a));
+      conjuntoAlias.delete(infoPrincipal.base);
+
+      const listaFinalAlias = Array.from(conjuntoAlias);
+      if (listaFinalAlias.length === 0) return infoPrincipal.base;
+      return `${infoPrincipal.base} (${listaFinalAlias.join(', ')})`;
+    }
+
+    function actualizarOpcionesNombreFusion() {
+      const sel = document.getElementById('selectInsumoParaFusionar');
+      const cont = document.getElementById('opcionesNombreFusion');
+      if (!sel || !cont || !insumoSeleccionadoEstante) return;
+
+      const idSecundario = parseInt(sel.value);
+      const otroInsumo = insumosDespensa.find(i => i.id === idSecundario);
+      if (!otroInsumo) return;
+
+      const opcion1Preview = construirNombreFusionado(insumoSeleccionadoEstante.nombre, otroInsumo.nombre);
+      const opcion2Preview = construirNombreFusionado(otroInsumo.nombre, insumoSeleccionadoEstante.nombre);
+
+      cont.innerHTML = `
+        <label class="flex items-start gap-2.5 p-3 rounded-xl border border-stone-300 bg-stone-50 cursor-pointer hover:bg-white transition">
+          <input type="radio" name="nombreFusionPrincipalRadio" value="actual" checked class="mt-0.5 text-emerald-600">
+          <div>
+            <span class="text-xs font-black text-stone-900 block leading-snug">${opcion1Preview}</span>
+            <span class="text-[10px] text-stone-500">Mantiene "${insumoSeleccionadoEstante.nombre}" como base</span>
+          </div>
+        </label>
+        <label class="flex items-start gap-2.5 p-3 rounded-xl border border-stone-300 bg-stone-50 cursor-pointer hover:bg-white transition">
+          <input type="radio" name="nombreFusionPrincipalRadio" value="secundario" class="mt-0.5 text-emerald-600">
+          <div>
+            <span class="text-xs font-black text-stone-900 block leading-snug">${opcion2Preview}</span>
+            <span class="text-[10px] text-stone-500">Mantiene "${otroInsumo.nombre}" como base</span>
+          </div>
+        </label>
+      `;
+    }
+
+    function confirmarFusionInsumos() {
+      if (!insumoSeleccionadoEstante) return;
+      const sel = document.getElementById('selectInsumoParaFusionar');
+      if (!sel) return;
+
+      const idSecundario = parseInt(sel.value);
+      const otroInsumo = insumosDespensa.find(i => i.id === idSecundario);
+      if (!otroInsumo) return;
+
+      const eleccion = document.querySelector('input[name="nombreFusionPrincipalRadio"]:checked')?.value || 'actual';
+      const nombreFinal = eleccion === 'actual' 
+        ? construirNombreFusionado(insumoSeleccionadoEstante.nombre, otroInsumo.nombre)
+        : construirNombreFusionado(otroInsumo.nombre, insumoSeleccionadoEstante.nombre);
+
+      const cant1 = insumoSeleccionadoEstante.cantidad || 0;
+      const costo1 = insumoSeleccionadoEstante.costoPromedio || 0;
+      const cant2 = otroInsumo.cantidad || 0;
+      const costo2 = otroInsumo.costoPromedio || 0;
+
+      const stockConsolidado = Math.round((cant1 + cant2) * 100) / 100;
+      const valorTotal = (cant1 * costo1) + (cant2 * costo2);
+      const nuevoCostoPromedio = stockConsolidado > 0 ? Math.round(valorTotal / stockConsolidado) : costo1;
+
+      const origPropioCant = (insumoSeleccionadoEstante.origenes?.propio?.cantidad || 0) + (otroInsumo.origenes?.propio?.cantidad || 0);
+      const origPropioVal = ((insumoSeleccionadoEstante.origenes?.propio?.cantidad || 0) * (insumoSeleccionadoEstante.origenes?.propio?.costoUnitario || 0)) +
+                            ((otroInsumo.origenes?.propio?.cantidad || 0) * (otroInsumo.origenes?.propio?.costoUnitario || 0));
+      const origPropioUnit = origPropioCant > 0 ? Math.round(origPropioVal / origPropioCant) : 0;
+
+      const origCompCant = (insumoSeleccionadoEstante.origenes?.comprado?.cantidad || 0) + (otroInsumo.origenes?.comprado?.cantidad || 0);
+      const origCompVal = ((insumoSeleccionadoEstante.origenes?.comprado?.cantidad || 0) * (insumoSeleccionadoEstante.origenes?.comprado?.costoUnitario || 0)) +
+                          ((otroInsumo.origenes?.comprado?.cantidad || 0) * (otroInsumo.origenes?.comprado?.costoUnitario || 0));
+      const origCompUnit = origCompCant > 0 ? Math.round(origCompVal / origCompCant) : 0;
+
+      insumoSeleccionadoEstante.nombre = nombreFinal;
+      insumoSeleccionadoEstante.cantidad = stockConsolidado;
+      insumoSeleccionadoEstante.costoPromedio = nuevoCostoPromedio;
+      insumoSeleccionadoEstante.origenes = {
+        propio: { cantidad: origPropioCant, costoUnitario: origPropioUnit },
+        comprado: { cantidad: origCompCant, costoUnitario: origCompUnit }
+      };
+
+      insumosDespensa = insumosDespensa.filter(i => i.id !== idSecundario);
+
+      guardarDespensaNube();
+      cerrarModales();
+      renderEstantes();
+      calcularDisponibilidad();
+      mostrarToast(`Insumos fusionados con éxito bajo "${nombreFinal}".`);
     }
 
     function renderizarListaProductos() {
@@ -2155,7 +2467,6 @@
         c[campo] = val;
       }
 
-      // Si proviene de la despensa, autocalcular el costo al cambiar la cantidad
       if (c.origenDespensaKey && c.costoUnitarioFijo !== undefined) {
         if (c.cantidad !== null && !isNaN(c.cantidad) && c.cantidad > 0) {
           c.costo = Math.round(c.cantidad * c.costoUnitarioFijo);
@@ -2733,14 +3044,12 @@
         inputNombre.value = esCopiaNueva ? `${prod.nombre} (Nueva tanda)` : (prod.nombre || '');
       }
 
-      // Paso 2: Compras registradas para la tanda
       if (f.compras && Array.isArray(f.compras)) {
         compras = JSON.parse(JSON.stringify(f.compras));
       } else {
         compras = [];
       }
 
-      // Paso 3: Cosecha / Producción propia
       const cosecho = Boolean(f.cosechoPropio);
       setearCosecha(cosecho);
       const cNom = document.getElementById('cosechaNombre');
@@ -2752,11 +3061,9 @@
       const cHs = document.getElementById('cosechaHoras');
       if (cHs) cHs.value = f.cosechaHoras || '';
 
-      // Paso 4: Insumos de la receta
       if (f.insumosReceta && Array.isArray(f.insumosReceta)) {
         insumosReceta = JSON.parse(JSON.stringify(f.insumosReceta));
       } else if (prod.insumos && Array.isArray(prod.insumos)) {
-        // Respaldo por si es un producto previamente calculado
         insumosReceta = prod.insumos.map(ins => ({
           id: Date.now() + Math.floor(Math.random() * 1000),
           tipo: 'libre',
@@ -2770,13 +3077,11 @@
       const hCoc = document.getElementById('horasCoccion');
       if (hCoc) hCoc.value = f.horasCoccion !== undefined ? f.horasCoccion : '';
 
-      // Paso 5: Envasado y Valor de hora
       const hEnv = document.getElementById('horasEnvasado');
       if (hEnv) hEnv.value = f.horasEnvasado !== undefined ? f.horasEnvasado : '';
       const vHora = document.getElementById('valorHoraTrabajo');
       if (vHora) vHora.value = f.valorHoraTrabajo !== undefined ? f.valorHoraTrabajo : '';
 
-      // Paso 6: Luz eléctrica con su opción seleccionada
       const tipoLuz = f.tipoMedidorLuz || 'hogar';
       setearTipoMedidor(tipoLuz);
       const facLuz = document.getElementById('facturaLuzMensual');
@@ -2784,7 +3089,6 @@
       const hDiaLuz = document.getElementById('horasDiariasUsoLuz');
       if (hDiaLuz) hDiaLuz.value = f.horasDiariasUsoLuz !== undefined ? f.horasDiariasUsoLuz : '';
 
-      // Paso 7: Unidades y rendimiento
       const unids = document.getElementById('unidadesProducidas');
       if (unids) unids.value = f.unidadesProducidas !== undefined ? f.unidadesProducidas : (prod.unidadesProducidas || '');
       const tUn = document.getElementById('tipoUnidad');
@@ -3161,6 +3465,7 @@
         emprendimiento: sesionActiva,
         productos: productosGuardados,
         despensa: insumosDespensa,
+        archivados: insumosArchivados,
         fecha: new Date().toISOString()
       };
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
@@ -3182,6 +3487,7 @@
           const imp = JSON.parse(evt.target.result);
           if (imp.productos) productosGuardados = imp.productos;
           if (imp.despensa) insumosDespensa = imp.despensa;
+          if (imp.archivados) insumosArchivados = imp.archivados;
           localStorage.setItem(`sgpp_prods_${sesionActiva.slug}`, JSON.stringify(productosGuardados));
           await guardarDespensaNube();
           cerrarModal('modalBackup');
@@ -3244,6 +3550,13 @@
     window.cerrarModales = cerrarModales;
     window.exportarCopiaJSON = exportarCopiaJSON;
     window.importarCopiaJSON = importarCopiaJSON;
+    window.solicitarArchivarInsumoActual = solicitarArchivarInsumoActual;
+    window.abrirModalArchivados = abrirModalArchivados;
+    window.reactivarInsumoArchivado = reactivarInsumoArchivado;
+    window.eliminarArchivadoDefinitivo = eliminarArchivadoDefinitivo;
+    window.abrirModalFusionarDesdeActual = abrirModalFusionarDesdeActual;
+    window.actualizarOpcionesNombreFusion = actualizarOpcionesNombreFusion;
+    window.confirmarFusionInsumos = confirmarFusionInsumos;
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', inicializarAuth);
