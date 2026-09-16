@@ -107,7 +107,7 @@
         <div class="text-center">
           <h2 class="text-xl sm:text-2xl font-black text-stone-900">Acceso a tu Emprendimiento</h2>
           <p class="text-xs text-stone-500 mt-1 leading-relaxed">
-            Ingresá con tu nombre y PIN de 4 números. Funciona con o sin conexión a internet en el campo.
+            Ingresá con tu nombre y PIN de 4 números. Funciona seguro, sin correos difíciles y con o sin conexión a internet.
           </p>
         </div>
 
@@ -1240,7 +1240,9 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { 
       getAuth, 
-      signInAnonymously,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      signOut,
       onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { 
@@ -1309,6 +1311,15 @@
 
     // Radar y detector de conectividad offline
     let estaOnline = navigator.onLine;
+
+    // PUENTE SEGURO: Genera credenciales técnicas de Firebase Auth a partir de Nombre + PIN
+    function generarCredencialTecnica(slug, pin) {
+      // Formato válido de email para Firebase Auth
+      const email = `${slug}.emprendimiento@despensa.app`;
+      // Firebase exige contraseña de mínimo 6 caracteres: combinamos PIN + slug + sufijo
+      const password = `pin_${pin}_${slug}_sgpp`;
+      return { email, password };
+    }
 
     function setearTipoMedidor(tipo) {
       tipoMedidorLuz = tipo;
@@ -1388,18 +1399,7 @@
     }
 
     async function inicializarAuth() {
-      // Pre-almacenar en Cache Storage del navegador para carga instantánea offline
       precargarRecursosEnCache();
-
-      onAuthStateChanged(auth, async (user) => {
-        if (!user && navigator.onLine) {
-          try {
-            await signInAnonymously(auth);
-          } catch (e) {
-            console.warn("Fallo autenticación base:", e);
-          }
-        }
-      });
 
       const sesionGuardada = localStorage.getItem('sgpp_sesion_activa_v2');
       if (sesionGuardada) {
@@ -1461,11 +1461,13 @@
       }
 
       const slug = slugificarNombre(nomInput);
-      actualizarIndicadorNube(navigator.onLine ? false : 'offline', navigator.onLine ? "Verificando en la nube..." : "Verificando en memoria local...");
+      const { email, password } = generarCredencialTecnica(slug, pinInput);
 
-      // 1. Verificación en memoria local (Modo campo sin señal)
+      actualizarIndicadorNube(navigator.onLine ? 'sincronizando' : 'offline', navigator.onLine ? "Autenticando..." : "Modo Campo");
+
+      // 1. Verificación rápida local (permite entrar sin señal si ya se usó en este equipo)
       const credencialLocal = localStorage.getItem(`sgpp_credencial_${slug}`);
-      if (credencialLocal) {
+      if (!navigator.onLine && credencialLocal) {
         try {
           const cred = JSON.parse(credencialLocal);
           if (cred && cred.pin === pinInput) {
@@ -1478,48 +1480,32 @@
         } catch (e) {}
       }
 
-      // 2. Si no estaba en local o hay internet, consulta en Firestore (con cache offline automático)
+      // 2. Autenticación en Firebase Auth (Email/Contraseña seguros)
       try {
-        if (navigator.onLine && !auth.currentUser) {
-          await signInAnonymously(auth);
-        }
+        await signInWithEmailAndPassword(auth, email, password);
 
-        const docAccesoRef = doc(db, 'emprendimientos', slug, 'seguridad', 'acceso');
-        const snap = await getDoc(docAccesoRef);
+        sesionActiva = { slug: slug, nombre: nomInput };
+        localStorage.setItem('sgpp_sesion_activa_v2', JSON.stringify(sesionActiva));
+        localStorage.setItem(`sgpp_credencial_${slug}`, JSON.stringify({ slug, nombre: nomInput, pin: pinInput }));
 
-        if (snap.exists()) {
-          const data = snap.data();
-          if (data.pin === pinInput) {
-            sesionActiva = { slug: slug, nombre: data.nombre || nomInput };
-            localStorage.setItem('sgpp_sesion_activa_v2', JSON.stringify(sesionActiva));
-            // Guardar copia local de credencial para futuros accesos en el medio del campo
-            localStorage.setItem(`sgpp_credencial_${slug}`, JSON.stringify({ slug, nombre: data.nombre || nomInput, pin: pinInput }));
-            
-            iniciarSincronizacionEmprendimiento(slug, sesionActiva.nombre);
-            mostrarToast(`¡Bienvenido de nuevo a ${sesionActiva.nombre}!`);
-            return;
-          } else {
-            if (errTxt) errTxt.innerText = "El PIN de 4 números es incorrecto.";
-            if (errDiv) errDiv.classList.remove('hidden');
-            actualizarIndicadorNube(false, "PIN incorrecto");
-            return;
-          }
-        } else {
-          if (errTxt) errTxt.innerText = `El emprendimiento "${nomInput}" no está registrado aún. Hacé clic en "Registrarse" arriba para crearlo.`;
-          if (errDiv) errDiv.classList.remove('hidden');
-          actualizarIndicadorNube(false, "No registrado");
-          return;
-        }
+        iniciarSincronizacionEmprendimiento(slug, sesionActiva.nombre);
+        mostrarToast(`¡Bienvenido a ${sesionActiva.nombre}!`);
       } catch (err) {
-        console.warn("Error en login:", err);
-        // Si no hay red y no tenía guardado el PIN localmente
+        console.warn("Fallo login seguro:", err.code, err.message);
+
         if (!navigator.onLine) {
-          if (errTxt) errTxt.innerText = `Estás sin conexión y este emprendimiento no fue abierto antes en este teléfono. Conéctate una vez a internet para validar el PIN inicial.`;
+          if (errTxt) errTxt.innerText = "Estás sin conexión y este emprendimiento no fue abierto antes en este teléfono. Conéctate una vez a internet para validar el PIN inicial.";
+        } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+          if (errTxt) errTxt.innerText = "El PIN es incorrecto o el emprendimiento aún no fue registrado.";
+        } else if (err.code === 'auth/operation-not-allowed') {
+          if (errTxt) errTxt.innerText = "Falta activar 'Correo electrónico/Contraseña' en la pestaña Authentication de tu consola Firebase.";
+          mostrarAlerta("Habilitar Método en Firebase", "Andá a Firebase Console -> Authentication -> Sign-in method -> Activá 'Correo electrónico/contraseña'.");
         } else {
           if (errTxt) errTxt.innerText = "Error de conexión con la nube. Verificá tu internet o las reglas de Firebase.";
         }
+
         if (errDiv) errDiv.classList.remove('hidden');
-        actualizarIndicadorNube('offline', "Sin Conexión");
+        actualizarIndicadorNube(false, "Acceso Denegado");
       }
     }
 
@@ -1549,34 +1535,22 @@
       }
 
       const slug = slugificarNombre(nomInput);
-      actualizarIndicadorNube(false, "Registrando...");
+      const { email, password } = generarCredencialTecnica(slug, pinInput);
+
+      actualizarIndicadorNube('sincronizando', "Creando credencial segura...");
 
       try {
-        if (navigator.onLine && !auth.currentUser) {
-          await signInAnonymously(auth);
-        }
-
-        const docAccesoRef = doc(db, 'emprendimientos', slug, 'seguridad', 'acceso');
-        const snap = await getDoc(docAccesoRef);
-
-        if (snap.exists()) {
-          if (errTxt) errTxt.innerText = `El emprendimiento "${nomInput}" ya está registrado. Ingresá con tu PIN en la pestaña "Ingresar".`;
-          if (errDiv) errDiv.classList.remove('hidden');
-          actualizarIndicadorNube(false, "Ya registrado");
-          return;
-        }
+        // Crear usuario seguro en Firebase Auth
+        await createUserWithEmailAndPassword(auth, email, password);
 
         const datosRegistro = {
           nombre: nomInput,
           slug: slug,
-          pin: pinInput,
           fechaRegistro: new Date().toISOString()
         };
 
-        await setDoc(docAccesoRef, datosRegistro);
-
         // Guardar credencial en dispositivo para permitir acceso offline inmediato en el campo
-        localStorage.setItem(`sgpp_credencial_${slug}`, JSON.stringify(datosRegistro));
+        localStorage.setItem(`sgpp_credencial_${slug}`, JSON.stringify({ slug, nombre: nomInput, pin: pinInput }));
 
         const despensaInicial = [
           { id: 1, nombre: "Azúcar Común", cantidad: 10, unidad: "kg", costoPromedio: 1150, costoHistorico: 1150, aumentosAbsorbidos: 0, origenes: { comprado: { cantidad: 10, costoUnitario: 1150 }, propio: { cantidad: 0, costoUnitario: 0 } } },
@@ -1589,18 +1563,27 @@
           actualizadoEl: new Date().toISOString()
         });
 
+        await setDoc(doc(db, 'emprendimientos', slug, 'seguridad', 'acceso'), datosRegistro);
+
         sesionActiva = { slug: slug, nombre: nomInput };
         localStorage.setItem('sgpp_sesion_activa_v2', JSON.stringify(sesionActiva));
 
         iniciarSincronizacionEmprendimiento(slug, nomInput);
         mostrarToast(`¡Emprendimiento "${nomInput}" registrado con éxito!`);
       } catch (err) {
-        console.warn("Error en registro:", err);
-        if (!navigator.onLine) {
-          if (errTxt) errTxt.innerText = "Para registrar por primera vez un nuevo emprendimiento necesitas conexión a internet.";
+        console.warn("Fallo registro seguro:", err.code, err.message);
+
+        if (err.code === 'auth/email-already-in-use') {
+          if (errTxt) errTxt.innerText = `El emprendimiento "${nomInput}" ya está registrado. Ingresá con tu PIN en la pestaña "Ingresar".`;
+        } else if (err.code === 'auth/operation-not-allowed') {
+          if (errTxt) errTxt.innerText = "Falta activar 'Correo electrónico/Contraseña' en Firebase Console -> Authentication.";
+          mostrarAlerta("Habilitar Método en Firebase", "Andá a Firebase Console -> Authentication -> Sign-in method -> Habilitá 'Correo electrónico/contraseña'.");
+        } else if (!navigator.onLine) {
+          if (errTxt) errTxt.innerText = "Para registrar por primera vez un nuevo emprendimiento necesitás conexión a internet.";
         } else {
           if (errTxt) errTxt.innerText = `No se pudo registrar: ${err.message}`;
         }
+
         if (errDiv) errDiv.classList.remove('hidden');
         actualizarIndicadorNube(false, "Error al registrar");
       }
@@ -1623,7 +1606,7 @@
 
       ocultarAlerta();
 
-      // Cargar respaldo local prioritario (respuesta en milisegundos sin depender de red)
+      // Cargar respaldo local prioritario (respuesta instantánea sin depender de red)
       const despensaLocal = localStorage.getItem(`sgpp_despensa_${slug}`);
       if (despensaLocal) {
         try { insumosDespensa = JSON.parse(despensaLocal); } catch (e) {}
@@ -1642,7 +1625,6 @@
       calcularDisponibilidad();
       verificarAlertaGuardian();
 
-      // Actualizar estado según conectividad
       actualizarIndicadorNube(navigator.onLine ? true : 'offline');
 
       // RADAR DESPENSA (Firestore con persistencia IndexedDB nativa)
@@ -1668,7 +1650,7 @@
             actualizarIndicadorNube(true, "Bóveda Sincronizada");
           }
         }, (err) => {
-          console.warn("Error radar despensa:", err);
+          console.warn("Radar despensa:", err);
           if (!navigator.onLine) {
             actualizarIndicadorNube('offline', "Modo Campo / Sin Señal");
           }
@@ -1677,6 +1659,7 @@
         console.warn("Fallo suscripción despensa:", e);
       }
 
+      // RADAR PRODUCTOS
       if (unsubscribeProductos) unsubscribeProductos();
       try {
         const colProductosRef = collection(db, 'emprendimientos', slug, 'productos');
@@ -1697,7 +1680,7 @@
             actualizarIndicadorNube(true, "Bóveda Sincronizada");
           }
         }, (err) => {
-          console.warn("Error radar productos:", err);
+          console.warn("Radar productos:", err);
           if (!navigator.onLine) {
             actualizarIndicadorNube('offline', "Modo Campo / Sin Señal");
           }
@@ -1712,11 +1695,9 @@
     async function guardarDespensaNube() {
       if (!sesionActiva || !sesionActiva.slug) return;
       
-      // Siempre guardar inmediatamente en local
       localStorage.setItem(`sgpp_despensa_${sesionActiva.slug}`, JSON.stringify(insumosDespensa));
       localStorage.setItem(`sgpp_archivados_${sesionActiva.slug}`, JSON.stringify(insumosArchivados));
 
-      // Indicar estado de guardado
       actualizarIndicadorNube(navigator.onLine ? 'sincronizando' : 'offline', navigator.onLine ? "Guardando en nube..." : "Guardado seguro en equipo");
 
       try {
@@ -1731,14 +1712,19 @@
           actualizarIndicadorNube('offline', "Modo Campo / Guardado Local");
         }
       } catch (e) {
-        console.warn("Guardado nube despensa (esperando conexión):", e);
+        console.warn("Guardado despensa en buffer offline:", e);
         actualizarIndicadorNube('offline', "Pendiente de subida (Sin señal)");
       }
     }
 
-    function mostrarPantallaAuth() {
+    async function mostrarPantallaAuth() {
       if (unsubscribeDespensa) { unsubscribeDespensa(); unsubscribeDespensa = null; }
       if (unsubscribeProductos) { unsubscribeProductos(); unsubscribeProductos = null; }
+      
+      try {
+        await signOut(auth);
+      } catch (e) {}
+
       sesionActiva = null;
       localStorage.removeItem('sgpp_sesion_activa_v2');
 
@@ -1757,9 +1743,9 @@
       actualizarIndicadorNube(navigator.onLine ? false : 'offline', navigator.onLine ? "Sin Sesión" : "Modo Offline");
     }
 
-    function confirmarCerrarSesion() {
+    async function confirmarCerrarSesion() {
       cerrarModal('modalCerrarSesion');
-      mostrarPantallaAuth();
+      await mostrarPantallaAuth();
       mostrarToast("Sesión cerrada correctamente.");
     }
 
@@ -3027,10 +3013,8 @@
       if (idx >= 0) productosGuardados[idx] = prodData;
       else productosGuardados.unshift(prodData);
 
-      // Persistencia local instantánea
       localStorage.setItem(`sgpp_prods_${sesionActiva.slug}`, JSON.stringify(productosGuardados));
 
-      // Escritura en Firestore (aprovecha cache persistente si no hay internet)
       try {
         await setDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'productos', targetId), prodData);
       } catch (err) {
@@ -3616,9 +3600,7 @@
       mostrarToast("¡Conexión restablecida! Sincronizando datos con la nube...");
 
       if (sesionActiva && sesionActiva.slug) {
-        // Enviar despensa y cambios locales pendientes
         await guardarDespensaNube();
-        // Re-sincronizar productos
         iniciarSincronizacionEmprendimiento(sesionActiva.slug, sesionActiva.nombre);
       } else {
         actualizarIndicadorNube(true, "Conectado");
@@ -3650,7 +3632,7 @@
           ];
           await cache.addAll(recursos).catch(() => {});
         } catch (e) {
-          // El navegador continuará con su cache HTTP estándar
+          // El navegador continuará con su cache estándar
         }
       }
     }
