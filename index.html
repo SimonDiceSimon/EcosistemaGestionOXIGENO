@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Gestión - Mi Despensa y Costos</title>
+  <title>Sistema de Gestión - Mi Despensa, Costos y Ventas</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -55,6 +55,11 @@
 
       <!-- Barra de usuario activo -->
       <div id="barraUsuarioSesion" class="hidden flex items-center gap-2">
+        <button onclick="window.cambiarVista('ventas')" class="bg-amber-500 hover:bg-amber-600 text-stone-950 font-black text-xs px-3 py-1.5 rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer active:scale-95" title="Abrir Punto de Venta">
+          <i class="ph-bold ph-storefront text-base"></i>
+          <span class="hidden sm:inline">Vender</span>
+        </button>
+
         <div class="flex items-center bg-emerald-900/80 border border-emerald-800 rounded-xl px-2.5 py-1.5 gap-2">
           <div class="text-left hidden sm:block">
             <span class="text-[9px] uppercase tracking-wider text-emerald-300 font-bold block leading-none">Emprendimiento</span>
@@ -73,14 +78,14 @@
     </div>
   </header>
 
-  <main class="max-w-5xl mx-auto px-4 py-5 flex-1 w-full pb-20">
+  <main class="max-w-5xl mx-auto px-4 py-5 flex-1 w-full pb-28">
 
     <!-- Banner informativo de modo fuera de línea -->
     <div id="bannerModoOffline" class="hidden mb-4 p-3 rounded-2xl bg-amber-500/10 border-2 border-amber-500/40 text-amber-950 text-xs flex items-center justify-between gap-2 shadow-sm fade-in">
       <div class="flex items-center gap-2.5">
         <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0"></span>
         <p class="font-bold text-xs leading-snug">
-          <strong>Modo Campo Activo:</strong> Estás trabajando sin señal. Todo lo que cargues se guarda seguro en tu teléfono y se sincronizará automáticamente al volver a tener internet.
+          <strong>Modo Campo Activo:</strong> Estás trabajando sin señal. Todo lo que cargues se guarda seguro en tu dispositivo y se sincronizará automáticamente al volver a tener internet.
         </p>
       </div>
       <button onclick="window.verificarConexionManual()" class="shrink-0 bg-amber-200 hover:bg-amber-300 text-amber-950 px-2.5 py-1 rounded-xl font-bold text-[11px] transition">
@@ -209,6 +214,28 @@
 
     <div id="vistaInicio" class="hidden space-y-5 fade-in">
       
+      <!-- Banner Destacado Módulo de Venta -->
+      <div class="bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-stone-950 text-amber-300">Mostrador & Feria</span>
+            <span id="badgeStockTerminadoTotal" class="text-[10px] font-extrabold bg-amber-400/80 px-2 py-0.5 rounded-full text-stone-900">0 listos para venta</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-black text-stone-950 leading-tight">Punto de Venta y Despacho Rápido</h2>
+          <p class="text-xs text-stone-900/80 font-medium">Botonera táctil con cálculo en vivo, rebajas asignadas por producto y registro de turistas.</p>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button onclick="window.cambiarVista('ventas')" class="flex-1 sm:flex-none py-3 px-5 bg-stone-950 hover:bg-black text-amber-300 font-black rounded-2xl shadow-md transition flex items-center justify-center gap-2 text-xs cursor-pointer active:scale-95">
+            <i class="ph-bold ph-shopping-bag-open text-base"></i>
+            <span>Abrir Venta</span>
+          </button>
+          <button onclick="window.abrirModalHistorialVentas()" class="py-3 px-3.5 bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold rounded-2xl transition flex items-center justify-center gap-1.5 text-xs cursor-pointer active:scale-95 border border-amber-600/30" title="Ver historial de ventas y anulaciones">
+            <i class="ph-bold ph-clock-counter-clockwise text-base"></i>
+            <span class="hidden sm:inline">Historial</span>
+          </button>
+        </div>
+      </div>
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
         
         <!-- RECUADRO 1: TUS PRODUCTOS Y COSTOS -->
@@ -240,7 +267,7 @@
         <div class="bg-white rounded-3xl p-6 shadow-sm border border-stone-200/90 flex flex-col justify-between space-y-4">
           <div class="space-y-2">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-amber-800 uppercase tracking-wider">Control Físico</span>
+              <span class="text-xs font-bold text-amber-800 uppercase tracking-wider">Control de Materias Primas</span>
               <span id="badgeStockDespensa" class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">0 insumos</span>
             </div>
             <h2 class="text-2xl font-black text-stone-900 leading-tight">Mi Despensa</h2>
@@ -282,6 +309,127 @@
 
     </div>
 
+    <div id="vistaVentas" class="hidden space-y-4 fade-in pb-20">
+      
+      <!-- Barra superior de ventas -->
+      <div class="flex items-center justify-between gap-2 pb-2 border-b border-stone-200">
+        <button onclick="window.cambiarVista('inicio')" class="bg-white hover:bg-stone-50 text-stone-800 font-bold text-xs px-3.5 py-2 rounded-xl border border-stone-300 shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95 transition">
+          <i class="ph-bold ph-arrow-left"></i> Volver al Panel
+        </button>
+
+        <div class="flex items-center gap-2">
+          <!-- Selector tarifa: Minorista vs Mayorista -->
+          <div class="bg-stone-200/80 p-0.5 rounded-xl flex items-center text-xs font-bold">
+            <button id="btnTarifaMinorista" onclick="window.cambiarTarifaVenta('minorista')" class="px-2.5 py-1 rounded-lg bg-white text-emerald-950 shadow-sm cursor-pointer transition">
+              Feria
+            </button>
+            <button id="btnTarifaMayorista" onclick="window.cambiarTarifaVenta('mayorista')" class="px-2.5 py-1 rounded-lg text-stone-600 hover:text-stone-900 cursor-pointer transition">
+              Mayorista
+            </button>
+          </div>
+
+          <button onclick="window.abrirModalHistorialVentas()" class="bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs px-3 py-2 rounded-xl border border-stone-300 flex items-center gap-1.5 cursor-pointer active:scale-95 transition" title="Ver ventas cobradas">
+            <i class="ph-bold ph-clock-counter-clockwise text-base text-stone-600"></i>
+            <span class="hidden sm:inline">Historial</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Buscador de productos para venta -->
+      <div class="relative">
+        <i class="ph-bold ph-magnifying-glass absolute left-3.5 top-3.5 text-stone-400 text-base"></i>
+        <input 
+          type="text" 
+          id="input-buscador-ventas"
+          oninput="window.filtrarProductosVentas()" 
+          placeholder="Buscar producto por nombre..." 
+          class="w-full pl-9 pr-4 py-2.5 bg-white rounded-2xl border border-stone-200 text-stone-800 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm"
+        >
+      </div>
+
+      <!-- Alerta visual de piso de costo en vivo -->
+      <div id="alertaPisoCostoVenta" class="hidden p-3 rounded-2xl bg-rose-50 border-2 border-rose-300 text-rose-900 text-xs flex items-center justify-between gap-2 shadow-sm fade-in">
+        <div class="flex items-center gap-2">
+          <i class="ph-bold ph-warning text-lg text-rose-600 shrink-0"></i>
+          <p class="font-bold leading-tight" id="textoPisoCostoVenta">
+            Atención: El precio rebajado queda por debajo del costo unitario de producción.
+          </p>
+        </div>
+      </div>
+
+      <!-- Listado Scroleable de Productos -->
+      <div id="contenedorProductosVenta" class="space-y-2.5">
+        <!-- Inyectado dinámicamente por JS -->
+      </div>
+
+      <!-- Estado vacío para ventas si no hay recetas calculadas -->
+      <div id="estadoVacioVentas" class="hidden text-center py-12 px-4 bg-white rounded-2xl border border-dashed border-stone-300">
+        <i class="ph-bold ph-basket text-4xl text-stone-300 mb-2"></i>
+        <h4 class="text-sm font-bold text-stone-700">No tenés productos elaborados todavía</h4>
+        <p class="text-xs text-stone-400 mt-1 mb-4">Calculá tu primera tanda de productos para habilitar el mostrador de ventas.</p>
+        <button onclick="window.iniciarNuevoCalculo()" class="text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-4 py-2.5 rounded-xl cursor-pointer inline-flex items-center gap-1.5">
+          <i class="ph-bold ph-plus"></i> Calcular Primer Producto
+        </button>
+      </div>
+
+      <!-- BARRA INFERIOR FIJA (STICKY BOTTOM BAR) -->
+      <div class="fixed bottom-0 left-0 right-0 z-40 bg-stone-900 text-white border-t border-stone-800 shadow-2xl px-4 py-3">
+        <div class="max-w-5xl mx-auto flex flex-col gap-2">
+          
+          <!-- Sub-barra superior: Switch Turista y Detalle de Descuento -->
+          <div class="flex items-center justify-between text-xs border-b border-stone-800/80 pb-2">
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" id="checkEsTurista" onchange="window.actualizarResumenVentaEnVivo()" class="sr-only peer">
+              <div class="w-8 h-4.5 bg-stone-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-amber-500"></div>
+              <span class="font-bold flex items-center gap-1 text-stone-300 peer-checked:text-amber-300">
+                <i class="ph-bold ph-sun-horizon"></i> Cliente Turista
+              </span>
+            </label>
+
+            <div class="text-[11px] text-stone-400" id="indicadorDiferenciaDescuento">
+              Precio de lista normal
+            </div>
+          </div>
+
+          <!-- Fila principal de cobro -->
+          <div class="flex items-center justify-between gap-3">
+            <!-- Conteo y Subtotal -->
+            <div class="shrink-0">
+              <span class="text-[10px] text-stone-400 uppercase font-extrabold block" id="lblCantidadItemsVenta">0 items</span>
+              <span class="text-xs text-stone-400">Lista: <strong class="text-stone-200" id="subtotalListaVenta">$ 0</strong></span>
+            </div>
+
+            <!-- Campo editable de Total Definitivo Cobrado -->
+            <div class="flex items-center gap-1.5 bg-stone-800/90 border border-stone-700 px-3 py-1.5 rounded-xl">
+              <span class="text-xs text-stone-400 font-bold">$</span>
+              <input 
+                type="number" 
+                id="inputTotalCobradoVenta"
+                step="any"
+                placeholder="0"
+                onfocus="this.select()"
+                oninput="window.alEditarTotalCobradoManual()"
+                class="w-24 sm:w-28 bg-transparent text-amber-300 font-black text-lg focus:outline-none text-right"
+              >
+            </div>
+
+            <!-- Botón de Confirmación -->
+            <button 
+              id="btnConfirmarVenta"
+              onclick="window.confirmarVentaActual()" 
+              disabled
+              class="flex-1 max-w-[160px] sm:max-w-[200px] py-2.5 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-md bg-stone-800 text-stone-500 cursor-not-allowed"
+            >
+              <i class="ph-bold ph-check-circle text-base"></i>
+              <span>Cobrar y Bajar</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
     <div id="vistaProductos" class="hidden space-y-4 fade-in">
       
       <div class="flex items-center justify-between pb-2 border-b border-stone-200">
@@ -293,7 +441,7 @@
 
       <div class="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-2">
         <h2 class="text-xl font-black text-stone-900">Mis Productos Calculados</h2>
-        <p class="text-xs text-stone-500">Recetas terminadas con sus costos por unidad y precios fijados para la venta.</p>
+        <p class="text-xs text-stone-500">Recetas terminadas con sus costos por unidad, stock para venta y precios fijados.</p>
       </div>
 
       <div id="contenedorTerminados" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
@@ -418,8 +566,8 @@
               <p class="text-xs text-stone-400 mt-0.5" id="detalleFecha">Tanda registrada el --/--/----</p>
             </div>
             <div class="bg-stone-800/90 border border-stone-700/80 px-3 py-2 rounded-xl text-right">
-              <span class="text-[10px] uppercase font-bold text-stone-400 block">Rendimiento</span>
-              <span class="text-base font-black text-stone-100" id="detalleRinde">0 unidades</span>
+              <span class="text-[10px] uppercase font-bold text-stone-400 block">Stock Disponible</span>
+              <span class="text-base font-black text-amber-400" id="detalleStockListo">0 unidades</span>
             </div>
           </div>
 
@@ -820,7 +968,7 @@
             <div class="space-y-2 pt-2">
               <button onclick="window.guardarProducto(true)" class="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold py-3.5 px-4 rounded-2xl shadow-md transition flex items-center justify-center gap-2 text-xs cursor-pointer">
                 <i class="ph-bold ph-check-circle text-base"></i>
-                <span>Agregar a mis productos</span>
+                <span>Agregar a mis productos (+ Stock Venta)</span>
               </button>
               <button onclick="window.guardarProducto(false)" class="w-full bg-amber-500 hover:bg-amber-600 active:scale-95 text-stone-950 font-extrabold py-2.5 px-4 rounded-xl shadow-sm transition flex items-center justify-center gap-2 text-xs cursor-pointer">
                 <i class="ph-bold ph-clock-countdown text-base"></i>
@@ -971,7 +1119,7 @@
     </div>
   </div>
 
-  <!-- MODAL: INSUMOS EN PAUSA / ARCHIVADOS (Plantilla de reactivación) -->
+  <!-- MODAL: INSUMOS EN PAUSA / ARCHIVADOS -->
   <div id="modal-archivados" class="fixed inset-0 bg-stone-900/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
     <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-start border-b border-stone-200 pb-2">
@@ -1161,6 +1309,30 @@
     </div>
   </div>
 
+  <!-- MODAL: HISTORIAL DE VENTAS Y ANULACIÓN -->
+  <div id="modalHistorialVentas" class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center border-b border-stone-200 pb-2 shrink-0">
+        <div>
+          <span class="text-[10px] font-black text-amber-900 uppercase tracking-wider bg-amber-100 px-2 py-0.5 rounded-md">Mostrador</span>
+          <h2 class="text-lg font-black text-stone-900 mt-0.5">Historial de Ventas Realizadas</h2>
+        </div>
+        <button type="button" onclick="window.cerrarModal('modalHistorialVentas')" class="bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs px-3 py-1.5 rounded-xl cursor-pointer">
+          Cerrar ✕
+        </button>
+      </div>
+
+      <div class="flex items-center justify-between bg-stone-50 border border-stone-200 p-2.5 rounded-xl text-xs font-bold text-stone-700 shrink-0">
+        <span id="resumenTotalRecaudadoVentas">Recaudado hoy: $ 0</span>
+        <span id="resumenTotalUnidadesVentas">0 unidades entregadas</span>
+      </div>
+
+      <div id="contenedorListaHistorialVentas" class="space-y-2.5 overflow-y-auto flex-1 pr-1">
+        <!-- Render dinámico JS -->
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: CERRAR SESIÓN -->
   <div id="modalCerrarSesion" class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-stone-200 space-y-4">
@@ -1216,7 +1388,7 @@
         </button>
       </div>
       <p class="text-xs text-stone-500 leading-relaxed">
-        Descargá una copia completa con todos tus productos, recetas y estantes de despensa para tener un respaldo en tu teléfono o PC sin costo alguno.
+        Descargá una copia completa con tus recetas, despensa, inventario para venta y ventas registradas para tener un respaldo en tu teléfono o PC.
       </p>
       <div class="space-y-3 pt-1">
         <button onclick="window.exportarCopiaJSON()" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer">
@@ -1231,7 +1403,7 @@
   </div>
 
   <!-- TOAST AVISO FLOTANTE -->
-  <div id="toastMensaje" class="fixed bottom-6 right-6 bg-stone-900 text-white text-xs px-4 py-3 rounded-2xl shadow-2xl z-50 hidden flex items-center gap-2 border border-stone-800 transition-all">
+  <div id="toastMensaje" class="fixed bottom-20 sm:bottom-6 right-6 bg-stone-900 text-white text-xs px-4 py-3 rounded-2xl shadow-2xl z-50 hidden flex items-center gap-2 border border-stone-800 transition-all">
     <i class="ph-bold ph-check-circle text-emerald-400 text-base" id="toastIcono"></i>
     <span id="toastTexto">Listo</span>
   </div>
@@ -1272,7 +1444,6 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Inicialización con persistencia local en IndexedDB nativa a costo cero
     let db;
     try {
       db = initializeFirestore(app, {
@@ -1287,7 +1458,8 @@
     let sesionActiva = null; // { slug: 'simondice', nombre: 'SimonDice' }
     let productosGuardados = [];
     let insumosDespensa = [];
-    let insumosArchivados = []; // Insumos en pausa / archivados
+    let insumosArchivados = [];
+    let ventasGuardadas = []; // Registro de ventas completadas
     let idProductoSeleccionado = null;
     let productoAEliminarId = null;
     let borradorEnEdicionId = null;
@@ -1295,6 +1467,7 @@
     // Desuscriptores en tiempo real
     let unsubscribeDespensa = null;
     let unsubscribeProductos = null;
+    let unsubscribeVentas = null;
 
     // Estado calculadora
     let compras = [];
@@ -1309,14 +1482,15 @@
     let margenMayoristaSeleccionado = 45;
     let tipoMedidorLuz = 'hogar';
 
-    // Radar y detector de conectividad offline
+    // Estado Módulo de Ventas
+    let carritoVenta = {}; // { [prodId]: { cantidad: 2, tieneDescuento: false } }
+    let tarifaVentaActual = 'minorista'; // 'minorista' (feria) | 'mayorista'
+    let totalCobradoManualOverride = null;
+
     let estaOnline = navigator.onLine;
 
-    // PUENTE SEGURO: Genera credenciales técnicas de Firebase Auth a partir de Nombre + PIN
     function generarCredencialTecnica(slug, pin) {
-      // Formato válido de email para Firebase Auth
       const email = `${slug}.emprendimiento@despensa.app`;
-      // Firebase exige contraseña de mínimo 6 caracteres: combinamos PIN + slug + sufijo
       const password = `pin_${pin}_${slug}_sgpp`;
       return { email, password };
     }
@@ -1465,7 +1639,6 @@
 
       actualizarIndicadorNube(navigator.onLine ? 'sincronizando' : 'offline', navigator.onLine ? "Autenticando..." : "Modo Campo");
 
-      // 1. Verificación rápida local (permite entrar sin señal si ya se usó en este equipo)
       const credencialLocal = localStorage.getItem(`sgpp_credencial_${slug}`);
       if (!navigator.onLine && credencialLocal) {
         try {
@@ -1480,7 +1653,6 @@
         } catch (e) {}
       }
 
-      // 2. Autenticación en Firebase Auth (Email/Contraseña seguros)
       try {
         await signInWithEmailAndPassword(auth, email, password);
 
@@ -1497,11 +1669,8 @@
           if (errTxt) errTxt.innerText = "Estás sin conexión y este emprendimiento no fue abierto antes en este teléfono. Conéctate una vez a internet para validar el PIN inicial.";
         } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
           if (errTxt) errTxt.innerText = "El PIN es incorrecto o el emprendimiento aún no fue registrado.";
-        } else if (err.code === 'auth/operation-not-allowed') {
-          if (errTxt) errTxt.innerText = "Falta activar 'Correo electrónico/Contraseña' en la pestaña Authentication de tu consola Firebase.";
-          mostrarAlerta("Habilitar Método en Firebase", "Andá a Firebase Console -> Authentication -> Sign-in method -> Activá 'Correo electrónico/contraseña'.");
         } else {
-          if (errTxt) errTxt.innerText = "Error de conexión con la nube. Verificá tu internet o las reglas de Firebase.";
+          if (errTxt) errTxt.innerText = "Error de conexión con la nube. Verificá tu internet.";
         }
 
         if (errDiv) errDiv.classList.remove('hidden');
@@ -1540,7 +1709,6 @@
       actualizarIndicadorNube('sincronizando', "Creando credencial segura...");
 
       try {
-        // Crear usuario seguro en Firebase Auth
         await createUserWithEmailAndPassword(auth, email, password);
 
         const datosRegistro = {
@@ -1549,7 +1717,6 @@
           fechaRegistro: new Date().toISOString()
         };
 
-        // Guardar credencial en dispositivo para permitir acceso offline inmediato en el campo
         localStorage.setItem(`sgpp_credencial_${slug}`, JSON.stringify({ slug, nombre: nomInput, pin: pinInput }));
 
         const despensaInicial = [
@@ -1574,12 +1741,7 @@
         console.warn("Fallo registro seguro:", err.code, err.message);
 
         if (err.code === 'auth/email-already-in-use') {
-          if (errTxt) errTxt.innerText = `El emprendimiento "${nomInput}" ya está registrado. Ingresá con tu PIN en la pestaña "Ingresar".`;
-        } else if (err.code === 'auth/operation-not-allowed') {
-          if (errTxt) errTxt.innerText = "Falta activar 'Correo electrónico/Contraseña' en Firebase Console -> Authentication.";
-          mostrarAlerta("Habilitar Método en Firebase", "Andá a Firebase Console -> Authentication -> Sign-in method -> Habilitá 'Correo electrónico/contraseña'.");
-        } else if (!navigator.onLine) {
-          if (errTxt) errTxt.innerText = "Para registrar por primera vez un nuevo emprendimiento necesitás conexión a internet.";
+          if (errTxt) errTxt.innerText = `El emprendimiento "${nomInput}" ya está registrado. Ingresá con tu PIN en "Ingresar".`;
         } else {
           if (errTxt) errTxt.innerText = `No se pudo registrar: ${err.message}`;
         }
@@ -1606,7 +1768,7 @@
 
       ocultarAlerta();
 
-      // Cargar respaldo local prioritario (respuesta instantánea sin depender de red)
+      // Cargar respaldo local prioritario
       const despensaLocal = localStorage.getItem(`sgpp_despensa_${slug}`);
       if (despensaLocal) {
         try { insumosDespensa = JSON.parse(despensaLocal); } catch (e) {}
@@ -1619,15 +1781,20 @@
       if (prodsLocales) {
         try { productosGuardados = JSON.parse(prodsLocales); } catch (e) {}
       }
+      const ventasLocales = localStorage.getItem(`sgpp_ventas_${slug}`);
+      if (ventasLocales) {
+        try { ventasGuardadas = JSON.parse(ventasLocales); } catch (e) {}
+      }
 
       renderEstantes();
       renderizarListaProductos();
+      renderizarProductosVenta();
       calcularDisponibilidad();
       verificarAlertaGuardian();
 
       actualizarIndicadorNube(navigator.onLine ? true : 'offline');
 
-      // RADAR DESPENSA (Firestore con persistencia IndexedDB nativa)
+      // Radar Despensa
       if (unsubscribeDespensa) unsubscribeDespensa();
       try {
         const docDespensaRef = doc(db, 'emprendimientos', slug, 'datos', 'despensa');
@@ -1644,22 +1811,12 @@
               verificarAlertaGuardian();
             }
           }
-          if (docSnap.metadata.fromCache && !navigator.onLine) {
-            actualizarIndicadorNube('offline', "Modo Campo / Datos Locales");
-          } else {
-            actualizarIndicadorNube(true, "Bóveda Sincronizada");
-          }
-        }, (err) => {
-          console.warn("Radar despensa:", err);
-          if (!navigator.onLine) {
-            actualizarIndicadorNube('offline', "Modo Campo / Sin Señal");
-          }
         });
       } catch (e) {
         console.warn("Fallo suscripción despensa:", e);
       }
 
-      // RADAR PRODUCTOS
+      // Radar Productos
       if (unsubscribeProductos) unsubscribeProductos();
       try {
         const colProductosRef = collection(db, 'emprendimientos', slug, 'productos');
@@ -1673,20 +1830,30 @@
           productosGuardados = prodsActualizados;
           localStorage.setItem(`sgpp_prods_${slug}`, JSON.stringify(productosGuardados));
           renderizarListaProductos();
+          renderizarProductosVenta();
           calcularDisponibilidad();
-          if (snapshot.metadata.fromCache && !navigator.onLine) {
-            actualizarIndicadorNube('offline', "Modo Campo / Datos Locales");
-          } else {
-            actualizarIndicadorNube(true, "Bóveda Sincronizada");
-          }
-        }, (err) => {
-          console.warn("Radar productos:", err);
-          if (!navigator.onLine) {
-            actualizarIndicadorNube('offline', "Modo Campo / Sin Señal");
-          }
         });
       } catch (e) {
         console.warn("Fallo suscripción productos:", e);
+      }
+
+      // Radar Ventas
+      if (unsubscribeVentas) unsubscribeVentas();
+      try {
+        const colVentasRef = collection(db, 'emprendimientos', slug, 'ventas');
+        unsubscribeVentas = onSnapshot(colVentasRef, { includeMetadataChanges: true }, (snapshot) => {
+          const vActualizadas = [];
+          snapshot.forEach(docSnap => {
+            vActualizadas.push({ ...docSnap.data(), id: docSnap.id });
+          });
+
+          vActualizadas.sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+          ventasGuardadas = vActualizadas;
+          localStorage.setItem(`sgpp_ventas_${slug}`, JSON.stringify(ventasGuardadas));
+          renderizarHistorialVentas();
+        });
+      } catch (e) {
+        console.warn("Fallo suscripción ventas:", e);
       }
 
       cambiarVista('inicio');
@@ -1698,28 +1865,21 @@
       localStorage.setItem(`sgpp_despensa_${sesionActiva.slug}`, JSON.stringify(insumosDespensa));
       localStorage.setItem(`sgpp_archivados_${sesionActiva.slug}`, JSON.stringify(insumosArchivados));
 
-      actualizarIndicadorNube(navigator.onLine ? 'sincronizando' : 'offline', navigator.onLine ? "Guardando en nube..." : "Guardado seguro en equipo");
-
       try {
         await setDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'datos', 'despensa'), { 
           insumos: insumosDespensa,
           archivados: insumosArchivados,
           actualizadoEl: new Date().toISOString()
         });
-        if (navigator.onLine) {
-          actualizarIndicadorNube(true, "Bóveda Sincronizada");
-        } else {
-          actualizarIndicadorNube('offline', "Modo Campo / Guardado Local");
-        }
       } catch (e) {
         console.warn("Guardado despensa en buffer offline:", e);
-        actualizarIndicadorNube('offline', "Pendiente de subida (Sin señal)");
       }
     }
 
     async function mostrarPantallaAuth() {
       if (unsubscribeDespensa) { unsubscribeDespensa(); unsubscribeDespensa = null; }
       if (unsubscribeProductos) { unsubscribeProductos(); unsubscribeProductos = null; }
+      if (unsubscribeVentas) { unsubscribeVentas(); unsubscribeVentas = null; }
       
       try {
         await signOut(auth);
@@ -1731,7 +1891,7 @@
       const barra = document.getElementById('barraUsuarioSesion');
       if (barra) barra.classList.add('hidden');
 
-      ['vistaInicio', 'vistaProductos', 'vistaDespensa', 'vistaDetalle', 'vistaCalculadora'].forEach(id => {
+      ['vistaAuth', 'vistaInicio', 'vistaProductos', 'vistaDespensa', 'vistaDetalle', 'vistaCalculadora', 'vistaVentas'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
       });
@@ -1755,7 +1915,7 @@
         return;
       }
 
-      ['vistaAuth', 'vistaInicio', 'vistaProductos', 'vistaDespensa', 'vistaDetalle', 'vistaCalculadora'].forEach(id => {
+      ['vistaAuth', 'vistaInicio', 'vistaProductos', 'vistaDespensa', 'vistaDetalle', 'vistaCalculadora', 'vistaVentas'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
       });
@@ -1765,7 +1925,8 @@
         vista === 'productos' ? 'vistaProductos' :
         vista === 'despensa' ? 'vistaDespensa' :
         vista === 'detalle' ? 'vistaDetalle' :
-        vista === 'calculadora' ? 'vistaCalculadora' : 'vistaInicio'
+        vista === 'calculadora' ? 'vistaCalculadora' :
+        vista === 'ventas' ? 'vistaVentas' : 'vistaInicio'
       );
 
       if (target) target.classList.remove('hidden');
@@ -1778,12 +1939,466 @@
         calcularDisponibilidad();
       } else if (vista === 'productos') {
         renderizarListaProductos();
+      } else if (vista === 'ventas') {
+        renderizarProductosVenta();
+        actualizarResumenVentaEnVivo();
       } else if (vista === 'calculadora') {
         actualizarNombreResumen();
         calcular();
       }
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cambiarTarifaVenta(tarifa) {
+      tarifaVentaActual = tarifa;
+      const bMin = document.getElementById('btnTarifaMinorista');
+      const bMay = document.getElementById('btnTarifaMayorista');
+
+      if (tarifa === 'minorista') {
+        if (bMin) bMin.className = "px-2.5 py-1 rounded-lg bg-white text-emerald-950 shadow-sm cursor-pointer transition";
+        if (bMay) bMay.className = "px-2.5 py-1 rounded-lg text-stone-600 hover:text-stone-900 cursor-pointer transition";
+      } else {
+        if (bMay) bMay.className = "px-2.5 py-1 rounded-lg bg-white text-purple-950 shadow-sm cursor-pointer transition";
+        if (bMin) bMin.className = "px-2.5 py-1 rounded-lg text-stone-600 hover:text-stone-900 cursor-pointer transition";
+      }
+
+      totalCobradoManualOverride = null;
+      renderizarProductosVenta();
+      actualizarResumenVentaEnVivo();
+    }
+
+    function obtenerPrecioUnitarioProducto(prod, tarifa = tarifaVentaActual) {
+      const costo = prod.costoUnitario || 0;
+      if (tarifa === 'minorista') {
+        return prod.preciosVenta?.precioMinorista || Math.round(costo * 1.5);
+      } else {
+        return prod.preciosVenta?.precioMayorista || Math.round(costo * 1.45);
+      }
+    }
+
+    function renderizarProductosVenta(query = '') {
+      const contenedor = document.getElementById('contenedorProductosVenta');
+      const vacio = document.getElementById('estadoVacioVentas');
+      if (!contenedor) return;
+
+      const terminados = productosGuardados.filter(p => p.estado !== 'borrador');
+
+      if (terminados.length === 0) {
+        contenedor.innerHTML = '';
+        if (vacio) vacio.classList.remove('hidden');
+        return;
+      }
+      if (vacio) vacio.classList.add('hidden');
+
+      const q = (query || document.getElementById('input-buscador-ventas')?.value || '').toLowerCase().trim();
+      const filtrados = terminados.filter(p => p.nombre.toLowerCase().includes(q));
+
+      contenedor.innerHTML = '';
+
+      filtrados.forEach(prod => {
+        const itemCarrito = carritoVenta[prod.id] || { cantidad: 0, tieneDescuento: false };
+        const cantEnCarrito = itemCarrito.cantidad;
+        const tieneDescuento = itemCarrito.tieneDescuento;
+        const stockActual = prod.stockTerminado !== undefined ? prod.stockTerminado : (prod.unidadesProducidas || 0);
+        const precioUnitario = obtenerPrecioUnitarioProducto(prod);
+
+        const card = document.createElement('div');
+        card.className = `p-3.5 sm:p-4 rounded-2xl border transition shadow-sm flex items-center justify-between gap-3 ${
+          cantEnCarrito > 0 ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-300' : 'bg-white border-stone-200'
+        }`;
+
+        // Badge de stock físico terminado
+        let badgeStock = '';
+        if (stockActual <= 0) {
+          badgeStock = `<span class="text-[10px] font-bold text-amber-900 bg-amber-100/90 px-1.5 py-0.5 rounded border border-amber-300">Stock: ${stockActual} (Permisivo)</span>`;
+        } else {
+          badgeStock = `<span class="text-[10px] font-bold text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded border border-stone-200">Stock: ${stockActual} ${prod.tipoUnidad}</span>`;
+        }
+
+        card.innerHTML = `
+          <div class="flex-1 min-w-0 pr-1">
+            <h4 class="font-black text-stone-900 text-sm leading-snug break-words">${prod.nombre}</h4>
+            <div class="flex items-center gap-2 mt-1 flex-wrap">
+              <span class="text-xs font-black text-emerald-800">$${formatearNumero(precioUnitario)} <span class="text-[10px] font-medium text-stone-500">c/u</span></span>
+              ${badgeStock}
+            </div>
+
+            <!-- Chip tildable Descuento específico -->
+            ${cantEnCarrito > 0 ? `
+              <button 
+                type="button" 
+                onclick="window.alternarDescuentoItemVenta('${prod.id}')"
+                class="mt-1.5 text-[10px] font-black px-2 py-0.5 rounded-md border transition cursor-pointer flex items-center gap-1 ${
+                  tieneDescuento 
+                    ? 'bg-amber-500 text-stone-950 border-amber-600 shadow-sm' 
+                    : 'bg-stone-100 text-stone-500 border-stone-300 hover:text-stone-800'
+                }"
+              >
+                <i class="ph-bold ${tieneDescuento ? 'ph-check' : 'ph-tag'}"></i>
+                <span>${tieneDescuento ? 'Aplica Rebaja' : '+ Marcar para Rebaja'}</span>
+              </button>
+            ` : ''}
+          </div>
+
+          <!-- Bloque de control en fila [ - ] [ Cant ] [ + ] -->
+          <div class="flex items-center gap-1 shrink-0">
+            <button 
+              type="button" 
+              onclick="window.modificarCantidadCarrito('${prod.id}', -1)"
+              class="w-8 h-8 rounded-xl border border-stone-300 bg-stone-100 hover:bg-stone-200 active:scale-95 text-stone-700 font-black text-sm flex items-center justify-center transition cursor-pointer"
+            >
+              −
+            </button>
+            
+            <div class="w-9 text-center font-black text-base ${cantEnCarrito > 0 ? 'text-amber-950 font-extrabold' : 'text-stone-300'}">
+              ${cantEnCarrito}
+            </div>
+
+            <button 
+              type="button" 
+              onclick="window.modificarCantidadCarrito('${prod.id}', 1)"
+              class="w-10 h-10 rounded-xl bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white font-black text-lg flex items-center justify-center shadow-sm transition cursor-pointer"
+            >
+              +
+            </button>
+          </div>
+        `;
+        contenedor.appendChild(card);
+      });
+    }
+
+    function filtrarProductosVentas() {
+      const q = document.getElementById('input-buscador-ventas')?.value || '';
+      renderizarProductosVenta(q);
+    }
+
+    function modificarCantidadCarrito(prodId, delta) {
+      if (!carritoVenta[prodId]) {
+        carritoVenta[prodId] = { cantidad: 0, tieneDescuento: false };
+      }
+
+      carritoVenta[prodId].cantidad = Math.max(0, carritoVenta[prodId].cantidad + delta);
+      if (carritoVenta[prodId].cantidad === 0) {
+        carritoVenta[prodId].tieneDescuento = false;
+      }
+
+      totalCobradoManualOverride = null; // Reiniciar override manual para auto-sumar
+      renderizarProductosVenta();
+      actualizarResumenVentaEnVivo();
+    }
+
+    function alternarDescuentoItemVenta(prodId) {
+      if (carritoVenta[prodId]) {
+        carritoVenta[prodId].tieneDescuento = !carritoVenta[prodId].tieneDescuento;
+        renderizarProductosVenta();
+        actualizarResumenVentaEnVivo();
+      }
+    }
+
+    function alEditarTotalCobradoManual() {
+      const val = parseFloat(document.getElementById('inputTotalCobradoVenta')?.value);
+      totalCobradoManualOverride = !isNaN(val) ? Math.max(0, val) : null;
+      actualizarResumenVentaEnVivo(false);
+    }
+
+    function calcularTotalesVentaActual() {
+      let totalUnidades = 0;
+      let subtotalLista = 0;
+      const itemsActivos = [];
+
+      Object.keys(carritoVenta).forEach(prodId => {
+        const item = carritoVenta[prodId];
+        if (item && item.cantidad > 0) {
+          const prod = productosGuardados.find(p => p.id === prodId);
+          if (prod) {
+            const precioUnitario = obtenerPrecioUnitarioProducto(prod);
+            const costoUnitario = prod.costoUnitario || 0;
+            const subtotalItem = precioUnitario * item.cantidad;
+
+            totalUnidades += item.cantidad;
+            subtotalLista += subtotalItem;
+
+            itemsActivos.push({
+              prodId: prod.id,
+              nombre: prod.nombre,
+              tipoUnidad: prod.tipoUnidad,
+              cantidad: item.cantidad,
+              precioUnitarioLista: precioUnitario,
+              costoUnitario: costoUnitario,
+              subtotalLista: subtotalItem,
+              tieneDescuento: Boolean(item.tieneDescuento),
+              precioFinalCobradoUnitario: precioUnitario,
+              totalCobradoItem: subtotalItem
+            });
+          }
+        }
+      });
+
+      const totalCobradoFinal = totalCobradoManualOverride !== null ? totalCobradoManualOverride : subtotalLista;
+      const diferenciaDescuento = subtotalLista - totalCobradoFinal;
+
+      // Distribuir descuento entre los ítems
+      let hayAlertaPisoCosto = false;
+      let productoBajoCostoNombre = "";
+
+      if (diferenciaDescuento > 0 && itemsActivos.length > 0) {
+        const itemsConDescuento = itemsActivos.filter(i => i.tieneDescuento);
+        const grupoObjetivo = itemsConDescuento.length > 0 ? itemsConDescuento : itemsActivos;
+
+        const baseTotalGrupo = grupoObjetivo.reduce((acc, i) => acc + i.subtotalLista, 0);
+
+        grupoObjetivo.forEach(item => {
+          const proporcion = baseTotalGrupo > 0 ? (item.subtotalLista / baseTotalGrupo) : (1 / grupoObjetivo.length);
+          const descuentoItemTotal = diferenciaDescuento * proporcion;
+          item.totalCobradoItem = Math.max(0, Math.round(item.subtotalLista - descuentoItemTotal));
+          item.precioFinalCobradoUnitario = item.cantidad > 0 ? Math.round(item.totalCobradoItem / item.cantidad) : 0;
+
+          if (item.precioFinalCobradoUnitario < item.costoUnitario) {
+            hayAlertaPisoCosto = true;
+            productoBajoCostoNombre = item.nombre;
+          }
+        });
+      }
+
+      return {
+        totalUnidades,
+        subtotalLista,
+        totalCobradoFinal,
+        diferenciaDescuento,
+        itemsActivos,
+        hayAlertaPisoCosto,
+        productoBajoCostoNombre
+      };
+    }
+
+    function actualizarResumenVentaEnVivo(actualizarInputManual = true) {
+      const { totalUnidades, subtotalLista, totalCobradoFinal, diferenciaDescuento, hayAlertaPisoCosto, productoBajoCostoNombre } = calcularTotalesVentaActual();
+
+      const lblCant = document.getElementById('lblCantidadItemsVenta');
+      const lblSubLista = document.getElementById('subtotalListaVenta');
+      const inpTotal = document.getElementById('inputTotalCobradoVenta');
+      const btnCobrar = document.getElementById('btnConfirmarVenta');
+      const indDif = document.getElementById('indicadorDiferenciaDescuento');
+      const alertaPiso = document.getElementById('alertaPisoCostoVenta');
+      const txtPiso = document.getElementById('textoPisoCostoVenta');
+
+      if (lblCant) lblCant.innerText = `${totalUnidades} ${totalUnidades === 1 ? 'producto' : 'productos'}`;
+      if (lblSubLista) lblSubLista.innerText = `$ ${formatearNumero(subtotalLista)}`;
+
+      if (inpTotal && actualizarInputManual) {
+        inpTotal.value = totalCobradoFinal > 0 ? totalCobradoFinal : (totalUnidades > 0 ? 0 : '');
+      }
+
+      if (indDif) {
+        if (diferenciaDescuento > 0) {
+          indDif.innerHTML = `<span class="text-amber-400 font-bold">Rebaja aplicada: -$ ${formatearNumero(diferenciaDescuento)}</span>`;
+        } else if (diferenciaDescuento < 0) {
+          indDif.innerHTML = `<span class="text-sky-300 font-bold">Recargo aplicado: +$ ${formatearNumero(Math.abs(diferenciaDescuento))}</span>`;
+        } else {
+          indDif.innerText = "Precio de lista normal";
+        }
+      }
+
+      if (alertaPiso && txtPiso) {
+        if (hayAlertaPisoCosto) {
+          alertaPiso.classList.remove('hidden');
+          txtPiso.innerText = `Atención: "${productoBajoCostoNombre}" se cobraría por debajo de su costo técnico de elaboración.`;
+        } else {
+          alertaPiso.classList.add('hidden');
+        }
+      }
+
+      if (btnCobrar) {
+        if (totalUnidades > 0) {
+          btnCobrar.disabled = false;
+          btnCobrar.className = "flex-1 max-w-[160px] sm:max-w-[200px] py-2.5 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-md bg-amber-500 hover:bg-amber-400 active:scale-95 text-stone-950 cursor-pointer";
+        } else {
+          btnCobrar.disabled = true;
+          btnCobrar.className = "flex-1 max-w-[160px] sm:max-w-[200px] py-2.5 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-md bg-stone-800 text-stone-500 cursor-not-allowed";
+        }
+      }
+    }
+
+    async function confirmarVentaActual() {
+      if (!sesionActiva) return mostrarToast("Iniciá sesión para registrar ventas.");
+
+      const { totalUnidades, subtotalLista, totalCobradoFinal, diferenciaDescuento, itemsActivos } = calcularTotalesVentaActual();
+      if (totalUnidades <= 0) return mostrarToast("Sumá al menos 1 producto para vender.");
+
+      const esTurista = Boolean(document.getElementById('checkEsTurista')?.checked);
+      const ventaId = "venta-" + Date.now();
+      const fechaHoraActual = new Date().toISOString();
+
+      // 1. Descontar stock físico terminado de los productos
+      itemsActivos.forEach(item => {
+        const prod = productosGuardados.find(p => p.id === item.prodId);
+        if (prod) {
+          const stockPrevio = prod.stockTerminado !== undefined ? prod.stockTerminado : (prod.unidadesProducidas || 0);
+          prod.stockTerminado = stockPrevio - item.cantidad; // Permisivo: puede entrar a negativos
+        }
+      });
+
+      // 2. Armar objeto de la venta
+      const registroVenta = {
+        id: ventaId,
+        fecha: fechaHoraActual,
+        fechaLegible: new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) + ' hs',
+        tarifa: tarifaVentaActual,
+        totalUnidades: totalUnidades,
+        subtotalLista: subtotalLista,
+        totalCobrado: totalCobradoFinal,
+        descuentoAplicado: diferenciaDescuento,
+        esTurista: esTurista,
+        items: itemsActivos,
+        estado: 'cobrada'
+      };
+
+      ventasGuardadas.unshift(registroVenta);
+
+      // Guardar productos y ventas localmente
+      localStorage.setItem(`sgpp_prods_${sesionActiva.slug}`, JSON.stringify(productosGuardados));
+      localStorage.setItem(`sgpp_ventas_${sesionActiva.slug}`, JSON.stringify(ventasGuardadas));
+
+      // Sincronizar con Firestore
+      try {
+        await setDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'ventas', ventaId), registroVenta);
+        for (const item of itemsActivos) {
+          const prod = productosGuardados.find(p => p.id === item.prodId);
+          if (prod) {
+            await setDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'productos', prod.id), prod);
+          }
+        }
+      } catch (err) {
+        console.warn("Venta guardada en cache offline:", err);
+      }
+
+      // Reiniciar carrito
+      carritoVenta = {};
+      totalCobradoManualOverride = null;
+      const checkTurista = document.getElementById('checkEsTurista');
+      if (checkTurista) checkTurista.checked = false;
+
+      renderizarProductosVenta();
+      actualizarResumenVentaEnVivo();
+      renderizarListaProductos();
+      renderizarHistorialVentas();
+
+      mostrarToast(`¡Venta registrada! $ ${formatearNumero(totalCobradoFinal)} cobrados.`);
+    }
+
+    function abrirModalHistorialVentas() {
+      renderizarHistorialVentas();
+      abrirModal('modalHistorialVentas');
+    }
+
+    function renderizarHistorialVentas() {
+      const cont = document.getElementById('contenedorListaHistorialVentas');
+      const txtTotal = document.getElementById('resumenTotalRecaudadoVentas');
+      const txtUnids = document.getElementById('resumenTotalUnidadesVentas');
+      if (!cont) return;
+
+      const hoyStr = new Date().toISOString().split('T')[0];
+      const ventasHoy = ventasGuardadas.filter(v => (v.fecha || '').startsWith(hoyStr));
+
+      const totalRecaudadoHoy = ventasHoy.reduce((acc, v) => acc + (v.totalCobrado || 0), 0);
+      const totalUnidadesHoy = ventasHoy.reduce((acc, v) => acc + (v.totalUnidades || 0), 0);
+
+      if (txtTotal) txtTotal.innerText = `Recaudado hoy: $ ${formatearNumero(totalRecaudadoHoy)}`;
+      if (txtUnids) txtUnids.innerText = `${totalUnidadesHoy} ${totalUnidadesHoy === 1 ? 'unidad' : 'unidades'} entregadas`;
+
+      if (ventasGuardadas.length === 0) {
+        cont.innerHTML = `
+          <div class="text-center py-8 bg-stone-50 rounded-2xl border border-dashed border-stone-200 text-stone-400 p-4">
+            <i class="ph-bold ph-receipt text-3xl mb-1 text-stone-300"></i>
+            <p class="text-xs font-bold text-stone-600">No hay ventas registradas aún</p>
+            <p class="text-[11px] mt-0.5">Las ventas confirmadas aparecerán acá con opción de anulación y reintegro.</p>
+          </div>
+        `;
+        return;
+      }
+
+      cont.innerHTML = '';
+
+      ventasGuardadas.forEach(v => {
+        const card = document.createElement('div');
+        card.className = "bg-stone-50 border border-stone-200 rounded-2xl p-3.5 space-y-2 text-xs";
+
+        const itemsHtml = (v.items || []).map(it => 
+          `<div class="flex justify-between items-center text-stone-700">
+            <span>• ${it.nombre} (${it.cantidad} ${it.tipoUnidad})</span>
+            <span class="font-bold text-stone-900">$${formatearNumero(it.totalCobradoItem || it.subtotalLista)}</span>
+          </div>`
+        ).join('');
+
+        card.innerHTML = `
+          <div class="flex justify-between items-start pb-1.5 border-b border-stone-200">
+            <div>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="font-black text-stone-900 text-sm">$ ${formatearNumero(v.totalCobrado)}</span>
+                ${v.esTurista ? '<span class="text-[9px] font-black uppercase bg-amber-200 text-amber-950 px-1.5 py-0.2 rounded border border-amber-300">🌱 Turista</span>' : ''}
+                <span class="text-[9px] font-bold text-stone-500 uppercase bg-stone-200/70 px-1.5 py-0.2 rounded">${v.tarifa || 'feria'}</span>
+              </div>
+              <span class="text-[10px] text-stone-400 mt-0.5 block">${v.fechaLegible || v.fecha?.slice(0, 16).replace('T', ' ') || '--'}</span>
+            </div>
+
+            <button 
+              onclick="window.anularVentaDesdeHistorial('${v.id}')"
+              class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-[11px] px-2.5 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1 active:scale-95"
+            >
+              <i class="ph-bold ph-arrow-u-up-left"></i> Anular
+            </button>
+          </div>
+
+          <div class="space-y-1 text-[11px] pt-1">
+            ${itemsHtml}
+          </div>
+
+          ${v.descuentoAplicado > 0 ? `
+            <div class="text-[10px] text-amber-800 font-semibold pt-1 border-t border-stone-200/60 flex justify-between">
+              <span>Rebaja concedida:</span>
+              <span>-$ ${formatearNumero(v.descuentoAplicado)}</span>
+            </div>
+          ` : ''}
+        `;
+        cont.appendChild(card);
+      });
+    }
+
+    async function anularVentaDesdeHistorial(ventaId) {
+      const idx = ventasGuardadas.findIndex(v => v.id === ventaId);
+      if (idx === -1 || !sesionActiva) return;
+
+      const [ventaAnulada] = ventasGuardadas.splice(idx, 1);
+
+      // Reintegrar stock terminado a los productos
+      (ventaAnulada.items || []).forEach(item => {
+        const prod = productosGuardados.find(p => p.id === item.prodId);
+        if (prod) {
+          prod.stockTerminado = (prod.stockTerminado !== undefined ? prod.stockTerminado : 0) + item.cantidad;
+        }
+      });
+
+      localStorage.setItem(`sgpp_ventas_${sesionActiva.slug}`, JSON.stringify(ventasGuardadas));
+      localStorage.setItem(`sgpp_prods_${sesionActiva.slug}`, JSON.stringify(productosGuardados));
+
+      try {
+        await deleteDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'ventas', ventaId));
+        for (const item of (ventaAnulada.items || [])) {
+          const prod = productosGuardados.find(p => p.id === item.prodId);
+          if (prod) {
+            await setDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'productos', prod.id), prod);
+          }
+        }
+      } catch (err) {
+        console.warn("Anulación sincronizada en buffer:", err);
+      }
+
+      renderizarHistorialVentas();
+      renderizarProductosVenta();
+      renderizarListaProductos();
+
+      mostrarToast(`Venta de $ ${formatearNumero(ventaAnulada.totalCobrado)} anulada. Stock reintegrado.`);
     }
 
     function renderEstantes(lista = insumosDespensa) {
@@ -2180,6 +2795,7 @@
       const contenedorTerminados = document.getElementById('contenedorTerminados');
       const contadorTerminados = document.getElementById('btnTextoVerCalculados');
       const contadorHeader = document.getElementById('contadorTerminadosHeader');
+      const badgeStockTotal = document.getElementById('badgeStockTerminadoTotal');
       const seccionBorradores = document.getElementById('seccionBorradores');
       const contenedorBorradores = document.getElementById('contenedorBorradores');
       const contadorBorradores = document.getElementById('contadorBorradores');
@@ -2187,6 +2803,9 @@
 
       const borradores = productosGuardados.filter(p => p.estado === 'borrador');
       const terminados = productosGuardados.filter(p => p.estado !== 'borrador');
+
+      const totalStockListo = terminados.reduce((acc, p) => acc + (p.stockTerminado !== undefined ? p.stockTerminado : (p.unidadesProducidas || 0)), 0);
+      if (badgeStockTotal) badgeStockTotal.innerText = `${totalStockListo} listos para venta`;
 
       if (contadorTerminados) contadorTerminados.innerText = `Ver mis productos calculados (${terminados.length})`;
       if (contadorHeader) contadorHeader.innerText = `${terminados.length} ${terminados.length === 1 ? 'producto calculado' : 'productos calculados'}`;
@@ -2234,6 +2853,7 @@
             card.onclick = () => verDetalleProducto(prod.id);
 
             const pFeria = prod.preciosVenta?.precioMinorista || Math.round(prod.costoUnitario * 1.5);
+            const stockTerminado = prod.stockTerminado !== undefined ? prod.stockTerminado : (prod.unidadesProducidas || 0);
 
             card.innerHTML = `
               <div>
@@ -2244,7 +2864,12 @@
                   </span>
                 </div>
                 <h4 class="font-black text-stone-900 text-sm leading-tight">${prod.nombre}</h4>
-                <p class="text-xs text-stone-500 mt-1">${prod.unidadesProducidas} ${prod.tipoUnidad}</p>
+                
+                <div class="flex items-center gap-2 mt-1.5">
+                  <span class="text-xs font-bold ${stockTerminado > 0 ? 'text-amber-900 bg-amber-100' : 'text-stone-500 bg-stone-100'} px-2 py-0.5 rounded-md border border-stone-200">
+                    Stock Venta: <strong>${stockTerminado} ${prod.tipoUnidad}</strong>
+                  </span>
+                </div>
                 
                 <div class="grid grid-cols-2 gap-2 bg-stone-50 p-2.5 rounded-xl border border-stone-200 mt-2.5 text-xs">
                   <div>
@@ -2968,12 +3593,17 @@
         await guardarDespensaNube();
       }
 
+      const prodExistente = productosGuardados.find(p => p.id === targetId);
+      const stockAnterior = prodExistente && prodExistente.stockTerminado !== undefined ? prodExistente.stockTerminado : 0;
+      const nuevoStockTerminado = esTerminado ? (stockAnterior + calc.unidades) : stockAnterior;
+
       const prodData = {
         id: targetId,
         nombre: nom,
         fecha: fechaHoy,
         estado: esTerminado ? 'terminado' : 'borrador',
         unidadesProducidas: calc.unidades,
+        stockTerminado: nuevoStockTerminado,
         tipoUnidad: document.getElementById('tipoUnidad')?.value || 'unidades',
         costoUnitario: calc.costoUnitario,
         costoTotal: calc.costoTotalTanda,
@@ -3023,13 +3653,14 @@
 
       borradorEnEdicionId = null;
       renderizarListaProductos();
+      renderizarProductosVenta();
       calcularDisponibilidad();
 
       if (esTerminado) {
-        mostrarToast(navigator.onLine ? `¡"${nom}" terminado y sincronizado!` : `¡"${nom}" guardado en memoria local!`);
+        mostrarToast(`¡"${nom}" terminado! Se sumaron ${calc.unidades} unidades al stock de venta.`);
         verDetalleProducto(targetId);
       } else {
-        mostrarToast(navigator.onLine ? `Borrador de "${nom}" guardado.` : `Borrador guardado en memoria del equipo.`);
+        mostrarToast(`Borrador de "${nom}" guardado.`);
         cambiarVista('inicio');
       }
     }
@@ -3041,7 +3672,9 @@
       idProductoSeleccionado = id;
       document.getElementById('detalleNombre').innerText = prod.nombre;
       document.getElementById('detalleFecha').innerText = `Tanda registrada el ${prod.fecha || '--'}`;
-      document.getElementById('detalleRinde').innerText = `${prod.unidadesProducidas} ${prod.tipoUnidad}`;
+      
+      const stockTerminado = prod.stockTerminado !== undefined ? prod.stockTerminado : (prod.unidadesProducidas || 0);
+      document.getElementById('detalleStockListo').innerText = `${stockTerminado} ${prod.tipoUnidad}`;
 
       document.getElementById('detalleCostoUnitario').innerText = `$ ${formatearNumero(prod.costoUnitario)}`;
       document.getElementById('detalleCostoTotal').innerText = `$ ${formatearNumero(prod.costoTotal)}`;
@@ -3120,7 +3753,8 @@
       } catch (e) {}
 
       renderizarListaProductos();
-      mostrarToast(navigator.onLine ? "Precios guardados con éxito." : "Precios guardados en memoria del equipo.");
+      renderizarProductosVenta();
+      mostrarToast("Precios de feria y mayorista guardados.");
     }
 
     function continuarBorradorDesdeId(id) {
@@ -3218,7 +3852,7 @@
 
       cargarDatosEnFormulario(prod, true);
       cambiarVista('calculadora');
-      mostrarToast("Receta y datos cargados en la calculadora.");
+      mostrarToast("Receta cargada en la calculadora.");
     }
 
     function solicitarEliminarProductoActual() {
@@ -3239,6 +3873,7 @@
       cerrarModal('modalEliminar');
       productoAEliminarId = null;
       renderizarListaProductos();
+      renderizarProductosVenta();
       mostrarToast("Producto eliminado.");
       cambiarVista('productos');
     }
@@ -3526,180 +4161,3 @@
       return new Intl.NumberFormat('es-AR', {
         minimumFractionDigits: 0,
         maximumFractionDigits: 2
-      }).format(num);
-    }
-
-    function mostrarToast(mensaje) {
-      const toast = document.getElementById('toastMensaje');
-      const txt = document.getElementById('toastTexto');
-      if (!toast || !txt) return;
-      txt.innerText = mensaje;
-      toast.classList.remove('hidden');
-      setTimeout(() => toast.classList.add('hidden'), 3400);
-    }
-
-    function abrirModal(id) {
-      const m = document.getElementById(id);
-      if (m) m.classList.remove('hidden');
-    }
-
-    function cerrarModal(id) {
-      const m = document.getElementById(id);
-      if (m) m.classList.add('hidden');
-    }
-
-    function cerrarModales() {
-      document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
-    }
-
-    function exportarCopiaJSON() {
-      const data = {
-        emprendimiento: sesionActiva,
-        productos: productosGuardados,
-        despensa: insumosDespensa,
-        archivados: insumosArchivados,
-        fecha: new Date().toISOString()
-      };
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
-      const a = document.createElement('a');
-      a.href = dataStr;
-      a.download = `respaldo_${sesionActiva ? sesionActiva.slug : 'sgpp'}_${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      mostrarToast("Copia de seguridad descargada.");
-    }
-
-    function importarCopiaJSON(e) {
-      const file = e.target.files[0];
-      if (!file || !sesionActiva) return;
-      const reader = new FileReader();
-      reader.onload = async function(evt) {
-        try {
-          const imp = JSON.parse(evt.target.result);
-          if (imp.productos) productosGuardados = imp.productos;
-          if (imp.despensa) insumosDespensa = imp.despensa;
-          if (imp.archivados) insumosArchivados = imp.archivados;
-          localStorage.setItem(`sgpp_prods_${sesionActiva.slug}`, JSON.stringify(productosGuardados));
-          await guardarDespensaNube();
-          cerrarModal('modalBackup');
-          renderizarListaProductos();
-          renderEstantes();
-          mostrarToast("Datos restaurados y sincronizados.");
-        } catch (err) {
-          mostrarToast("Error al importar el archivo JSON.");
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    // Escucha automática de reconexión y sincronización al volver a la civilización
-    window.addEventListener('online', async () => {
-      estaOnline = true;
-      actualizarIndicadorNube('sincronizando', "Reconectando con la nube...");
-      mostrarToast("¡Conexión restablecida! Sincronizando datos con la nube...");
-
-      if (sesionActiva && sesionActiva.slug) {
-        await guardarDespensaNube();
-        iniciarSincronizacionEmprendimiento(sesionActiva.slug, sesionActiva.nombre);
-      } else {
-        actualizarIndicadorNube(true, "Conectado");
-      }
-    });
-
-    window.addEventListener('offline', () => {
-      estaOnline = false;
-      actualizarIndicadorNube('offline', "Modo Campo / Sin Señal");
-      mostrarToast("Trabajando sin conexión. Datos seguros en tu dispositivo.");
-    });
-
-    function verificarConexionManual() {
-      if (navigator.onLine) {
-        window.dispatchEvent(new Event('online'));
-      } else {
-        mostrarToast("Aún no se detecta señal de internet.");
-      }
-    }
-
-    // Pre-cache de estilos y fuentes para acceso instantáneo sin internet
-    async function precargarRecursosEnCache() {
-      if ('caches' in window) {
-        try {
-          const cache = await caches.open('sgpp-estaticos-v1');
-          const recursos = [
-            'https://cdn.tailwindcss.com',
-            'https://unpkg.com/@phosphor-icons/web'
-          ];
-          await cache.addAll(recursos).catch(() => {});
-        } catch (e) {
-          // El navegador continuará con su cache estándar
-        }
-      }
-    }
-
-    window.alternarTabAuth = alternarTabAuth;
-    window.procesarLogin = procesarLogin;
-    window.procesarRegistro = procesarRegistro;
-    window.cambiarVista = cambiarVista;
-    window.irAInicioSiAutenticado = () => sesionActiva ? cambiarVista('inicio') : mostrarPantallaAuth();
-    window.solicitarCerrarSesion = () => abrirModal('modalCerrarSesion');
-    window.confirmarCerrarSesion = confirmarCerrarSesion;
-    window.iniciarNuevoCalculo = iniciarNuevoCalculo;
-    window.guardarProducto = guardarProducto;
-    window.verDetalleProducto = verDetalleProducto;
-    window.continuarBorradorDesdeId = continuarBorradorDesdeId;
-    window.cargarDatosEnFormulario = cargarDatosEnFormulario;
-    window.reutilizarProductoActual = reutilizarProductoActual;
-    window.solicitarEliminarProductoActual = solicitarEliminarProductoActual;
-    window.confirmarEliminarProducto = confirmarEliminarProducto;
-    window.agregarCompraDesdeDespensa = agregarCompraDesdeDespensa;
-    window.agregarCompra = agregarCompra;
-    window.actualizarCompraSilencioso = actualizarCompraSilencioso;
-    window.cambiarInsumoDespensaCompra = cambiarInsumoDespensaCompra;
-    window.eliminarCompra = eliminarCompra;
-    window.agregarInsumoReceta = agregarInsumoReceta;
-    window.agregarInsumoLibreReceta = agregarInsumoLibreReceta;
-    window.actualizarInsumoRecetaRef = actualizarInsumoRecetaRef;
-    window.actualizarInsumoRecetaSilencioso = actualizarInsumoRecetaSilencioso;
-    window.eliminarInsumoReceta = eliminarInsumoReceta;
-    window.setearCosecha = setearCosecha;
-    window.setearTipoMedidor = setearTipoMedidor;
-    window.actualizarNombreResumen = actualizarNombreResumen;
-    window.calcular = calcular;
-    window.abrirVerEstante = abrirVerEstante;
-    window.setModoMovimiento = setModoMovimiento;
-    window.confirmarMovimientoEstante = confirmarMovimientoEstante;
-    window.abrirModalCompra = abrirModalCompra;
-    window.guardarNuevaCompra = guardarNuevaCompra;
-    window.abrirModalNuevoInsumo = abrirModalNuevoInsumo;
-    window.setOrigenNuevoInsumo = setOrigenNuevoInsumo;
-    window.guardarNuevoInsumoEstante = guardarNuevoInsumoEstante;
-    window.abrirModalImpacto = abrirModalImpacto;
-    window.seguirAbsorbiendoAumentos = seguirAbsorbiendoAumentos;
-    window.actualizarCostosReceta = actualizarCostosReceta;
-    window.calcularDisponibilidad = calcularDisponibilidad;
-    window.filtrarInsumos = filtrarInsumos;
-    window.seleccionarNivelEstrategia = seleccionarNivelEstrategia;
-    window.guardarPreciosFijados = guardarPreciosFijados;
-    window.abrirModal = abrirModal;
-    window.cerrarModal = cerrarModal;
-    window.cerrarModales = cerrarModales;
-    window.exportarCopiaJSON = exportarCopiaJSON;
-    window.importarCopiaJSON = importarCopiaJSON;
-    window.solicitarArchivarInsumoActual = solicitarArchivarInsumoActual;
-    window.abrirModalArchivados = abrirModalArchivados;
-    window.reactivarInsumoArchivado = reactivarInsumoArchivado;
-    window.eliminarArchivadoDefinitivo = eliminarArchivadoDefinitivo;
-    window.abrirModalFusionarDesdeActual = abrirModalFusionarDesdeActual;
-    window.actualizarOpcionesNombreFusion = actualizarOpcionesNombreFusion;
-    window.confirmarFusionInsumos = confirmarFusionInsumos;
-    window.verificarConexionManual = verificarConexionManual;
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', inicializarAuth);
-    } else {
-      inicializarAuth();
-    }
-  </script>
-</body>
-</html>
