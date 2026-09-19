@@ -1602,6 +1602,7 @@
         try {
           sesionActiva = JSON.parse(sesionGuardada);
           if (sesionActiva && sesionActiva.slug) {
+            await reautenticarSesionGuardada(sesionActiva.slug);
             iniciarSincronizacionEmprendimiento(sesionActiva.slug, sesionActiva.nombre);
             return;
           }
@@ -1611,6 +1612,27 @@
       }
 
       mostrarPantallaAuth();
+    }
+
+    // La app puede "recordar" localmente que estabas en un emprendimiento, pero
+    // eso no le confirma nada a Firebase. Si no se vuelve a confirmar la
+    // identidad real ante Firebase al reabrir, los guardados en la nube pueden
+    // quedar rechazados aunque la app crea que seguís adentro. Esto se ejecuta
+    // en silencio, sin interrumpir el uso de la app.
+    async function reautenticarSesionGuardada(slug) {
+      if (!navigator.onLine) return; // sin señal ahora; se reintenta solo al reconectar
+
+      const credencialLocal = localStorage.getItem(`sgpp_credencial_${slug}`);
+      if (!credencialLocal) return;
+
+      try {
+        const cred = JSON.parse(credencialLocal);
+        if (!cred || !cred.pin) return;
+        const { email, password } = generarCredencialTecnica(slug, cred.pin);
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (e) {
+        console.warn("No se pudo reconfirmar la sesión con Firebase al reabrir:", e);
+      }
     }
 
     function alternarTabAuth(tab) {
@@ -1748,24 +1770,38 @@
         // Guardar credencial en dispositivo para permitir acceso offline inmediato en el campo
         localStorage.setItem(`sgpp_credencial_${slug}`, JSON.stringify({ slug, nombre: nomInput, pin: pinInput }));
 
-        const despensaInicial = [
-          { id: 1, nombre: "Azúcar Común", cantidad: 10, unidad: "kg", costoPromedio: 1150, costoHistorico: 1150, aumentosAbsorbidos: 0, origenes: { comprado: { cantidad: 10, costoUnitario: 1150 }, propio: { cantidad: 0, costoUnitario: 0 } } },
-          { id: 2, nombre: "Frascos de Vidrio 360cc", cantidad: 30, unidad: "unid", costoPromedio: 450, costoHistorico: 450, aumentosAbsorbidos: 0, origenes: { comprado: { cantidad: 30, costoUnitario: 450 }, propio: { cantidad: 0, costoUnitario: 0 } } }
-        ];
+        // Antes de cargar los insumos de ejemplo, se revisa si ya existe una
+        // Despensa real para este emprendimiento (por ejemplo, alguien
+        // recuperando el acceso después de que se le borró la cuenta técnica).
+        // Si ya existe, no se toca: nunca se pisan datos reales con la muestra.
+        const refDespensa = doc(db, 'emprendimientos', slug, 'datos', 'despensa');
+        const snapDespensaExistente = await getDoc(refDespensa);
+        const eraEmprendimientoExistente = snapDespensaExistente.exists();
 
-        await setDoc(doc(db, 'emprendimientos', slug, 'datos', 'despensa'), {
-          insumos: despensaInicial,
-          archivados: [],
-          actualizadoEl: new Date().toISOString()
-        });
+        if (!eraEmprendimientoExistente) {
+          const despensaInicial = [
+            { id: 1, nombre: "Azúcar Común", cantidad: 10, unidad: "kg", costoPromedio: 1150, costoHistorico: 1150, aumentosAbsorbidos: 0, origenes: { comprado: { cantidad: 10, costoUnitario: 1150 }, propio: { cantidad: 0, costoUnitario: 0 } } },
+            { id: 2, nombre: "Frascos de Vidrio 360cc", cantidad: 30, unidad: "unid", costoPromedio: 450, costoHistorico: 450, aumentosAbsorbidos: 0, origenes: { comprado: { cantidad: 30, costoUnitario: 450 }, propio: { cantidad: 0, costoUnitario: 0 } } }
+          ];
 
+          await setDoc(refDespensa, {
+            insumos: despensaInicial,
+            archivados: [],
+            actualizadoEl: new Date().toISOString()
+          });
+        }
+
+        // El registro de "seguridad/acceso" sí se puede recrear sin riesgo:
+        // solo guarda metadatos de la cuenta técnica, no información productiva.
         await setDoc(doc(db, 'emprendimientos', slug, 'seguridad', 'acceso'), datosRegistro);
 
         sesionActiva = { slug: slug, nombre: nomInput };
         localStorage.setItem('sgpp_sesion_activa_v2', JSON.stringify(sesionActiva));
 
         iniciarSincronizacionEmprendimiento(slug, nomInput);
-        mostrarToast(`¡Emprendimiento "${nomInput}" registrado con éxito!`);
+        mostrarToast(eraEmprendimientoExistente
+          ? `¡Acceso recuperado! Encontramos y recuperamos todos los datos de "${nomInput}".`
+          : `¡Emprendimiento "${nomInput}" registrado con éxito!`);
       } catch (err) {
         console.warn("Fallo registro seguro:", err.code, err.message);
 
@@ -1956,14 +1992,22 @@
         return true;
       } catch (e) {
         console.warn(descripcionError + ":", e);
+        const codigo = (e && e.code) ? e.code : 'desconocido';
 
         if (!navigator.onLine) {
           actualizarIndicadorNube('offline', "Modo Campo / Guardado Local");
           return false;
         }
 
-        actualizarIndicadorNube('error', "No se pudo guardar. Reintentando...");
-        mostrarToast("No se pudo guardar en la nube. Reintentando en unos segundos...");
+        actualizarIndicadorNube('error', `No se pudo guardar (${codigo})`);
+        mostrarToast(`No se pudo guardar en la nube (código: ${codigo}). Reintentando en unos segundos...`);
+
+        // "permission-denied" suele significar que la sesión con Firebase quedó
+        // desactualizada aunque la app crea que seguís logueado. Antes de
+        // reintentar, se intenta reconfirmar la identidad real.
+        if (codigo === 'permission-denied' && sesionActiva && sesionActiva.slug) {
+          await reautenticarSesionGuardada(sesionActiva.slug);
+        }
 
         return new Promise((resolve) => {
           setTimeout(async () => {
@@ -1973,9 +2017,10 @@
               mostrarToast("Listo, se guardó correctamente.");
               resolve(true);
             } catch (e2) {
+              const codigo2 = (e2 && e2.code) ? e2.code : 'desconocido';
               console.warn(descripcionError + " (reintento):", e2);
-              actualizarIndicadorNube('error', "No se pudo guardar");
-              mostrarToast("Seguimos sin poder guardar esto. Revisá la conexión y volvé a intentar la acción.");
+              actualizarIndicadorNube('error', `No se pudo guardar (${codigo2})`);
+              mostrarToast(`Seguimos sin poder guardar esto (código: ${codigo2}). Revisá la conexión y volvé a intentar la acción.`);
               resolve(false);
             }
           }, 4000);
@@ -4178,11 +4223,9 @@
             <p class="text-[11px] font-bold mt-0.5 ${sinStock ? 'text-rose-600' : 'text-emerald-700'}">
               ${sinStock ? `Sin stock físico (${item.cantidad} ${item.unidad})` : `Quedan: ${item.cantidad} ${item.unidad}`}
             </p>
-            ${cant > 0 ? `
-              <button onclick="window.toggleDescu('${item.id}')" class="mt-1.5 text-[10px] font-black uppercase px-2 py-0.5 rounded-full border transition cursor-pointer ${enCanasto.esDescu ? 'bg-amber-500 border-amber-500 text-stone-950' : 'bg-stone-100 border-stone-300 text-stone-500'}">
-                Descu
-              </button>
-            ` : ''}
+            <button onclick="window.toggleDescu('${item.id}')" class="mt-1.5 text-[10px] font-black uppercase px-2 py-0.5 rounded-full border transition cursor-pointer ${cant > 0 ? (enCanasto.esDescu ? 'bg-amber-500 border-amber-500 text-stone-950' : 'bg-stone-100 border-stone-300 text-stone-500') : 'invisible'}">
+              Descu
+            </button>
           </div>
           <div class="flex items-center gap-2 shrink-0">
             <button onclick="window.quitarUnidadCanasto('${item.id}')" class="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 font-black text-lg flex items-center justify-center cursor-pointer active:scale-90 transition">
@@ -4477,7 +4520,7 @@
           ${!anulada ? `
             <div class="flex gap-2 pt-1.5 border-t border-stone-100">
               <button onclick="window.modificarVenta('${v.id}')" class="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-[11px] py-1.5 px-2 rounded-xl transition cursor-pointer">
-                Devolver al Canasto
+                Modificar Venta
               </button>
               <button onclick="window.solicitarDeshacerVenta('${v.id}')" class="flex-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[11px] py-1.5 px-2 rounded-xl border border-rose-200 transition cursor-pointer">
                 Deshacer venta
@@ -4520,6 +4563,7 @@
       mostrarToast("¡Conexión restablecida! Sincronizando datos con la nube...");
 
       if (sesionActiva && sesionActiva.slug) {
+        await reautenticarSesionGuardada(sesionActiva.slug);
         await guardarDespensaNube();
         iniciarSincronizacionEmprendimiento(sesionActiva.slug, sesionActiva.nombre);
       } else {
