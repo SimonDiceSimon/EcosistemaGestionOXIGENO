@@ -1422,7 +1422,7 @@
     import { 
       initializeFirestore,
       persistentLocalCache,
-      persistentMultipleTabManager,
+      persistentSingleTabManager,
       getFirestore,
       collection,
       doc, 
@@ -1446,12 +1446,16 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Inicialización con persistencia local en IndexedDB nativa a costo cero
+    // Inicialización con persistencia local en IndexedDB nativa a costo cero.
+    // Se usa persistentSingleTabManager (en vez de multi-pestaña) porque es más
+    // estable en Safari, que tiene fallas conocidas con IndexedDB multi-pestaña.
+    // Esto no afecta la sincronización entre distintos dispositivos: cada
+    // teléfono tiene su propia base local y se sincroniza con la nube igual.
     let db;
     try {
       db = initializeFirestore(app, {
         localCache: persistentLocalCache({
-          tabManager: persistentMultipleTabManager()
+          tabManager: persistentSingleTabManager({ forceOwnership: false })
         })
       });
     } catch (e) {
@@ -1559,6 +1563,13 @@
         badgeNube.className = "text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-900 text-emerald-200 flex items-center gap-1 border border-emerald-800";
         if (iconoNube) iconoNube.className = "ph-bold ph-cloud-check text-[11px]";
         textoNube.innerText = textoPersonalizado || "Bóveda Sincronizada";
+        if (bannerOffline) bannerOffline.classList.add('hidden');
+      } else if (online === 'error') {
+        // Distinto de "sin señal": hay conexión, pero el guardado en la nube falló
+        // (por ejemplo, un problema del navegador con el guardado local).
+        badgeNube.className = "text-[9px] font-bold px-2 py-0.5 rounded-full bg-rose-900 text-rose-200 flex items-center gap-1 border border-rose-800";
+        if (iconoNube) iconoNube.className = "ph-bold ph-warning-circle text-[11px]";
+        textoNube.innerText = textoPersonalizado || "No se pudo guardar";
         if (bannerOffline) bannerOffline.classList.add('hidden');
       } else {
         badgeNube.className = "text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-900 text-amber-200 flex items-center gap-1 border border-amber-800";
@@ -1819,6 +1830,7 @@
       calcularDisponibilidad();
       verificarAlertaGuardian();
       actualizarResumenMostradorInicio();
+      migrarProductosAlMostradorSiHaceFalta();
 
       actualizarIndicadorNube(navigator.onLine ? true : 'offline');
 
@@ -1869,6 +1881,7 @@
           localStorage.setItem(`sgpp_prods_${slug}`, JSON.stringify(productosGuardados));
           renderizarListaProductos();
           calcularDisponibilidad();
+          migrarProductosAlMostradorSiHaceFalta();
           if (snapshot.metadata.fromCache && !navigator.onLine) {
             actualizarIndicadorNube('offline', "Modo Campo / Datos Locales");
           } else {
@@ -1930,58 +1943,91 @@
       cambiarVista('inicio');
     }
 
+    // Intenta guardar en la nube distinguiendo dos causas de falla muy distintas:
+    // 1) no hay señal real (navigator.onLine === false) -> es esperable, se guardó
+    //    localmente y se subirá solo al reconectar.
+    // 2) hay señal, pero el guardado falló igual (por ejemplo, un problema puntual
+    //    del navegador con el guardado local) -> no hay que decir "sin señal",
+    //    porque no es cierto y confunde. Se avisa y se reintenta una vez solo.
+    // Devuelve true si el guardado en la nube quedó confirmado, false si no.
+    async function guardarConReintento(funcionGuardado, descripcionError) {
+      try {
+        await funcionGuardado();
+        return true;
+      } catch (e) {
+        console.warn(descripcionError + ":", e);
+
+        if (!navigator.onLine) {
+          actualizarIndicadorNube('offline', "Modo Campo / Guardado Local");
+          return false;
+        }
+
+        actualizarIndicadorNube('error', "No se pudo guardar. Reintentando...");
+        mostrarToast("No se pudo guardar en la nube. Reintentando en unos segundos...");
+
+        return new Promise((resolve) => {
+          setTimeout(async () => {
+            try {
+              await funcionGuardado();
+              actualizarIndicadorNube(true, "Bóveda Sincronizada");
+              mostrarToast("Listo, se guardó correctamente.");
+              resolve(true);
+            } catch (e2) {
+              console.warn(descripcionError + " (reintento):", e2);
+              actualizarIndicadorNube('error', "No se pudo guardar");
+              mostrarToast("Seguimos sin poder guardar esto. Revisá la conexión y volvé a intentar la acción.");
+              resolve(false);
+            }
+          }, 4000);
+        });
+      }
+    }
+
     async function guardarDespensaNube() {
-      if (!sesionActiva || !sesionActiva.slug) return;
+      if (!sesionActiva || !sesionActiva.slug) return true;
       
       localStorage.setItem(`sgpp_despensa_${sesionActiva.slug}`, JSON.stringify(insumosDespensa));
       localStorage.setItem(`sgpp_archivados_${sesionActiva.slug}`, JSON.stringify(insumosArchivados));
 
       actualizarIndicadorNube(navigator.onLine ? 'sincronizando' : 'offline', navigator.onLine ? "Guardando en nube..." : "Guardado seguro en equipo");
 
-      try {
+      const ok = await guardarConReintento(async () => {
         await setDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'datos', 'despensa'), { 
           insumos: insumosDespensa,
           archivados: insumosArchivados,
           actualizadoEl: new Date().toISOString()
         });
-        if (navigator.onLine) {
-          actualizarIndicadorNube(true, "Bóveda Sincronizada");
-        } else {
-          actualizarIndicadorNube('offline', "Modo Campo / Guardado Local");
-        }
-      } catch (e) {
-        console.warn("Guardado despensa en buffer offline:", e);
-        actualizarIndicadorNube('offline', "Pendiente de subida (Sin señal)");
+      }, "Guardado despensa");
+
+      if (ok && navigator.onLine) {
+        actualizarIndicadorNube(true, "Bóveda Sincronizada");
       }
+      return ok;
     }
 
     // Guarda el estante del Mostrador (stock de productos listos para vender)
     async function guardarMostradorNube() {
-      if (!sesionActiva || !sesionActiva.slug) return;
+      if (!sesionActiva || !sesionActiva.slug) return true;
 
       localStorage.setItem(`sgpp_mostrador_${sesionActiva.slug}`, JSON.stringify(stockMostrador));
 
-      try {
+      return await guardarConReintento(async () => {
         await setDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'datos', 'mostrador'), {
           stock: stockMostrador,
           actualizadoEl: new Date().toISOString()
         });
-      } catch (e) {
-        console.warn("Guardado Mostrador en buffer offline:", e);
-      }
+      }, "Guardado Mostrador");
     }
 
     // Guarda (crea o actualiza) un comprobante de venta puntual
     async function guardarVentaNube(venta) {
-      if (!sesionActiva || !sesionActiva.slug) return;
+      if (!sesionActiva || !sesionActiva.slug) return true;
 
       localStorage.setItem(`sgpp_ventas_${sesionActiva.slug}`, JSON.stringify(ventasDia));
 
-      try {
+      return await guardarConReintento(async () => {
         await setDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'ventas', venta.id), venta);
-      } catch (e) {
-        console.warn("Guardado de venta en buffer offline:", e);
-      }
+      }, "Guardado de venta");
     }
 
     async function mostrarPantallaAuth() {
@@ -3213,6 +3259,9 @@
         }
       });
 
+      let despensaOk = true;
+      let mostradorOk = true;
+
       if (esTerminado) {
         compras.forEach(c => {
           if (!c.origenDespensaKey && c.nombre && c.cantidad && c.costo) {
@@ -3247,7 +3296,7 @@
           }
         }
 
-        await guardarDespensaNube();
+        despensaOk = await guardarDespensaNube();
       }
 
       const prodData = {
@@ -3255,6 +3304,7 @@
         nombre: nom,
         fecha: fechaHoy,
         estado: esTerminado ? 'terminado' : 'borrador',
+        acreditadoMostrador: esTerminado ? true : false,
         unidadesProducidas: calc.unidades,
         tipoUnidad: document.getElementById('tipoUnidad')?.value || 'unidades',
         costoUnitario: calc.costoUnitario,
@@ -3297,11 +3347,9 @@
 
       localStorage.setItem(`sgpp_prods_${sesionActiva.slug}`, JSON.stringify(productosGuardados));
 
-      try {
+      const productoOk = await guardarConReintento(async () => {
         await setDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'productos', targetId), prodData);
-      } catch (err) {
-        console.warn("Guardado producto diferido en memoria local:", err);
-      }
+      }, "Guardado producto");
 
       // Si la tanda quedó terminada, se acredita automáticamente al Mostrador (stock listo para vender)
       if (esTerminado) {
@@ -3313,7 +3361,7 @@
           precioMinorista: prodData.preciosVenta.precioMinorista,
           precioMayorista: prodData.preciosVenta.precioMayorista
         });
-        await guardarMostradorNube();
+        mostradorOk = await guardarMostradorNube();
       }
 
       borradorEnEdicionId = null;
@@ -3321,11 +3369,26 @@
       calcularDisponibilidad();
       actualizarResumenMostradorInicio();
 
+      // El guardado local (localStorage) ya ocurrió sin importar la nube, así que
+      // el dato nunca se pierde. El mensaje solo distingue si además ya subió:
+      // - sin señal real: se avisa que quedó en el teléfono, esperando conexión.
+      // - con señal pero algo falló: guardarConReintento ya avisó y reintentó,
+      //   así que acá no se repite el aviso para no saturar de toasts.
+      const todoSincronizado = despensaOk && productoOk && mostradorOk;
+
       if (esTerminado) {
-        mostrarToast(navigator.onLine ? `¡"${nom}" terminado y sincronizado!` : `¡"${nom}" guardado en memoria local!`);
+        if (!navigator.onLine) {
+          mostrarToast(`¡"${nom}" guardado en memoria local!`);
+        } else if (todoSincronizado) {
+          mostrarToast(`¡"${nom}" terminado y sincronizado!`);
+        }
         verDetalleProducto(targetId);
       } else {
-        mostrarToast(navigator.onLine ? `Borrador de "${nom}" guardado.` : `Borrador guardado en memoria del equipo.`);
+        if (!navigator.onLine) {
+          mostrarToast(`Borrador guardado en memoria del equipo.`);
+        } else if (todoSincronizado) {
+          mostrarToast(`Borrador de "${nom}" guardado.`);
+        }
         cambiarVista('inicio');
       }
     }
@@ -3941,6 +4004,43 @@
           precioMayorista: precioMayorista || 0
         });
       }
+    }
+
+    // Migración: acredita al Mostrador los productos que ya estaban marcados
+    // como "terminado" antes de que existiera este módulo (o que por algún otro
+    // motivo nunca llegaron a acreditarse). Es segura de correr varias veces:
+    // cada producto se marca con acreditadoMostrador para no sumarse dos veces.
+    async function migrarProductosAlMostradorSiHaceFalta() {
+      if (!sesionActiva) return;
+
+      const pendientes = productosGuardados.filter(p => p.estado !== 'borrador' && !p.acreditadoMostrador);
+      if (pendientes.length === 0) return;
+
+      pendientes.forEach(prod => {
+        incorporarOActualizarEnMostrador({
+          nombre: prod.nombre,
+          cantidad: prod.unidadesProducidas || 0,
+          unidad: prod.tipoUnidad || 'unidades',
+          costoUnitario: prod.costoUnitario || 0,
+          precioMinorista: prod.preciosVenta?.precioMinorista || 0,
+          precioMayorista: prod.preciosVenta?.precioMayorista || 0
+        });
+        prod.acreditadoMostrador = true;
+      });
+
+      localStorage.setItem(`sgpp_prods_${sesionActiva.slug}`, JSON.stringify(productosGuardados));
+      await guardarMostradorNube();
+
+      for (const prod of pendientes) {
+        try {
+          await setDoc(doc(db, 'emprendimientos', sesionActiva.slug, 'productos', prod.id), prod);
+        } catch (e) {
+          console.warn("No se pudo marcar producto como acreditado al Mostrador:", e);
+        }
+      }
+
+      renderMostrador();
+      actualizarResumenMostradorInicio();
     }
 
     // Cuánto hay puesto en el canasto de un producto del Mostrador
